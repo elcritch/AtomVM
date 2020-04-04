@@ -364,6 +364,7 @@ compile_erlang(count_char2_bs)
 compile_erlang(count_char3_bs)
 compile_erlang(count_pairs)
 compile_erlang(decode_mqtt)
+compile_erlang(decode_int32)
 
 add_custom_target(erlang_test_modules DEPENDS
     add.beam
@@ -722,4 +723,5 @@ add_custom_target(erlang_test_modules DEPENDS
     count_char3_bs.beam
     count_pairs.beam
     decode_mqtt.beam
+    decode_int32.beam
 )

@@ -406,6 +406,7 @@ struct Test tests[] =
     {"count_char3_bs.beam", 1},
     {"count_pairs.beam", 3},
     {"decode_mqtt.beam", 120948},
+    {"decode_int32.beam", 240351},
 
     //TEST CRASHES HERE: {"memlimit.beam", 0},
 
