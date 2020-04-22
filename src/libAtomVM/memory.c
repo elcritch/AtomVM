@@ -37,7 +37,9 @@
 static void memory_scan_and_copy(term *mem_start, const term *mem_end, term **new_heap_pos, int move);
 static term memory_shallow_copy_term(term t, term **new_heap, int move);
 
-HOT_FUNC term *memory_heap_alloc(Context *c, uint32_t size)
+// TODO: FIXME
+// HOT_FUNC term *memory_heap_alloc(Context *c, uint32_t size)
+term *memory_heap_alloc(Context *c, uint32_t size)
 {
     term *allocated = c->heap_ptr;
     c->heap_ptr += size;
@@ -135,7 +137,11 @@ enum MemoryGCResult memory_gc(Context *ctx, int new_size)
 
     struct ListHead *fragment;
     struct ListHead *tmp;
-    MUTABLE_LIST_FOR_EACH(fragment, tmp, &ctx->heap_fragments) {
+    // TODO: FIXME
+    // MUTABLE_LIST_FOR_EACH(fragment, tmp, &ctx->heap_fragments) {
+    for (fragment = (&ctx->heap_fragments)->next, tmp = fragment->next;
+         fragment != (&ctx->heap_fragments);
+         fragment = tmp, tmp = fragment->next) {
         free(fragment);
     }
     list_init(&ctx->heap_fragments);
@@ -351,7 +357,9 @@ static void memory_scan_and_copy(term *mem_start, const term *mem_end, term **ne
     *new_heap_pos = new_heap;
 }
 
-HOT_FUNC static term memory_shallow_copy_term(term t, term **new_heap, int move)
+// TODO: FIXME
+// HOT_FUNC static term memory_shallow_copy_term(term t, term **new_heap, int move)
+static term memory_shallow_copy_term(term t, term **new_heap, int move)
 {
     if (term_is_atom(t)) {
         return t;

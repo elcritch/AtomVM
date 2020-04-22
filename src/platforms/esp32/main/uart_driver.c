@@ -59,7 +59,9 @@ struct UARTData
     uint8_t uart_num;
 };
 
-static void IRAM_ATTR uart_isr_handler(void *arg)
+// TODO: FIXME
+// static void IRAM_ATTR uart_isr_handler(void *arg)
+static void uart_isr_handler(void *arg)
 {
     uint16_t rxfifo_len;
     volatile uint16_t interrupt_status;
@@ -229,13 +231,13 @@ void uart_driver_init(Context *ctx, term opts)
             abort();
     }
 
-    uart_config_t uart_config = {
-        .baud_rate = uart_speed,
-        .data_bits = data_bits,
-        .parity    = parity,
-        .stop_bits = stop_bits,
-        .flow_ctrl = flow_control
-    };
+    uart_config_t uart_config;
+    uart_config.baud_rate  = uart_speed;
+    uart_config.data_bits  = data_bits;
+    uart_config.parity     = parity;
+    uart_config.stop_bits  = stop_bits;
+    uart_config.flow_ctrl  = flow_control;
+
     uart_param_config(uart_num, &uart_config);
 
     uart_driver_install(uart_num, UART_BUF_SIZE, 0, 0, NULL, 0);

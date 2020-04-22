@@ -74,7 +74,8 @@ static void receive_events(GlobalContext *glb, TickType_t wait_ticks)
         }
 
         struct ListHead *listener_lh;
-        LIST_FOR_EACH(listener_lh, &platform->listeners) {
+        // TODO: FIXME
+        for (listener_lh = (&platform->listeners)->next; listener_lh != (&platform->listeners); listener_lh = listener_lh->next) {
             EventListener *listener = GET_LIST_ENTRY(listener_lh, EventListener, listeners_list_head);
             if (listener->sender == sender) {
                 TRACE("sys: handler found for: %p\n", (void *) sender);
@@ -150,8 +151,10 @@ Module *sys_load_module(GlobalContext *global, const char *module_name)
     return new_module;
 }
 
+// TODO: FIXME
 // This function allows to use AtomVM as a component on ESP32 and customize it
-__attribute__ ((weak)) Context *sys_create_port_fallback(Context *new_ctx, const char *driver_name, term opts)
+// __attribute__ ((weak)) Context *sys_create_port_fallback(Context *new_ctx, const char *driver_name, term opts)
+Context *sys_create_port_fallback(Context *new_ctx, const char *driver_name, term opts)
 {
     UNUSED(driver_name);
     UNUSED(opts);

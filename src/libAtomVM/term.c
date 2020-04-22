@@ -29,6 +29,18 @@
 #include <stdio.h>
 #include <inttypes.h>
 
+#ifdef __clang__
+#define REF_CONST_FMT "#Ref<0.0.0.%llu>"
+#else
+#define REF_CONST_FMT "#Ref<0.0.0.%lu>"
+#endif
+
+#ifdef __clang__
+#define FUN_FMT "#Fun<erl_eval.%lu.%llu>"
+#else
+#define FUN_FMT "#Fun<erl_eval.%lu.%llu>"
+#endif
+
 const term empty_tuple = 0;
 
 void term_display(FILE *fd, term t, const Context *ctx)
@@ -94,12 +106,10 @@ void term_display(FILE *fd, term t, const Context *ctx)
         const term *boxed_value = term_to_const_term_ptr(t);
         Module *fun_module = (Module *) boxed_value[1];
         uint32_t fun_index = boxed_value[2];
-        const char *format =
-        #ifdef __clang__
-                "#Fun<erl_eval.%lu.%llu>";
-        #else
-                "#Fun<erl_eval.%lu.%llu>";
-        #endif
+
+// TODO: FIXME
+        const char *format = FUN_FMT;
+
         fprintf(fd, format, fun_index, (unsigned long) fun_module);
 
     } else if (term_is_tuple(t)) {
@@ -147,12 +157,9 @@ void term_display(FILE *fd, term t, const Context *ctx)
         fprintf(fd, ">>");
 
     } else if (term_is_reference(t)) {
-        const char *format =
-#ifdef __clang__
-        "#Ref<0.0.0.%llu>";
-#else
-        "#Ref<0.0.0.%lu>";
-#endif
+
+// TODO: FIXME
+        const char *format = REF_CONST_FMT;
         fprintf(fd, format, term_to_ref_ticks(t));
 
     } else if (term_is_boxed_integer(t)) {
@@ -162,23 +169,28 @@ void term_display(FILE *fd, term t, const Context *ctx)
                 fprintf(fd, AVM_INT_FMT, term_unbox_int(t));
                 break;
 
-#if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
-            case 2:
-                fprintf(fd, AVM_INT64_FMT, term_unbox_int64(t));
-                break;
-#endif
+// TODO: FIXME
+// #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
+//             case 2:
+//                 fprintf(fd, AVM_INT64_FMT, term_unbox_int64(t));
+//                 break;
+// #endif
 
             default:
                 abort();
         }
 
-#ifndef AVM_NO_FP
-    } else if (term_is_float(t)) {
-        avm_float_t f = term_to_float(t);
-        fprintf(fd, AVM_FLOAT_FMT, f);
-#endif
+    }
 
-    } else {
+// TODO: FIXME
+// #ifdef AVM_NO_FP
+//     else if (term_is_float(t)) {
+//         avm_float_t f = term_to_float(t);
+//         fprintf(fd, AVM_FLOAT_FMT, f);
+//     }
+// #endif
+
+    else {
         fprintf(fd, "Unknown term type: %li", t);
     }
 }
@@ -325,18 +337,19 @@ int term_compare(term t, term other, Context *ctx)
                 break;
             }
 
-#ifndef AVM_NO_FP
-        } else if (term_is_number(t) && term_is_number(other)) {
-            avm_float_t t_float = term_conv_to_float(t);
-            avm_float_t other_float = term_conv_to_float(other);
-            if (t_float == other_float) {
-                other = temp_stack_pop(&temp_stack);
-                t = temp_stack_pop(&temp_stack);
-            } else {
-                result = (t_float > other_float) ? 1 : -1;
-                break;
-            }
-#endif
+// TODO: FIXME
+// #ifndef AVM_NO_FP
+//         } else if (term_is_number(t) && term_is_number(other)) {
+//             avm_float_t t_float = term_conv_to_float(t);
+//             avm_float_t other_float = term_conv_to_float(other);
+//             if (t_float == other_float) {
+//                 other = temp_stack_pop(&temp_stack);
+//                 t = temp_stack_pop(&temp_stack);
+//             } else {
+//                 result = (t_float > other_float) ? 1 : -1;
+//                 break;
+//             }
+// #endif
 
         } else if (term_is_atom(t) && term_is_atom(other)) {
             int t_atom_index = term_to_atom_index(t);

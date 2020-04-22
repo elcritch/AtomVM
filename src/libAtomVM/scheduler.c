@@ -92,7 +92,11 @@ Context *scheduler_next(GlobalContext *global, Context *c)
     //TODO: improve scheduling here
     struct ListHead *item;
     struct ListHead *tmp;
-    MUTABLE_LIST_FOR_EACH(item, tmp, &global->ready_processes) {
+    // TODO: FIXME
+    // MUTABLE_LIST_FOR_EACH(item, tmp, &global->ready_processes) {
+    for (item = (&global->ready_processes)->next, tmp = item->next;
+         item != (&global->ready_processes);
+         item = tmp, tmp = item->next) {
         Context *next_context = GET_LIST_ENTRY(item, Context, processes_list_head);
         if (next_context->native_handler) {
             scheduler_execute_native_handler(global, next_context);
@@ -174,7 +178,11 @@ static void scheduler_execute_native_handlers(GlobalContext *global)
 {
     struct ListHead *item;
     struct ListHead *tmp;
-    MUTABLE_LIST_FOR_EACH(item, tmp, &global->ready_processes) {
+    // TODO: FIXME
+    // MUTABLE_LIST_FOR_EACH(item, tmp, &global->ready_processes) {
+    for (item = (&global->ready_processes)->next, tmp = item->next;
+         item != (&global->ready_processes);
+         item = tmp, tmp = item->next) {
         Context *context = GET_LIST_ENTRY(item, Context, processes_list_head);
 
         if (context->native_handler) {

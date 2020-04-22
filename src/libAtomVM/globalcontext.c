@@ -92,7 +92,9 @@ GlobalContext *globalcontext_new()
     return glb;
 }
 
-COLD_FUNC void globalcontext_destroy(GlobalContext *glb)
+// TODO: FIXME
+// COLD_FUNC void globalcontext_destroy(GlobalContext *glb)
+void globalcontext_destroy(GlobalContext *glb)
 {
     free(glb);
 }

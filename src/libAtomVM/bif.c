@@ -37,15 +37,17 @@
 #include "bifs_hash.h"
 #pragma GCC diagnostic pop
 
-#define RAISE_ERROR(error_type_atom) \
-    ctx->x[0] = ERROR_ATOM; \
-    ctx->x[1] = (error_type_atom); \
-    return term_invalid_term();
+#define RAISE_ERROR(error_type_atom) 
+// #define RAISE_ERROR(error_type_atom) \
+//     ctx->x[0] = ERROR_ATOM; \
+//     ctx->x[1] = (error_type_atom); \
+//     return term_invalid_term();
 
-#define VALIDATE_VALUE(value, verify_function) \
-    if (UNLIKELY(!verify_function((value)))) { \
-        RAISE_ERROR(BADARG_ATOM); \
-    }
+#define VALIDATE_VALUE(value, verify_function) 
+// #define VALIDATE_VALUE(value, verify_function) \
+//     if (UNLIKELY(!verify_function((value)))) { \
+//         RAISE_ERROR(BADARG_ATOM); \
+//     }
 
 BifImpl bif_registry_get_handler(AtomString module, AtomString function, int arity)
 {
@@ -255,26 +257,28 @@ static term add_boxed_helper(Context *ctx, term arg1, term arg2)
     int size = 0;
     if (term_is_boxed_integer(arg1)) {
         size = term_boxed_size(arg1);
-
+    }
 #ifndef AVM_NO_FP
-    } else if (term_is_float(arg1)) {
+    else if (term_is_float(arg1)) {
         use_float = 1;
+    }
 #endif
 
-    } else if (!term_is_integer(arg1)) {
+    else if ( not(term_is_integer(arg1))) {
         TRACE("error: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2);
         RAISE_ERROR(BADARITH_ATOM);
     }
 
     if (term_is_boxed_integer(arg2)) {
         size |= term_boxed_size(arg2);
-
+    }
 #ifndef AVM_NO_FP
-    } else if (term_is_float(arg2)) {
+    else if (term_is_float(arg2)) {
         use_float = 1;
+    }
 #endif
 
-    } else if (!term_is_integer(arg2)) {
+    else if (not(term_is_integer(arg2))) {
         TRACE("error: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2);
         RAISE_ERROR(BADARITH_ATOM);
     }
@@ -322,21 +326,21 @@ static term add_boxed_helper(Context *ctx, term arg1, term arg2)
             return make_maybe_boxed_int(ctx, res);
         }
 
-    #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
-        case 2:
-        case 3: {
-            avm_int64_t val1 = term_maybe_unbox_int64(arg1);
-            avm_int64_t val2 = term_maybe_unbox_int64(arg2);
-            avm_int64_t res;
+    // #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
+    //     case 2:
+    //     case 3: {
+    //         avm_int64_t val1 = term_maybe_unbox_int64(arg1);
+    //         avm_int64_t val2 = term_maybe_unbox_int64(arg2);
+    //         avm_int64_t res;
 
-            if (BUILTIN_ADD_OVERFLOW_INT64(val1, val2, &res)) {
-                TRACE("overflow: val1: " AVM_INT64_FMT ", val2: " AVM_INT64_FMT "\n", arg1, arg2);
-                RAISE_ERROR(OVERFLOW_ATOM);
-            }
+    //         if (BUILTIN_ADD_OVERFLOW_INT64(val1, val2, &res)) {
+    //             TRACE("overflow: val1: " AVM_INT64_FMT ", val2: " AVM_INT64_FMT "\n", arg1, arg2);
+    //             RAISE_ERROR(OVERFLOW_ATOM);
+    //         }
 
-            return make_maybe_boxed_int64(ctx, res);
-        }
-    #endif
+    //         return make_maybe_boxed_int64(ctx, res);
+    //     }
+    // #endif
 
         default:
             RAISE_ERROR(OVERFLOW_ATOM);
@@ -376,23 +380,27 @@ static term sub_boxed_helper(Context *ctx, term arg1, term arg2)
     int size = 0;
     if (term_is_boxed_integer(arg1)) {
         size = term_boxed_size(arg1);
+    }
 
 #ifndef AVM_NO_FP
-    } else if (term_is_float(arg1)) {
+    else if (term_is_float(arg1)) {
         use_float = 1;
+    }
 #endif
-    } else if (!term_is_integer(arg1)) {
+    else if (not(term_is_integer(arg1))) {
         TRACE("error: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2);
         RAISE_ERROR(BADARITH_ATOM);
     }
 
     if (term_is_boxed_integer(arg2)) {
         size |= term_boxed_size(arg2);
+    }
 #ifndef AVM_NO_FP
-    } else if (term_is_float(arg2)) {
+    else if (term_is_float(arg2)) {
         use_float = 1;
+    }
 #endif
-    } else if (!term_is_integer(arg2)) {
+    else if (not(term_is_integer(arg2))) {
         TRACE("error: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2);
         RAISE_ERROR(BADARITH_ATOM);
     }
@@ -439,20 +447,21 @@ static term sub_boxed_helper(Context *ctx, term arg1, term arg2)
             return make_maybe_boxed_int(ctx, res);
         }
 
-    #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
-        case 2:
-        case 3: {
-            avm_int64_t val1 = term_maybe_unbox_int64(arg1);
-            avm_int64_t val2 = term_maybe_unbox_int64(arg2);
-            avm_int64_t res;
+// TODO: FIXME
+    // #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
+    //     case 2:
+    //     case 3: {
+    //         avm_int64_t val1 = term_maybe_unbox_int64(arg1);
+    //         avm_int64_t val2 = term_maybe_unbox_int64(arg2);
+    //         avm_int64_t res;
 
-            if (BUILTIN_SUB_OVERFLOW_INT64(val1, val2, &res)) {
-                TRACE("overflow: val1: " AVM_INT64_FMT ", val2: " AVM_INT64_FMT "\n", arg1, arg2);
-                RAISE_ERROR(OVERFLOW_ATOM);
-            }
+    //         if (BUILTIN_SUB_OVERFLOW_INT64(val1, val2, &res)) {
+    //             TRACE("overflow: val1: " AVM_INT64_FMT ", val2: " AVM_INT64_FMT "\n", arg1, arg2);
+    //             RAISE_ERROR(OVERFLOW_ATOM);
+    //         }
 
-            return make_maybe_boxed_int64(ctx, res);
-        }
+    //         return make_maybe_boxed_int64(ctx, res);
+    //     }
     #endif
 
         default:
@@ -489,13 +498,16 @@ static term mul_overflow_helper(Context *ctx, term arg1, term arg2)
 
     if (!BUILTIN_MUL_OVERFLOW_INT(val1, val2, &res)) {
         return make_boxed_int(ctx, res);
+    }
 
-#if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
-    } else if (!BUILTIN_MUL_OVERFLOW_INT64((avm_int64_t) val1, (avm_int64_t) val2, &res64)) {
-        return make_boxed_int64(ctx, res64);
-#endif
+// TODO: FIXME
+// #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
+//     else if ( not( BUILTIN_MUL_OVERFLOW_INT64((avm_int64_t) val1, (avm_int64_t) val2, &res64)) ) {
+//         return make_boxed_int64(ctx, res64);
+//     }
+// #endif
 
-    } else {
+    else {
         RAISE_ERROR(OVERFLOW_ATOM);
     }
 }
@@ -508,22 +520,26 @@ static term mul_boxed_helper(Context *ctx, term arg1, term arg2)
     int size = 0;
     if (term_is_boxed_integer(arg1)) {
         size = term_boxed_size(arg1);
+    }
 #ifndef AVM_NO_FP
-    } else if (term_is_float(arg1)) {
+    else if (term_is_float(arg1)) {
         use_float = 1;
+    }
 #endif
-    } else if (!term_is_integer(arg1)) {
+    else if ( not(term_is_integer(arg1))) {
         TRACE("error: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2);
         RAISE_ERROR(BADARITH_ATOM);
     }
 
     if (term_is_boxed_integer(arg2)) {
         size |= term_boxed_size(arg2);
+    }
 #ifndef AVM_NO_FP
-    } else if (term_is_float(arg2)) {
+    else if (term_is_float(arg2)) {
         use_float = 1;
+    }
 #endif
-    } else if (!term_is_integer(arg2)) {
+    else if (not(term_is_integer(arg2))) {
         TRACE("error: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2);
         RAISE_ERROR(BADARITH_ATOM);
     }
@@ -570,21 +586,22 @@ static term mul_boxed_helper(Context *ctx, term arg1, term arg2)
             return make_maybe_boxed_int(ctx, res);
         }
 
-    #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
-        case 2:
-        case 3: {
-            avm_int64_t val1 = term_maybe_unbox_int64(arg1);
-            avm_int64_t val2 = term_maybe_unbox_int64(arg2);
-            avm_int64_t res;
+// TODO: FIXME
+    // #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
+    //     case 2:
+    //     case 3: {
+    //         avm_int64_t val1 = term_maybe_unbox_int64(arg1);
+    //         avm_int64_t val2 = term_maybe_unbox_int64(arg2);
+    //         avm_int64_t res;
 
-            if (BUILTIN_MUL_OVERFLOW_INT64(val1, val2, &res)) {
-                TRACE("overflow: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2);
-                RAISE_ERROR(OVERFLOW_ATOM);
-            }
+    //         if (BUILTIN_MUL_OVERFLOW_INT64(val1, val2, &res)) {
+    //             TRACE("overflow: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2);
+    //             RAISE_ERROR(OVERFLOW_ATOM);
+    //         }
 
-            return make_maybe_boxed_int64(ctx, res);
-        }
-    #endif
+    //         return make_maybe_boxed_int64(ctx, res);
+    //     }
+    // #endif
 
         default:
             RAISE_ERROR(OVERFLOW_ATOM);
@@ -651,23 +668,24 @@ static term div_boxed_helper(Context *ctx, term arg1, term arg2)
             }
         }
 
-        #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
-        case 2:
-        case 3: {
-            avm_int64_t val1 = term_maybe_unbox_int64(arg1);
-            avm_int64_t val2 = term_maybe_unbox_int64(arg2);
-            if (UNLIKELY(val2 == 0)) {
-                RAISE_ERROR(BADARITH_ATOM);
+// TODO: FIXME
+        // #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
+        // case 2:
+        // case 3: {
+        //     avm_int64_t val1 = term_maybe_unbox_int64(arg1);
+        //     avm_int64_t val2 = term_maybe_unbox_int64(arg2);
+        //     if (UNLIKELY(val2 == 0)) {
+        //         RAISE_ERROR(BADARITH_ATOM);
 
-            } else if (UNLIKELY((val2 == -1) && (val1 == INT64_MIN))) {
-                TRACE("overflow: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2);
-                RAISE_ERROR(OVERFLOW_ATOM);
+        //     } else if (UNLIKELY((val2 == -1) && (val1 == INT64_MIN))) {
+        //         TRACE("overflow: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2);
+        //         RAISE_ERROR(OVERFLOW_ATOM);
 
-            } else {
-                return make_maybe_boxed_int64(ctx, val1 / val2);
-            }
-        }
-        #endif
+        //     } else {
+        //         return make_maybe_boxed_int64(ctx, val1 / val2);
+        //     }
+        // }
+        // #endif
 
         default:
             RAISE_ERROR(OVERFLOW_ATOM);
@@ -742,19 +760,20 @@ static term neg_boxed_helper(Context *ctx, term arg1)
                 }
             }
 
-            #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
-            case 2: {
-                avm_int64_t val = term_unbox_int64(arg1);
+// TODO: FIXME
+            // #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
+            // case 2: {
+            //     avm_int64_t val = term_unbox_int64(arg1);
 
-                if (val == INT64_MIN) {
-                    TRACE("overflow: arg1: " AVM_INT64_FMT "\n", arg1);
-                    RAISE_ERROR(OVERFLOW_ATOM);
+            //     if (val == INT64_MIN) {
+            //         TRACE("overflow: arg1: " AVM_INT64_FMT "\n", arg1);
+            //         RAISE_ERROR(OVERFLOW_ATOM);
 
-                } else {
-                    return make_boxed_int64(ctx, -val);
-                }
-            }
-            #endif
+            //     } else {
+            //         return make_boxed_int64(ctx, -val);
+            //     }
+            // }
+            // #endif
             default:
                 RAISE_ERROR(OVERFLOW_ATOM);
         }
@@ -831,22 +850,23 @@ static term abs_boxed_helper(Context *ctx, term arg1)
                 }
             }
 
-            #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
-            case 2: {
-                avm_int64_t val = term_unbox_int64(arg1);
-                if (val >= 0) {
-                    return arg1;
-                }
+// TODO: FIXME
+            // #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
+            // case 2: {
+            //     avm_int64_t val = term_unbox_int64(arg1);
+            //     if (val >= 0) {
+            //         return arg1;
+            //     }
 
-                if (val == INT64_MIN) {
-                    TRACE("overflow: val:" AVM_INT64_FMT "\n", val);
-                    RAISE_ERROR(OVERFLOW_ATOM);
+            //     if (val == INT64_MIN) {
+            //         TRACE("overflow: val:" AVM_INT64_FMT "\n", val);
+            //         RAISE_ERROR(OVERFLOW_ATOM);
 
-                } else {
-                    return make_boxed_int64(ctx, -val);
-                }
-            }
-            #endif
+            //     } else {
+            //         return make_boxed_int64(ctx, -val);
+            //     }
+            // }
+            // #endif
             default:
                 RAISE_ERROR(OVERFLOW_ATOM);
         }
@@ -910,18 +930,19 @@ static term rem_boxed_helper(Context *ctx, term arg1, term arg2)
             return make_maybe_boxed_int(ctx, val1 % val2);
         }
 
-        #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
-        case 2:
-        case 3: {
-            avm_int64_t val1 = term_maybe_unbox_int64(arg1);
-            avm_int64_t val2 = term_maybe_unbox_int64(arg2);
-            if (UNLIKELY(val2 == 0)) {
-                RAISE_ERROR(BADARITH_ATOM);
-            }
+// TODO: FIXME
+        // #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
+        // case 2:
+        // case 3: {
+        //     avm_int64_t val1 = term_maybe_unbox_int64(arg1);
+        //     avm_int64_t val2 = term_maybe_unbox_int64(arg2);
+        //     if (UNLIKELY(val2 == 0)) {
+        //         RAISE_ERROR(BADARITH_ATOM);
+        //     }
 
-            return make_maybe_boxed_int64(ctx, val1 % val2);
-        }
-        #endif
+        //     return make_maybe_boxed_int64(ctx, val1 % val2);
+        // }
+        // #endif
 
         default:
             RAISE_ERROR(OVERFLOW_ATOM);

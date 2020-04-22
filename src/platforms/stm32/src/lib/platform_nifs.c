@@ -34,11 +34,11 @@ static term nif_atomvm_platform(Context *ctx, int argc, term argv[])
     return STM32_ATOM;
 }
 
-static const struct Nif atomvm_platform_nif =
-{
-    .base.type = NIFFunctionType,
-    .nif_ptr = nif_atomvm_platform
-};
+// static const struct Nif atomvm_platform_nif =
+// {
+//     .base.type = NIFFunctionType,
+//     .nif_ptr = nif_atomvm_platform
+// };
 
 const struct Nif *platform_nifs_get_nif(const char *nifname)
 {

@@ -44,17 +44,19 @@
 #define MAX_NIF_NAME_LEN 260
 #define FLOAT_BUF_SIZE 64
 
-#define VALIDATE_VALUE(value, verify_function) \
-    if (UNLIKELY(!verify_function((value)))) { \
-        argv[0] = ERROR_ATOM; \
-        argv[1] = BADARG_ATOM; \
-        return term_invalid_term(); \
-    } \
+#define VALIDATE_VALUE(value, verify_function)
+// #define VALIDATE_VALUE(value, verify_function) \
+//     if (UNLIKELY(!verify_function((value)))) { \
+//         argv[0] = ERROR_ATOM; \
+//         argv[1] = BADARG_ATOM; \
+//         return term_invalid_term(); \
+//     } \
 
-#define RAISE_ERROR(error_type_atom) \
-    ctx->x[0] = ERROR_ATOM; \
-    ctx->x[1] = (error_type_atom); \
-    return term_invalid_term();
+#define RAISE_ERROR(error_type_atom)
+// #define RAISE_ERROR(error_type_atom) \
+//     ctx->x[0] = ERROR_ATOM; \
+//     ctx->x[1] = (error_type_atom); \
+//     return term_invalid_term();
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
@@ -129,6 +131,8 @@ static term nif_erlang_ref_to_list(Context *ctx, int argc, term argv[]);
 static term nif_erlang_fun_to_list(Context *ctx, int argc, term argv[]);
 static term nif_atomvm_read_priv(Context *ctx, int argc, term argv[]);
 
+// TODO: FIXME
+/*
 static const struct Nif binary_at_nif =
 {
     .base.type = NIFFunctionType,
@@ -470,6 +474,7 @@ static const struct Nif atomvm_read_priv_nif =
     .base.type = NIFFunctionType,
     .nif_ptr = nif_atomvm_read_priv
 };
+*/
 
 //Ignore warning caused by gperf generated code
 #pragma GCC diagnostic push
@@ -1875,9 +1880,10 @@ static term nif_erlang_process_flag(Context *ctx, int argc, term argv[])
             return OK_ATOM;
         }
     }
-#else
-    UNUSED(ctx);
-    UNUSED(argv);
+// TODO: FIXME
+// #else
+    // unused(ctx);
+    // unused(argv);
 #endif
 
     RAISE_ERROR(BADARG_ATOM);
@@ -2069,7 +2075,7 @@ static term nif_erlang_binary_to_term(Context *ctx, int argc, term argv[])
             break;
     }
     if (term_is_invalid_term(dst)) {
-        RAISE_ERROR(BADARG_ATOM)
+        RAISE_ERROR(BADARG_ATOM);
     }
     if (return_used) {
         term ret = term_alloc_tuple(2, ctx);
@@ -2292,12 +2298,13 @@ static term nif_erlang_ref_to_list(Context *ctx, int argc, term argv[])
     term t = argv[0];
     VALIDATE_VALUE(t, term_is_reference);
 
-    const char *format =
+    // TODO: FIXME
     #ifdef __clang__
-            "#Ref<0.0.0.%llu>";
+    const char *format = "#Ref<0.0.0.%llu>";
     #else
-            "#Ref<0.0.0.%lu>";
+    const char *format = "#Ref<0.0.0.%lu>";
     #endif
+
     // 2^64 = 18446744073709551616 (20 chars)
     // 12 chars of static text + '\0'
     char buf[33];
@@ -2329,11 +2336,10 @@ static term nif_erlang_fun_to_list(Context *ctx, int argc, term argv[])
 
     // char-len(address) + char-len(32-bit-num) + 16 + '\0' = 47
     // 20                  10
-    const char *format =
     #ifdef __clang__
-            "#Fun<erl_eval.%lu.%llu>";
+    const char *format = "#Fun<erl_eval.%lu.%llu>";
     #else
-            "#Fun<erl_eval.%lu.%llu>";
+    const char *format = "#Fun<erl_eval.%lu.%llu>";
     #endif
     char buf[47];
     snprintf(buf, 47, format, fun_index, (unsigned long) fun_module);

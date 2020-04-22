@@ -185,7 +185,11 @@ void socket_events_handler(EventListener *listener)
 
         struct SocketData *socket = NULL;
         struct ListHead *socket_head;
-        LIST_FOR_EACH(socket_head, &platform->sockets_list_head) {
+        // TODO: FIXME
+        for (socket_head = (&platform->sockets_list_head)->next;
+             socket_head != (&platform->sockets_list_head);
+             socket_head = item->next) {
+        // LIST_FOR_EACH(socket_head, &platform->sockets_list_head) {
             struct SocketData *current_socket = GET_LIST_ENTRY(socket_head, struct SocketData, sockets_head);
             if (current_socket->conn == netconn) {
                 socket = current_socket;
@@ -317,13 +321,14 @@ static void send_message(term pid, term message, GlobalContext *global)
     mailbox_send(target, message);
 }
 
-void ESP_IRAM_ATTR socket_callback(struct netconn *netconn, enum netconn_evt evt, u16_t len)
+// TODO: FIXME
+// void ESP_IRAM_ATTR socket_callback(struct netconn *netconn, enum netconn_evt evt, u16_t len)
+void socket_callback(struct netconn *netconn, enum netconn_evt evt, u16_t len)
 {
-    struct NetconnEvent event = {
-        .netconn = netconn,
-        .evt = evt,
-        .len = len
-    };
+    struct NetconnEvent event; 
+    event.netconn = netconn;
+    event.evt = evt;
+    event.len = len;
 
     BaseType_t xHigherPriorityTaskWoken;
     int result = xQueueSendFromISR(netconn_events, &event, &xHigherPriorityTaskWoken);
@@ -407,7 +412,10 @@ static void do_accept(Context *ctx, term msg)
         struct ListHead *accepter_head;
         struct ListHead *tmp;
         struct TCPServerAccepter *accepter = NULL;
-        MUTABLE_LIST_FOR_EACH(accepter_head, tmp, &tcp_data->accepters_list_head) {
+        // MUTABLE_LIST_FOR_EACH(accepter_head, tmp, &tcp_data->accepters_list_head) {
+        for (accepter_head = (&tcp_data->accepters_list_head)->next, tmp = accepter_head->next;
+             accepter_head != (&tcp_data->accepters_list_head);
+             accepter_head = tmp, tmp = accepter_head->next) {
             //TODO: check if is alive here
             if (1) {
                 accepter = GET_LIST_ENTRY(accepter_head, struct TCPServerAccepter, accepter_head);
@@ -536,7 +544,10 @@ static void tcp_server_handler(Context *ctx)
     struct ListHead *accepter_head;
     struct ListHead *tmp;
     struct TCPServerAccepter *accepter = NULL;
-    MUTABLE_LIST_FOR_EACH(accepter_head, tmp, &tcp_data->accepters_list_head) {
+    // MUTABLE_LIST_FOR_EACH(accepter_head, tmp, &tcp_data->accepters_list_head) {
+    for (accepter_head = (&tcp_data->accepters_list_head)->next, tmp = accepter_head->next;
+         accepter_head != (&tcp_data->accepters_list_head);
+         accepter_head = tmp, tmp = accepter_head->next) {
         //TODO: is alive here
         if (1) {
             accepter = GET_LIST_ENTRY(accepter_head, struct TCPServerAccepter, accepter_head);
@@ -680,8 +691,8 @@ static bool bool_term_to_bool(term b, bool *ok)
             return false;
 
         default:
-            return false;
             *ok = false;
+            return false;
     }
 }
 

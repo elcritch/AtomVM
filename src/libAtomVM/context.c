@@ -109,7 +109,9 @@ size_t context_message_queue_len(Context *ctx)
     size_t num_messages = 0;
 
     struct ListHead *item;
-    LIST_FOR_EACH(item, &ctx->mailbox) {
+    // TODO: FIXME
+    // LIST_FOR_EACH(item, &ctx->mailbox) {
+    for (item = (&ctx->mailbox)->next; item != (&ctx->mailbox); item = item->next) {
         num_messages++;
     }
 
@@ -121,7 +123,9 @@ size_t context_size(Context *ctx)
     size_t messages_size = 0;
 
     struct ListHead *item;
-    LIST_FOR_EACH(item, &ctx->mailbox) {
+    // TODO: FIXME
+    // LIST_FOR_EACH(item, &ctx->mailbox) {
+    for (item = (&ctx->mailbox)->next; item != (&ctx->mailbox); item = item->next) {
         Message *msg = GET_LIST_ENTRY(item, Message, mailbox_list_head);
         messages_size += sizeof(Message) + msg->msg_memory_size;
     }

@@ -35,17 +35,20 @@
 //#define ENABLE_TRACE
 #include "trace.h"
 
-#define VALIDATE_VALUE(value, verify_function) \
-    if (UNLIKELY(!verify_function((value)))) { \
-        argv[0] = ERROR_ATOM; \
-        argv[1] = BADARG_ATOM; \
-        return term_invalid_term(); \
-    }
+#define VALIDATE_VALUE(value, verify_function)
+#define RAISE_ERROR(error_type_atom)
 
-#define RAISE_ERROR(error_type_atom) \
-    ctx->x[0] = ERROR_ATOM; \
-    ctx->x[1] = (error_type_atom); \
-    return term_invalid_term();
+// #define VALIDATE_VALUE(value, verify_function) \
+//     if (UNLIKELY(!verify_function((value)))) { \
+//         argv[0] = ERROR_ATOM; \
+//         argv[1] = BADARG_ATOM; \
+//         return term_invalid_term(); \
+//     }
+
+// #define RAISE_ERROR(error_type_atom) \
+//     ctx->x[0] = ERROR_ATOM; \
+//     ctx->x[1] = (error_type_atom); \
+//     return term_invalid_term();
 
 #define MAX_NVS_KEY_SIZE 15
 #define MD5_DIGEST_LENGTH 16
@@ -372,61 +375,61 @@ static term nif_atomvm_platform(Context *ctx, int argc, term argv[])
 // NIF structures and distpatch
 //
 
-static const struct Nif esp_random_nif =
-{
-    .base.type = NIFFunctionType,
-    .nif_ptr = nif_esp_random
-};
-static const struct Nif esp_random_bytes_nif =
-{
-    .base.type = NIFFunctionType,
-    .nif_ptr = nif_esp_random_bytes
-};
-static const struct Nif esp_restart_nif =
-{
-    .base.type = NIFFunctionType,
-    .nif_ptr = nif_esp_restart
-};
-static const struct Nif esp_reset_reason_nif =
-{
-    .base.type = NIFFunctionType,
-    .nif_ptr = nif_esp_reset_reason
-};
-static const struct Nif esp_nvs_get_binary_nif =
-{
-    .base.type = NIFFunctionType,
-    .nif_ptr = nif_esp_nvs_get_binary
-};
-static const struct Nif esp_nvs_set_binary_nif =
-{
-    .base.type = NIFFunctionType,
-    .nif_ptr = nif_esp_nvs_set_binary
-};
-static const struct Nif esp_nvs_erase_key_nif =
-{
-    .base.type = NIFFunctionType,
-    .nif_ptr = nif_esp_nvs_erase_key
-};
-static const struct Nif esp_nvs_erase_all_nif =
-{
-    .base.type = NIFFunctionType,
-    .nif_ptr = nif_esp_nvs_erase_all
-};
-static const struct Nif esp_nvs_reformat_nif =
-{
-    .base.type = NIFFunctionType,
-    .nif_ptr = nif_esp_nvs_reformat
-};
-static const struct Nif rom_md5_nif =
-{
-    .base.type = NIFFunctionType,
-    .nif_ptr = nif_rom_md5
-};
-static const struct Nif atomvm_platform_nif =
-{
-    .base.type = NIFFunctionType,
-    .nif_ptr = nif_atomvm_platform
-};
+// static const struct Nif esp_random_nif =
+// {
+//     .base.type = NIFFunctionType,
+//     .nif_ptr = nif_esp_random
+// };
+// static const struct Nif esp_random_bytes_nif =
+// {
+//     .base.type = NIFFunctionType,
+//     .nif_ptr = nif_esp_random_bytes
+// };
+// static const struct Nif esp_restart_nif =
+// {
+//     .base.type = NIFFunctionType,
+//     .nif_ptr = nif_esp_restart
+// };
+// static const struct Nif esp_reset_reason_nif =
+// {
+//     .base.type = NIFFunctionType,
+//     .nif_ptr = nif_esp_reset_reason
+// };
+// static const struct Nif esp_nvs_get_binary_nif =
+// {
+//     .base.type = NIFFunctionType,
+//     .nif_ptr = nif_esp_nvs_get_binary
+// };
+// static const struct Nif esp_nvs_set_binary_nif =
+// {
+//     .base.type = NIFFunctionType,
+//     .nif_ptr = nif_esp_nvs_set_binary
+// };
+// static const struct Nif esp_nvs_erase_key_nif =
+// {
+//     .base.type = NIFFunctionType,
+//     .nif_ptr = nif_esp_nvs_erase_key
+// };
+// static const struct Nif esp_nvs_erase_all_nif =
+// {
+//     .base.type = NIFFunctionType,
+//     .nif_ptr = nif_esp_nvs_erase_all
+// };
+// static const struct Nif esp_nvs_reformat_nif =
+// {
+//     .base.type = NIFFunctionType,
+//     .nif_ptr = nif_esp_nvs_reformat
+// };
+// static const struct Nif rom_md5_nif =
+// {
+//     .base.type = NIFFunctionType,
+//     .nif_ptr = nif_rom_md5
+// };
+// static const struct Nif atomvm_platform_nif =
+// {
+//     .base.type = NIFFunctionType,
+//     .nif_ptr = nif_atomvm_platform
+// };
 
 const struct Nif *platform_nifs_get_nif(const char *nifname)
 {

@@ -46,7 +46,10 @@
 static Context *global_gpio_ctx = NULL;
 
 static void consume_gpio_mailbox(Context *ctx);
-static void IRAM_ATTR gpio_isr_handler(void *arg);
+
+// TODO: FIXME
+// static void IRAM_ATTR gpio_isr_handler(void *arg);
+static void gpio_isr_handler(void *arg);
 
 struct GPIOListenerData
 {
@@ -233,7 +236,9 @@ static void consume_gpio_mailbox(Context *ctx)
     mailbox_send(target, ret);
 }
 
-static void IRAM_ATTR gpio_isr_handler(void *arg)
+// TODO: FIXME
+// static void IRAM_ATTR gpio_isr_handler(void *arg)
+static void gpio_isr_handler(void *arg)
 {
     xQueueSendFromISR(event_queue, &arg, NULL);
 }

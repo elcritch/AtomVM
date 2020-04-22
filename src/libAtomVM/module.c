@@ -211,10 +211,10 @@ Module *module_new_from_iff_binary(GlobalContext *global, const void *iff_binary
                 module_destroy(mod);
                 return NULL;
             }
-        #else
-            fprintf(stderr, "zlib required to uncompress literals.\n");
-            module_destroy(mod);
-            return NULL;
+        // #else 
+            // fprintf(stderr, "zlib required to uncompress literals.\n");
+            // module_destroy(mod);
+            // return NULL;
         #endif
 
         mod->literals_table = module_build_literals_table(mod->literals_data);
@@ -236,7 +236,9 @@ Module *module_new_from_iff_binary(GlobalContext *global, const void *iff_binary
     return mod;
 }
 
-COLD_FUNC void module_destroy(Module *module)
+// TODO: FIXME
+// COLD_FUNC void module_destroy(Module *module)
+void module_destroy(Module *module)
 {
     free(module->labels);
     free(module->imported_funcs);

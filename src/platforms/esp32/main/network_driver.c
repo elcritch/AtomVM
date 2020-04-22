@@ -48,13 +48,17 @@
 
 //#define ENABLE_TRACE 1
 
+
 #ifndef TRACE
-    #ifdef ENABLE_TRACE
         #define TRACE printf
-    #else
-        #define TRACE(...)
-    #endif
 #endif
+// #ifndef TRACE
+//     #ifdef ENABLE_TRACE
+//         #define TRACE printf
+//     #else
+//         #define TRACE(...)
+//     #endif
+// #endif
 
 #define CONNECTED_BIT BIT0
 

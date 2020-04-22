@@ -233,10 +233,9 @@ void sys_init_platform(GlobalContext *global)
 void sys_start_millis_timer()
 {
     if (!has_signal_handler) {
-        struct sigaction saction = {
-            .sa_handler = alarm_handler,
-            .sa_flags = SA_RESTART
-        };
+        struct sigaction saction;
+        saction.sa_handler = alarm_handler;
+        saction.sa_flags = SA_RESTART;
 
         sigaction(SIGALRM, &saction, NULL);
     }

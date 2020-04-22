@@ -19,7 +19,9 @@
 
 #include "debug.h"
 
-static COLD_FUNC void debug_display_type(term t, const Context *ctx)
+// TODO: FIXME
+// static COLD_FUNC void debug_display_type(term t, const Context *ctx)
+static void debug_display_type(term t, const Context *ctx)
 {
     if (term_is_atom(t) || term_is_integer(t) || term_is_nil(t) || term_is_pid(t)) {
         term_display(stderr, t, ctx);
@@ -40,7 +42,9 @@ static COLD_FUNC void debug_display_type(term t, const Context *ctx)
     }
 }
 
-static COLD_FUNC void debug_dump_binary_mem(char *buf, term val, unsigned n)
+// TODO: FIXME
+// static COLD_FUNC void debug_dump_binary_mem(char *buf, term val, unsigned n)
+static void debug_dump_binary_mem(char *buf, term val, unsigned n)
 {
     for (unsigned int i = 0; i < n;  ++i) {
         int bit_i = val >> i & 0x1;
@@ -49,7 +53,9 @@ static COLD_FUNC void debug_dump_binary_mem(char *buf, term val, unsigned n)
     buf[n] = '\0';
 }
 
-static COLD_FUNC void debug_dump_term(Context *ctx, term *pos, const char *region, unsigned i)
+// TODO: FIXME
+// static COLD_FUNC void debug_dump_term(Context *ctx, term *pos, const char *region, unsigned i)
+static void debug_dump_term(Context *ctx, term *pos, const char *region, unsigned i)
 {
     term t = *pos;
     // TODO use TERM_BITS instead
@@ -60,7 +66,9 @@ static COLD_FUNC void debug_dump_term(Context *ctx, term *pos, const char *regio
     fprintf(stderr, "\n");
 }
 
-COLD_FUNC void debug_dump_memory(Context *ctx, term *start, term *end, const char *region)
+// TODO: FIXME
+// COLD_FUNC void debug_dump_memory(Context *ctx, term *start, term *end, const char *region)
+void debug_dump_memory(Context *ctx, term *start, term *end, const char *region)
 {
     unsigned long size = end - start;
     fprintf(stderr, "DEBUG:\n");
@@ -75,30 +83,40 @@ COLD_FUNC void debug_dump_memory(Context *ctx, term *start, term *end, const cha
     fprintf(stderr, "DEBUG:\n");
 }
 
-COLD_FUNC void debug_dump_context(Context *ctx)
+// TODO: FIXME
+// COLD_FUNC void debug_dump_context(Context *ctx)
+void debug_dump_context(Context *ctx)
 {
     debug_dump_heap(ctx);
     debug_dump_stack(ctx);
     debug_dump_registers(ctx);
 }
 
-COLD_FUNC void debug_dump_heap(Context *ctx)
+// TODO: FIXME
+// COLD_FUNC void debug_dump_heap(Context *ctx)
+void debug_dump_heap(Context *ctx)
 {
     debug_dump_memory(ctx, ctx->heap_start, ctx->heap_ptr, "heap");
 }
 
-COLD_FUNC void debug_dump_stack(Context *ctx)
+// TODO: FIXME
+// COLD_FUNC void debug_dump_stack(Context *ctx)
+void debug_dump_stack(Context *ctx)
 {
     debug_dump_memory(ctx, ctx->e, ctx->stack_base, "stack");
 }
 
-COLD_FUNC void debug_dump_registers(Context *ctx)
+// TODO: FIXME
+// COLD_FUNC void debug_dump_registers(Context *ctx)
+void debug_dump_registers(Context *ctx)
 {
     debug_dump_memory(ctx, ctx->x, ctx->x + 16, "register");
 }
 
 
-COLD_FUNC void debug_print_processes_list(struct ListHead *processes)
+// TODO: FIXME
+// COLD_FUNC void debug_print_processes_list(struct ListHead *processes)
+void debug_print_processes_list(struct ListHead *processes)
 {
     Context *contexts = GET_LIST_ENTRY(processes, Context, processes_list_head);
     if (!contexts) {
@@ -115,7 +133,9 @@ COLD_FUNC void debug_print_processes_list(struct ListHead *processes)
     printf("\n");
 }
 
-COLD_FUNC char reg_type_c(int reg_type)
+// TODO: FIXME
+// COLD_FUNC char reg_type_c(int reg_type)
+char reg_type_c(int reg_type)
 {
     switch (reg_type) {
         case 2:
