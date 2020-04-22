@@ -19,7 +19,8 @@
 
 import
   tables,
-  atom
+  atom,
+  timer_wheel
   # defaultatoms,
   # context,
 
@@ -69,17 +70,16 @@ proc globalcontext_new*(): GlobalContext =
   glb.modules_by_index = @[]
   glb.modules_table = initTable[AtomString, AtomId](8)
 
-  glb.timer_wheel = timer_wheel_new(16)
+  # glb.timer_wheel = timer_wheel_new(16) 
+  # var tw = new(TimerWheel)
+  var tw: TimerWheel = timer_wheel_create(16)
+  glb.timer_wheel = tw
   glb.last_seen_millis = 0
   glb.ref_ticks = 0
-  sys_init_platform(glb)
+
+  # sys_init_platform(glb)
+
   return glb
-
-##  TODO: FIXME
-##  COLD_FUNC void globalcontext_destroy(GlobalContext *glb)
-
-proc globalcontext_destroy*(glb: ptr GlobalContext) =
-  free(glb)
 
 proc globalcontext_get_process*(glb: ptr GlobalContext; process_id: int32): ptr Context {.
     cdecl.} =

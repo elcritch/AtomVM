@@ -55,7 +55,7 @@ proc timer_wheel_item_init*(it: ptr TimerWheelItem; cb: proc (a1: var TimerWheel
 proc timer_wheel_expiry_to_monotonic*(tw: ptr TimerWheel; expiry: uint32): uint64 =
   return tw.monotonic_time + expiry
 
-proc timer_wheel_new*(slots_count: int): TimerWheel =
+proc timer_wheel_create*(slots_count: int): TimerWheel =
   result = new(TimerWheel)
   result.monotonic_time = 0
   result.slots = newSeq[seq[TimerWheelItem]](slots_count)
