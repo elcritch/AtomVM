@@ -20,7 +20,7 @@
 import
   mapped_file, utils
 
-proc mapped_file_open_beam*(file_name: cstring): ptr MappedFile {.cdecl.} =
+proc mapped_file_open_beam*(file_name: cstring): ptr MappedFile =
   var mf: ptr MappedFile = malloc(sizeof((MappedFile)))
   if IS_NULL_PTR(mf):
     fprintf(stderr, "Unable to allocate MappedFile struct\n")
@@ -41,7 +41,7 @@ proc mapped_file_open_beam*(file_name: cstring): ptr MappedFile {.cdecl.} =
     return nil
   return mf
 
-proc mapped_file_close*(mf: ptr MappedFile) {.cdecl.} =
+proc mapped_file_close*(mf: ptr MappedFile) =
   munmap(mf.mapped, mf.size)
   close(mf.fd)
   free(mf)

@@ -33,7 +33,7 @@ proc temp_stack_init*(temp_stack: ptr TempStack) {.inline, cdecl.} =
 proc temp_stack_destory*(temp_stack: ptr TempStack) {.inline, cdecl.} =
   free(temp_stack.stack_end - temp_stack.size)
 
-proc temp_stack_grow*(temp_stack: ptr TempStack) {.cdecl.} =
+proc temp_stack_grow*(temp_stack: ptr TempStack) =
   var old_used_size: cint = temp_stack.stack_end - temp_stack.stack_pos
   var new_size: cint = temp_stack.size * 2
   var new_stack_end: ptr term = (cast[ptr term](malloc(new_size * sizeof((term))))) +

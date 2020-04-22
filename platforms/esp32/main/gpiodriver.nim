@@ -34,7 +34,7 @@ type
     gpio*: cint
 
 
-proc gpiodriver_init*(ctx: ptr Context) {.cdecl.} =
+proc gpiodriver_init*(ctx: ptr Context) =
   if LIKELY(not global_gpio_ctx):
     global_gpio_ctx = ctx
     ctx.native_handler = consume_gpio_mailbox
@@ -43,7 +43,7 @@ proc gpiodriver_init*(ctx: ptr Context) {.cdecl.} =
     fprintf(stderr, "Only a single GPIO driver can be opened.\n")
     abort()
 
-proc gpio_interrupt_callback*(listener: ptr EventListener) {.cdecl.} =
+proc gpio_interrupt_callback*(listener: ptr EventListener) =
   var data: ptr GPIOListenerData = listener.data
   var listening_ctx: ptr Context = data.target_context
   var gpio_num: cint = data.gpio
@@ -56,14 +56,14 @@ proc gpio_interrupt_callback*(listener: ptr EventListener) {.cdecl.} =
   term_put_tuple_element(int_msg, 1, term_from_int32(gpio_num))
   mailbox_send(listening_ctx, int_msg)
 
-proc gpiodriver_set_level*(msg: term): term {.cdecl.} =
+proc gpiodriver_set_level*(msg: term): term =
   var gpio_num: int32_t = term_to_int32(term_get_tuple_element(msg, 2))
   var level: int32_t = term_to_int32(term_get_tuple_element(msg, 3))
   gpio_set_level(gpio_num, level != 0)
   TRACE("gpio: set_level: %i %i\n", gpio_num, level != 0)
   return OK_ATOM
 
-proc gpiodriver_set_direction*(msg: term): term {.cdecl.} =
+proc gpiodriver_set_direction*(msg: term): term =
   var gpio_num: int32_t = term_to_int32(term_get_tuple_element(msg, 2))
   var direction: term = term_get_tuple_element(msg, 3)
   if direction == INPUT_ATOM:
@@ -78,12 +78,12 @@ proc gpiodriver_set_direction*(msg: term): term {.cdecl.} =
     TRACE("gpio: unrecognized direction\n")
     return ERROR_ATOM
 
-proc gpiodriver_read*(msg: term): term {.cdecl.} =
+proc gpiodriver_read*(msg: term): term =
   var gpio_num: int32_t = term_to_int32(term_get_tuple_element(msg, 2))
   var level: cint = gpio_get_level(gpio_num)
   return term_from_int11(level)
 
-proc gpiodriver_set_int*(ctx: ptr Context; target: ptr Context; msg: term): term {.cdecl.} =
+proc gpiodriver_set_int*(ctx: ptr Context; target: ptr Context; msg: term): term =
   var glb: ptr GlobalContext = ctx.global
   var platform: ptr ESP32PlatformData = glb.platform_data
   var gpio_num: int32_t = term_to_int32(term_get_tuple_element(msg, 2))
@@ -127,7 +127,7 @@ proc gpiodriver_set_int*(ctx: ptr Context; target: ptr Context; msg: term): term
   gpio_isr_handler_add(gpio_num, gpio_isr_handler, data)
   return OK_ATOM
 
-proc consume_gpio_mailbox*(ctx: ptr Context) {.cdecl.} =
+proc consume_gpio_mailbox*(ctx: ptr Context) =
   var message: ptr Message = mailbox_dequeue(ctx)
   var msg: term = message.message
   var pid: term = term_get_tuple_element(msg, 0)
@@ -153,5 +153,5 @@ proc consume_gpio_mailbox*(ctx: ptr Context) {.cdecl.} =
 ##  TODO: FIXME
 ##  static void IRAM_ATTR gpio_isr_handler(void *arg)
 
-proc gpio_isr_handler*(arg: pointer) {.cdecl.} =
+proc gpio_isr_handler*(arg: pointer) =
   xQueueSendFromISR(event_queue, addr(arg), nil)

@@ -47,7 +47,7 @@ type
 
 
 proc network_driver_start*(ctx: ptr Context; pid: term_ref; `ref`: term_ref;
-                          config: term) {.cdecl.} =
+                          config: term) =
   TRACE("network_driver_start")
   var sta_config: term = interop_proplist_get_value(config, STA_ATOM)
   if not term_is_nil(sta_config):
@@ -112,13 +112,13 @@ proc network_driver_start*(ctx: ptr Context; pid: term_ref; `ref`: term_ref;
     var reply: term = port_create_error_tuple(ctx, BADARG_ATOM)
     port_send_reply(ctx, pid, `ref`, reply)
 
-proc network_driver_ifconfig*(ctx: ptr Context): term {.cdecl.} =
+proc network_driver_ifconfig*(ctx: ptr Context): term =
   return port_create_error_tuple(ctx, UNDEFINED_ATOM)
 
-proc get_ipv4_addr*(`addr`: ptr ip4_addr_t): u32_t {.cdecl.} =
+proc get_ipv4_addr*(`addr`: ptr ip4_addr_t): u32_t =
   return `addr`.`addr`
 
-proc send_got_ip*(data: ptr ClientData; info: ptr tcpip_adapter_ip_info_t) {.cdecl.} =
+proc send_got_ip*(data: ptr ClientData; info: ptr tcpip_adapter_ip_info_t) =
   TRACE("Sending got_ip back to AtomVM\n")
   var ctx: ptr Context = data.ctx
   port_ensure_available(ctx, ((4 + 1) * 3 + (2 + 1) + (2 + 1)) * 2)
@@ -132,7 +132,7 @@ proc send_got_ip*(data: ptr ClientData; info: ptr tcpip_adapter_ip_info_t) {.cde
   var reply: term = port_create_tuple2(ctx, STA_GOT_IP_ATOM, ip_info)
   port_send_reply(ctx, pid, `ref`, reply)
 
-proc send_atom*(data: ptr ClientData; atom: term) {.cdecl.} =
+proc send_atom*(data: ptr ClientData; atom: term) =
   var ctx: ptr Context = data.ctx
   port_ensure_available(ctx, 6)
   var pid: term = data.pid
@@ -140,15 +140,15 @@ proc send_atom*(data: ptr ClientData; atom: term) {.cdecl.} =
   ##  Pid ! {Ref, Atom}
   port_send_reply(ctx, pid, `ref`, atom)
 
-proc send_sta_connected*(data: ptr ClientData) {.cdecl.} =
+proc send_sta_connected*(data: ptr ClientData) =
   TRACE("Sending sta_connected back to AtomVM\n")
   send_atom(data, STA_CONNECTED_ATOM)
 
-proc send_sta_disconnected*(data: ptr ClientData) {.cdecl.} =
+proc send_sta_disconnected*(data: ptr ClientData) =
   TRACE("Sending sta_disconnected back to AtomVM\n")
   send_atom(data, STA_DISCONNECTED_ATOM)
 
-proc wifi_event_handler*(ctx: pointer; event: ptr system_event_t): esp_err_t {.cdecl.} =
+proc wifi_event_handler*(ctx: pointer; event: ptr system_event_t): esp_err_t =
   var data: ptr ClientData = cast[ptr ClientData](ctx)
   case event.event_id
   of SYSTEM_EVENT_STA_START:

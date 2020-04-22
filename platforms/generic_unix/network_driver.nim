@@ -21,7 +21,7 @@
 import
   network_driver, port, platform_defaultatoms
 
-proc create_dummy_ip_info*(ctx: ptr Context): term {.cdecl.} =
+proc create_dummy_ip_info*(ctx: ptr Context): term =
   ##  {{192,168,1,236}, {255,255,255,0}, {192,168,1,1}}
   var ip: term = term_alloc_tuple(4, ctx)
   term_put_tuple_element(ip, 0, term_from_int32(192))
@@ -45,7 +45,7 @@ proc create_dummy_ip_info*(ctx: ptr Context): term {.cdecl.} =
   return ret
 
 proc network_driver_start*(ctx: ptr Context; pid: term_ref; `ref`: term_ref;
-                          config: term) {.cdecl.} =
+                          config: term) =
   UNUSED(config)
   port_ensure_available(ctx, 24)
   ##  ok
@@ -58,5 +58,5 @@ proc network_driver_start*(ctx: ptr Context; pid: term_ref; `ref`: term_ref;
   term_put_tuple_element(sta_got_ip_tuple, 1, create_dummy_ip_info(ctx))
   port_send_reply(ctx, pid, `ref`, sta_got_ip_tuple)
 
-proc network_driver_ifconfig*(ctx: ptr Context): term {.cdecl.} =
+proc network_driver_ifconfig*(ctx: ptr Context): term =
   return port_create_error_tuple(ctx, UNDEFINED_ATOM)

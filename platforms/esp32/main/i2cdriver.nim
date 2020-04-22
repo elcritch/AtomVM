@@ -31,7 +31,7 @@ type
     transmitting_pid*: term
 
 
-proc i2cdriver_init*(ctx: ptr Context; opts: term) {.cdecl.} =
+proc i2cdriver_init*(ctx: ptr Context; opts: term) =
   var i2c_data: ptr I2CData = calloc(1, sizeof(I2CData))
   i2c_data.transmitting_pid = term_invalid_term()
   ctx.native_handler = i2cdriver_consume_mailbox
@@ -57,7 +57,7 @@ proc i2cdriver_init*(ctx: ptr Context; opts: term) {.cdecl.} =
     TRACE("i2cdriver: failed install, return vale: %i\n", ret)
     ## TODO: return error
 
-proc i2cdriver_begin_transmission*(ctx: ptr Context; pid: term; req: term): term {.cdecl.} =
+proc i2cdriver_begin_transmission*(ctx: ptr Context; pid: term; req: term): term =
   var i2c_data: ptr I2CData = ctx.platform_data
   if UNLIKELY(i2c_data.transmitting_pid != term_invalid_term()):
     ##  another process is already transmitting
@@ -70,7 +70,7 @@ proc i2cdriver_begin_transmission*(ctx: ptr Context; pid: term; req: term): term
   i2c_data.transmitting_pid = pid
   return OK_ATOM
 
-proc i2cdriver_end_transmission*(ctx: ptr Context; pid: term): term {.cdecl.} =
+proc i2cdriver_end_transmission*(ctx: ptr Context; pid: term): term =
   var i2c_data: ptr I2CData = ctx.platform_data
   if UNLIKELY(i2c_data.transmitting_pid != pid):
     ##  transaction owned from a different pid
@@ -84,7 +84,7 @@ proc i2cdriver_end_transmission*(ctx: ptr Context; pid: term): term {.cdecl.} =
     return ERROR_ATOM
   return OK_ATOM
 
-proc i2cdriver_write_byte*(ctx: ptr Context; pid: term; req: term): term {.cdecl.} =
+proc i2cdriver_write_byte*(ctx: ptr Context; pid: term; req: term): term =
   var i2c_data: ptr I2CData = ctx.platform_data
   if UNLIKELY(i2c_data.transmitting_pid != pid):
     ##  transaction owned from a different pid
@@ -98,7 +98,7 @@ proc i2cdriver_write_byte*(ctx: ptr Context; pid: term; req: term): term {.cdecl
     return ERROR_ATOM
   return OK_ATOM
 
-proc i2cdriver_read_bytes*(ctx: ptr Context; pid: term; req: term): term {.cdecl.} =
+proc i2cdriver_read_bytes*(ctx: ptr Context; pid: term; req: term): term =
   var i2c_data: ptr I2CData = ctx.platform_data
   if UNLIKELY(i2c_data.transmitting_pid != term_invalid_term()):
     ##  another process is already transmitting
@@ -131,7 +131,7 @@ proc i2cdriver_read_bytes*(ctx: ptr Context; pid: term; req: term): term {.cdecl
     return ERROR_ATOM
   return data_term
 
-proc i2cdriver_consume_mailbox*(ctx: ptr Context) {.cdecl.} =
+proc i2cdriver_consume_mailbox*(ctx: ptr Context) =
   var message: ptr Message = mailbox_dequeue(ctx)
   var msg: term = message.message
   var pid: term = term_get_tuple_element(msg, 0)

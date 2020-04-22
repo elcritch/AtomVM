@@ -88,7 +88,7 @@ proc externalterm_to_term_internal*(external_term: pointer; ctx: ptr Context;
     return result
 
 proc externalterm_to_term*(external_term: pointer; ctx: ptr Context;
-                          use_heap_fragment: cint): term {.cdecl.} =
+                          use_heap_fragment: cint): term =
   var bytes_read: csize = 0
   return externalterm_to_term_internal(external_term, ctx, use_heap_fragment,
                                       addr(bytes_read))
@@ -113,7 +113,7 @@ proc externalterm_from_binary*(ctx: ptr Context; dst: ptr term; binary: term;
   return EXTERNAL_TERM_OK
 
 proc externalterm_from_term*(ctx: ptr Context; buf: ptr ptr uint8_t; len: ptr csize;
-                            t: term): cint {.cdecl.} =
+                            t: term): cint =
   len[] = compute_external_size(ctx, t) + 1
   buf[] = malloc(len[])
   if UNLIKELY(IS_NULL_PTR(buf[])):
@@ -123,7 +123,7 @@ proc externalterm_from_term*(ctx: ptr Context; buf: ptr ptr uint8_t; len: ptr cs
   buf[0][] = EXTERNAL_TERM_TAG
   return k + 1
 
-proc externalterm_to_binary*(ctx: ptr Context; t: term): term {.cdecl.} =
+proc externalterm_to_binary*(ctx: ptr Context; t: term): term =
   ##
   ##  convert
   ##
@@ -141,10 +141,10 @@ proc externalterm_to_binary*(ctx: ptr Context; t: term): term {.cdecl.} =
   free(buf)
   return binary
 
-proc compute_external_size*(ctx: ptr Context; t: term): csize {.cdecl.} =
+proc compute_external_size*(ctx: ptr Context; t: term): csize =
   return serialize_term(ctx, nil, t)
 
-proc serialize_term*(ctx: ptr Context; buf: ptr uint8_t; t: term): cint {.cdecl.} =
+proc serialize_term*(ctx: ptr Context; buf: ptr uint8_t; t: term): cint =
   if term_is_uint8(t):
     if not IS_NULL_PTR(buf):
       buf[0] = SMALL_INTEGER_EXT
@@ -232,7 +232,7 @@ proc serialize_term*(ctx: ptr Context; buf: ptr uint8_t; t: term): cint {.cdecl.
     abort()
 
 proc parse_external_terms*(external_term_buf: ptr uint8_t; eterm_size: ptr cint;
-                          ctx: ptr Context; copy: cint): term {.cdecl.} =
+                          ctx: ptr Context; copy: cint): term =
   case external_term_buf[0]
   of NEW_FLOAT_EXT:
     when not defined(AVM_NO_FP):
@@ -333,7 +333,7 @@ proc parse_external_terms*(external_term_buf: ptr uint8_t; eterm_size: ptr cint;
     abort()
 
 proc calculate_heap_usage*(external_term_buf: ptr uint8_t; eterm_size: ptr cint;
-                          copy: bool; ctx: ptr Context): cint {.cdecl.} =
+                          copy: bool; ctx: ptr Context): cint =
   case external_term_buf[0]
   of NEW_FLOAT_EXT:
     when not defined(AVM_NO_FP):

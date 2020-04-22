@@ -23,7 +23,7 @@ import
 
 var ok_a*: cstring = "\x02ok"
 
-proc main*(argc: cint; argv: cstringArray): cint {.cdecl.} =
+proc main*(argc: cint; argv: cstringArray): cint =
   if argc < 2:
     printf("Need .beam file\n")
     return EXIT_FAILURE

@@ -78,7 +78,7 @@ proc globalcontext_new*(): GlobalContext =
 ##  TODO: FIXME
 ##  COLD_FUNC void globalcontext_destroy(GlobalContext *glb)
 
-proc globalcontext_destroy*(glb: ptr GlobalContext) {.cdecl.} =
+proc globalcontext_destroy*(glb: ptr GlobalContext) =
   free(glb)
 
 proc globalcontext_get_process*(glb: ptr GlobalContext; process_id: int32_t): ptr Context {.
@@ -94,12 +94,12 @@ proc globalcontext_get_process*(glb: ptr GlobalContext; process_id: int32_t): pt
       break
   return nil
 
-proc globalcontext_get_new_process_id*(glb: ptr GlobalContext): int32_t {.cdecl.} =
+proc globalcontext_get_new_process_id*(glb: ptr GlobalContext): int32_t =
   inc(glb.last_process_id)
   return glb.last_process_id
 
 proc globalcontext_register_process*(glb: ptr GlobalContext; atom_index: cint;
-                                    local_process_id: cint) {.cdecl.} =
+                                    local_process_id: cint) =
   var registered_process: ptr RegisteredProcess = malloc(sizeof(RegisteredProcess))
   if IS_NULL_PTR(registered_process):
     fprintf(stderr, "Failed to allocate memory: %s:%i.\n", __FILE__, __LINE__)
@@ -131,7 +131,7 @@ proc globalcontext_insert_atom*(glb: ptr GlobalContext; atom_string: AtomString)
   return globalcontext_insert_atom_maybe_copy(glb, atom_string, 0)
 
 proc globalcontext_insert_atom_maybe_copy*(glb: ptr GlobalContext;
-    atom_string: AtomString; copy: cint): cint {.cdecl.} =
+    atom_string: AtomString; copy: cint): cint =
   var htable: ptr AtomsHashTable = glb.atoms_table
   var atom_index: culong = atomshashtable_get_value(htable, atom_string, ULONG_MAX)
   if atom_index == ULONG_MAX:
@@ -163,7 +163,7 @@ proc globalcontext_atomstring_from_term*(glb: ptr GlobalContext; t: term): AtomS
   return cast[AtomString](ret)
 
 proc globalcontext_insert_module*(global: ptr GlobalContext; module: ptr Module;
-                                 module_name_atom: AtomString): cint {.cdecl.} =
+                                 module_name_atom: AtomString): cint =
   if not atomshashtable_insert(global.modules_table, module_name_atom,
                              TO_ATOMSHASHTABLE_VALUE(module)):
     return -1
@@ -185,7 +185,7 @@ proc globalcontext_insert_module*(global: ptr GlobalContext; module: ptr Module;
   return module_index
 
 proc globalcontext_insert_module_with_filename*(glb: ptr GlobalContext;
-    module: ptr Module; filename: cstring) {.cdecl.} =
+    module: ptr Module; filename: cstring) =
   var len: cint = strnlen(filename, 260)
   var len_without_ext: cint = len - strlen(".beam")
   if strcmp(filename + len_without_ext, ".beam") != 0:
@@ -201,7 +201,7 @@ proc globalcontext_insert_module_with_filename*(glb: ptr GlobalContext;
     abort()
 
 proc globalcontext_get_module*(global: ptr GlobalContext;
-                              module_name_atom: AtomString): ptr Module {.cdecl.} =
+                              module_name_atom: AtomString): ptr Module =
   var found_module: ptr Module = cast[ptr Module](atomshashtable_get_value(
       global.modules_table, module_name_atom, cast[culong](nil)))
   if not found_module:

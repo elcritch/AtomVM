@@ -26,7 +26,7 @@ const
 proc pad*(size: cint): cint {.inline, cdecl.} =
   return ((size + 4 - 1) shr 2) shl 2
 
-proc avmpack_is_valid*(avmpack_binary: pointer; size: uint32_t): cint {.cdecl.} =
+proc avmpack_is_valid*(avmpack_binary: pointer; size: uint32_t): cint =
   var pack_header: array[AVMPACK_SIZE, cuchar] = [0x00000023, 0x00000021, 0x0000002F,
       0x00000075, 0x00000073, 0x00000072, 0x0000002F, 0x00000062, 0x00000069,
       0x0000006E, 0x0000002F, 0x00000065, 0x0000006E, 0x00000076, 0x00000020,
@@ -38,7 +38,7 @@ proc avmpack_is_valid*(avmpack_binary: pointer; size: uint32_t): cint {.cdecl.} 
 
 proc avmpack_find_section_by_flag*(avmpack_binary: pointer; flags_mask: uint32_t;
                                   `ptr`: ptr pointer; size: ptr uint32_t;
-                                  name: cstringArray): cint {.cdecl.} =
+                                  name: cstringArray): cint =
   var offset: cint = AVMPACK_SIZE
   var flags: ptr uint32_t
   while true:
@@ -59,7 +59,7 @@ proc avmpack_find_section_by_flag*(avmpack_binary: pointer; flags_mask: uint32_t
   return 0
 
 proc avmpack_find_section_by_name*(avmpack_binary: pointer; name: cstring;
-                                  `ptr`: ptr pointer; size: ptr uint32_t): cint {.cdecl.} =
+                                  `ptr`: ptr pointer; size: ptr uint32_t): cint =
   var offset: cint = AVMPACK_SIZE
   var flags: ptr uint32_t
   while true:
@@ -79,7 +79,7 @@ proc avmpack_find_section_by_name*(avmpack_binary: pointer; name: cstring;
   return 0
 
 proc avmpack_fold*(accum: pointer; avmpack_binary: pointer;
-                  fold_fun: avmpack_fold_fun): pointer {.cdecl.} =
+                  fold_fun: avmpack_fold_fun): pointer =
   var offset: cint = AVMPACK_SIZE
   var size: uint32_t = 0
   while true:

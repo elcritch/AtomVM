@@ -46,7 +46,7 @@ var f_atom*: cstring = "\x01f"
 
 var stm32_atom*: cstring = "\x05stm32"
 
-proc platform_defaultatoms_init*(glb: ptr GlobalContext) {.cdecl.} =
+proc platform_defaultatoms_init*(glb: ptr GlobalContext) =
   var ok: cint = 1
   ok = ok and
       globalcontext_insert_atom(glb, set_level_atom) == SET_LEVEL_ATOM_INDEX

@@ -30,7 +30,7 @@ const
   DEFAULT_STACK_SIZE* = 8
   BYTES_PER_TERM* = (TERM_BITS div 8)
 
-proc context_new*(glb: ptr GlobalContext): ptr Context {.cdecl.} =
+proc context_new*(glb: ptr GlobalContext): ptr Context =
   var ctx: ptr Context = malloc(sizeof((Context)))
   if IS_NULL_PTR(ctx):
     fprintf(stderr, "Failed to allocate memory: %s:%i.\n", __FILE__, __LINE__)
@@ -74,13 +74,13 @@ proc context_new*(glb: ptr GlobalContext): ptr Context {.cdecl.} =
   ctx.bs_offset = 0
   return ctx
 
-proc context_destroy*(ctx: ptr Context) {.cdecl.} =
+proc context_destroy*(ctx: ptr Context) =
   linkedlist_remove(addr(ctx.global.processes_table),
                     addr(ctx.processes_table_head))
   free(ctx.heap_start)
   free(ctx)
 
-proc context_message_queue_len*(ctx: ptr Context): csize {.cdecl.} =
+proc context_message_queue_len*(ctx: ptr Context): csize =
   var num_messages: csize = 0
   var item: ptr ListHead
   ##  TODO: FIXME
@@ -91,7 +91,7 @@ proc context_message_queue_len*(ctx: ptr Context): csize {.cdecl.} =
     item = item.next
   return num_messages
 
-proc context_size*(ctx: ptr Context): csize {.cdecl.} =
+proc context_size*(ctx: ptr Context): csize =
   var messages_size: csize = 0
   var item: ptr ListHead
   ##  TODO: FIXME

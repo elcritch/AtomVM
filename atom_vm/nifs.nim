@@ -491,7 +491,7 @@ proc nif_atomvm_read_priv*(ctx: ptr Context; argc: cint; argv: ptr term): term {
 import
   nifs_hash
 
-proc nifs_get*(module: AtomString; function: AtomString; arity: cint): ptr Nif {.cdecl.} =
+proc nifs_get*(module: AtomString; function: AtomString; arity: cint): ptr Nif =
   var nifname: array[MAX_NIF_NAME_LEN, char]
   var module_name_len: cint = atom_string_len(module)
   memcpy(nifname, atom_string_data(module), module_name_len)
@@ -523,7 +523,7 @@ proc make_maybe_boxed_int64*(ctx: ptr Context; value: avm_int64_t): term {.inlin
   else:
     return term_from_int(value)
 
-proc nif_erlang_iolist_size_1*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_iolist_size_1*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var ok: cint
   var size: avm_int_t = interop_iolist_size(argv[0], addr(ok))
@@ -554,7 +554,7 @@ proc nif_erlang_iolist_to_binary_1*(ctx: ptr Context; argc: cint; argv: ptr term
   free(bin_buf)
   return bin_res
 
-proc nif_erlang_open_port_2*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_open_port_2*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var port_name_tuple: term = argv[0]
   VALIDATE_VALUE(port_name_tuple, term_is_tuple)
@@ -585,7 +585,7 @@ proc nif_erlang_open_port_2*(ctx: ptr Context; argc: cint; argv: ptr term): term
     scheduler_make_waiting(ctx.global, new_ctx)
     return term_from_local_process_id(new_ctx.process_id)
 
-proc nif_erlang_register_2*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_register_2*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var reg_name_term: term = argv[0]
   VALIDATE_VALUE(reg_name_term, term_is_atom)
@@ -598,7 +598,7 @@ proc nif_erlang_register_2*(ctx: ptr Context; argc: cint; argv: ptr term): term 
   globalcontext_register_process(ctx.global, atom_index, pid)
   return term_nil()
 
-proc nif_erlang_whereis_1*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_whereis_1*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var reg_name_term: term = argv[0]
   VALIDATE_VALUE(reg_name_term, term_is_atom)
@@ -610,7 +610,7 @@ proc nif_erlang_whereis_1*(ctx: ptr Context; argc: cint; argv: ptr term): term {
   else:
     return UNDEFINED_ATOM
 
-proc process_echo_mailbox*(ctx: ptr Context) {.cdecl.} =
+proc process_echo_mailbox*(ctx: ptr Context) =
   var msg: ptr Message = mailbox_dequeue(ctx)
   var pid: term = term_get_tuple_element(msg.message, 0)
   var val: term = term_get_tuple_element(msg.message, 1)
@@ -619,7 +619,7 @@ proc process_echo_mailbox*(ctx: ptr Context) {.cdecl.} =
   mailbox_send(target, val)
   free(msg)
 
-proc process_console_mailbox*(ctx: ptr Context) {.cdecl.} =
+proc process_console_mailbox*(ctx: ptr Context) =
   var message: ptr Message = mailbox_dequeue(ctx)
   var msg: term = message.message
   port_ensure_available(ctx, 12)
@@ -652,7 +652,7 @@ proc process_console_mailbox*(ctx: ptr Context) {.cdecl.} =
     fprintf(stderr, "WARNING: Invalid port command.  Unable to send reply")
   free(message)
 
-proc nif_erlang_spawn_fun*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_spawn_fun*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   var fun_term: term = argv[0]
   var opts_term: term = argv[1]
   VALIDATE_VALUE(fun_term, term_is_function)
@@ -703,7 +703,7 @@ proc nif_erlang_spawn_fun*(ctx: ptr Context; argc: cint; argv: ptr term): term {
     new_ctx.max_heap_size = term_to_int(max_heap_size_term)
   return term_from_local_process_id(new_ctx.process_id)
 
-proc nif_erlang_spawn*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_spawn*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   var module_term: term = argv[0]
   var function_term: term = argv[1]
   var args_term: term = argv[2]
@@ -776,7 +776,7 @@ proc nif_erlang_spawn*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cde
       RAISE_ERROR(BADARG_ATOM)
   return term_from_local_process_id(new_ctx.process_id)
 
-proc nif_erlang_send_2*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_send_2*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var pid_term: term = argv[0]
   VALIDATE_VALUE(pid_term, term_is_pid)
@@ -792,7 +792,7 @@ proc nif_erlang_is_process_alive_1*(ctx: ptr Context; argc: cint; argv: ptr term
   var target: ptr Context = globalcontext_get_process(ctx.global, local_process_id)
   return if target: TRUE_ATOM else: FALSE_ATOM
 
-proc nif_erlang_concat_2*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_concat_2*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var prepend_list: term = argv[0]
   if UNLIKELY(not term_is_nonempty_list(prepend_list)):
@@ -825,7 +825,7 @@ proc nif_erlang_concat_2*(ctx: ptr Context; argc: cint; argv: ptr term): term {.
     prev_term[0] = append_list
   return list_begin
 
-proc nif_erlang_make_ref_0*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_make_ref_0*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   UNUSED(argv)
   ##  a ref is 64 bits, hence 8 bytes
@@ -834,7 +834,7 @@ proc nif_erlang_make_ref_0*(ctx: ptr Context; argc: cint; argv: ptr term): term 
   var ref_ticks: uint64_t = globalcontext_get_ref_ticks(ctx.global)
   return term_from_ref_ticks(ref_ticks, ctx)
 
-proc nif_erlang_system_time_1*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_system_time_1*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(ctx)
   UNUSED(argc)
   var ts: timespec
@@ -875,7 +875,7 @@ proc nif_erlang_universaltime_0*(ctx: ptr Context; argc: cint; argv: ptr term): 
   term_put_tuple_element(date_time_tuple, 1, time_tuple)
   return date_time_tuple
 
-proc nif_erlang_timestamp_0*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_timestamp_0*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(ctx)
   UNUSED(argc)
   UNUSED(argv)
@@ -891,7 +891,7 @@ proc nif_erlang_timestamp_0*(ctx: ptr Context; argc: cint; argv: ptr term): term
   term_put_tuple_element(timestamp_tuple, 2, term_from_int32(ts.tv_nsec div 1000))
   return timestamp_tuple
 
-proc nif_erlang_make_tuple_2*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_make_tuple_2*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   VALIDATE_VALUE(argv[0], term_is_integer)
   var count_elem: avm_int_t = term_to_int(argv[0])
@@ -960,7 +960,7 @@ proc nif_erlang_delete_element_2*(ctx: ptr Context; argc: cint; argv: ptr term):
     inc(i)
   return new_tuple
 
-proc nif_erlang_setelement_3*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_setelement_3*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   VALIDATE_VALUE(argv[0], term_is_integer)
   VALIDATE_VALUE(argv[1], term_is_tuple)
@@ -1021,7 +1021,7 @@ proc nif_erlang_binary_to_integer_1*(ctx: ptr Context; argc: cint; argv: ptr ter
   return make_maybe_boxed_int64(ctx, value)
 
 when not defined(AVM_NO_FP):
-  proc is_valid_float_string*(str: cstring; len: cint): cint {.cdecl.} =
+  proc is_valid_float_string*(str: cstring; len: cint): cint =
     var has_point: cint = 0
     var scientific: cint = 0
     var i: cint = 0
@@ -1042,7 +1042,7 @@ when not defined(AVM_NO_FP):
       inc(i)
     return has_point
 
-  proc parse_float*(ctx: ptr Context; buf: cstring; len: cint): term {.cdecl.} =
+  proc parse_float*(ctx: ptr Context; buf: cstring; len: cint): term =
     if UNLIKELY((len == 0) or (len >= FLOAT_BUF_SIZE - 1)):
       RAISE_ERROR(BADARG_ATOM)
     var null_terminated_buf: array[FLOAT_BUF_SIZE, char]
@@ -1110,7 +1110,7 @@ proc nif_erlang_binary_to_list_1*(ctx: ptr Context; argc: cint; argv: ptr term):
   return prev
 
 proc nif_erlang_binary_to_existing_atom_2*(ctx: ptr Context; argc: cint;
-    argv: ptr term): term {.cdecl.} =
+    argv: ptr term): term =
   return binary_to_atom(ctx, argc, argv, 0)
 
 proc binary_to_atom*(ctx: ptr Context; argc: cint; argv: ptr term; create_new: cint): term {.
@@ -1253,7 +1253,7 @@ proc nif_erlang_integer_to_list_1*(ctx: ptr Context; argc: cint; argv: ptr term)
 
 when not defined(AVM_NO_FP):
   proc format_float*(value: term; scientific: cint; decimals: cint; compact: cint;
-                    out_buf: cstring; outbuf_len: cint): cint {.cdecl.} =
+                    out_buf: cstring; outbuf_len: cint): cint =
     ##  %lf and %f are the same since C99 due to double promotion.
     var format: cstring
     if scientific:
@@ -1287,7 +1287,7 @@ when not defined(AVM_NO_FP):
     return strlen(out_buf)
 
   proc get_float_format_opts*(opts: term; scientific: ptr cint; decimals: ptr cint;
-                             compact: ptr cint): cint {.cdecl.} =
+                             compact: ptr cint): cint =
     var t: term = opts
     while term_is_nonempty_list(t):
       var head: term = term_get_list_head(t)
@@ -1343,7 +1343,7 @@ proc nif_erlang_float_to_binary*(ctx: ptr Context; argc: cint; argv: ptr term): 
     UNUSED(argv)
     RAISE_ERROR(BADARG_ATOM)
 
-proc nif_erlang_float_to_list*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_float_to_list*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   when not defined(AVM_NO_FP):
     var float_term: term = argv[0]
@@ -1429,14 +1429,14 @@ proc nif_erlang_list_to_integer_1*(ctx: ptr Context; argc: cint; argv: ptr term)
     RAISE_ERROR(BADARG_ATOM)
   return make_maybe_boxed_int64(ctx, acc)
 
-proc nif_erlang_display_1*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_display_1*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(ctx)
   UNUSED(argc)
   term_display(stdout, argv[0], ctx)
   printf("\n")
   return term_nil()
 
-proc nif_erlang_process_flag*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_process_flag*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   when defined(ENABLE_ADVANCED_TRACE):
     var pid: term = argv[0]
@@ -1487,11 +1487,11 @@ proc nif_erlang_process_flag*(ctx: ptr Context; argc: cint; argv: ptr term): ter
 type
   context_iterator* = proc (ctx: ptr Context; accum: pointer): pointer {.cdecl.}
 
-proc nif_increment_context_count*(ctx: ptr Context; accum: pointer): pointer {.cdecl.} =
+proc nif_increment_context_count*(ctx: ptr Context; accum: pointer): pointer =
   UNUSED(ctx)
   return cast[pointer]((cast[csize](accum) + 1))
 
-proc nif_increment_port_count*(ctx: ptr Context; accum: pointer): pointer {.cdecl.} =
+proc nif_increment_port_count*(ctx: ptr Context; accum: pointer): pointer =
   if ctx.native_handler:
     return cast[pointer]((cast[csize](accum) + 1))
   else:
@@ -1503,14 +1503,14 @@ type
     result*: term
 
 
-proc nif_cons_context*(ctx: ptr Context; p: pointer): pointer {.cdecl.} =
+proc nif_cons_context*(ctx: ptr Context; p: pointer): pointer =
   var accum: ptr ContextAccumulator = cast[ptr ContextAccumulator](p)
   accum.result = term_list_prepend(term_from_local_process_id(ctx.process_id),
                                  accum.result, accum.ctx)
   return cast[pointer](accum)
 
 proc nif_iterate_processes*(glb: ptr GlobalContext; fun: context_iterator;
-                           accum: pointer): pointer {.cdecl.} =
+                           accum: pointer): pointer =
   var processes: ptr Context = GET_LIST_ENTRY(glb.processes_table, Context,
       processes_table_head)
   var p: ptr Context = processes
@@ -1521,20 +1521,20 @@ proc nif_iterate_processes*(glb: ptr GlobalContext; fun: context_iterator;
       break
   return accum
 
-proc nif_num_processes*(glb: ptr GlobalContext): csize {.cdecl.} =
+proc nif_num_processes*(glb: ptr GlobalContext): csize =
   return cast[csize](nif_iterate_processes(glb, nif_increment_context_count, nil))
 
-proc nif_num_ports*(glb: ptr GlobalContext): csize {.cdecl.} =
+proc nif_num_ports*(glb: ptr GlobalContext): csize =
   return cast[csize](nif_iterate_processes(glb, nif_increment_port_count, nil))
 
-proc nif_list_processes*(ctx: ptr Context): term {.cdecl.} =
+proc nif_list_processes*(ctx: ptr Context): term =
   var accum: ContextAccumulator
   accum.ctx = ctx
   accum.result = term_nil()
   nif_iterate_processes(ctx.global, nif_cons_context, cast[pointer](addr(accum)))
   return accum.result
 
-proc nif_erlang_processes*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_processes*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argv)
   UNUSED(argc)
   var num_processes: csize = nif_num_processes(ctx.global)
@@ -1542,7 +1542,7 @@ proc nif_erlang_processes*(ctx: ptr Context; argc: cint; argv: ptr term): term {
     RAISE_ERROR(OUT_OF_MEMORY_ATOM)
   return nif_list_processes(ctx)
 
-proc nif_erlang_process_info*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_process_info*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var pid: term = argv[0]
   var item_or_item_info: term = argv[1]
@@ -1575,7 +1575,7 @@ proc nif_erlang_process_info*(ctx: ptr Context; argc: cint; argv: ptr term): ter
     RAISE_ERROR(BADARG_ATOM)
   return ret
 
-proc nif_erlang_system_info*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_system_info*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var key: term = argv[0]
   if not term_is_atom(key):
@@ -1645,7 +1645,7 @@ proc nif_erlang_term_to_binary*(ctx: ptr Context; argc: cint; argv: ptr term): t
     RAISE_ERROR(BADARG_ATOM)
   return ret
 
-proc nif_binary_at_2*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_binary_at_2*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var bin_term: term = argv[0]
   var pos_term: term = argv[1]
@@ -1657,7 +1657,7 @@ proc nif_binary_at_2*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdec
     RAISE_ERROR(BADARG_ATOM)
   return term_from_int11(term_binary_data(bin_term)[pos])
 
-proc nif_binary_first_1*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_binary_first_1*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var bin_term: term = argv[0]
   VALIDATE_VALUE(bin_term, term_is_binary)
@@ -1665,7 +1665,7 @@ proc nif_binary_first_1*(ctx: ptr Context; argc: cint; argv: ptr term): term {.c
     RAISE_ERROR(BADARG_ATOM)
   return term_from_int11(term_binary_data(bin_term)[0])
 
-proc nif_binary_last_1*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_binary_last_1*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var bin_term: term = argv[0]
   VALIDATE_VALUE(bin_term, term_is_binary)
@@ -1674,7 +1674,7 @@ proc nif_binary_last_1*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cd
     RAISE_ERROR(BADARG_ATOM)
   return term_from_int11(term_binary_data(bin_term)[size - 1])
 
-proc nif_binary_part_3*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_binary_part_3*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var bin_term: term = argv[0]
   var pos_term: term = argv[1]
@@ -1696,7 +1696,7 @@ proc nif_binary_part_3*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cd
   var bin_data: cstring = term_binary_data(argv[0])
   return term_from_literal_binary(bin_data + pos, len, ctx)
 
-proc nif_binary_split_2*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_binary_split_2*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var bin_term: term = argv[0]
   var pattern_term: term = argv[1]
@@ -1736,21 +1736,21 @@ proc nif_binary_split_2*(ctx: ptr Context; argc: cint; argv: ptr term): term {.c
       RAISE_ERROR(OUT_OF_MEMORY_ATOM)
     return term_list_prepend(argv[0], term_nil(), ctx)
 
-proc nif_erlang_throw*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_throw*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var t: term = argv[0]
   ctx.x[0] = THROW_ATOM
   ctx.x[1] = t
   return term_invalid_term()
 
-proc nif_erts_debug_flat_size*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erts_debug_flat_size*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(ctx)
   UNUSED(argc)
   var terms_count: culong
   terms_count = memory_estimate_usage(argv[0])
   return term_from_int32(terms_count)
 
-proc nif_erlang_pid_to_list*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_pid_to_list*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var t: term = argv[0]
   VALIDATE_VALUE(t, term_is_pid)
@@ -1768,7 +1768,7 @@ proc nif_erlang_pid_to_list*(ctx: ptr Context; argc: cint; argv: ptr term): term
     dec(i)
   return prev
 
-proc nif_erlang_ref_to_list*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_ref_to_list*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var t: term = argv[0]
   VALIDATE_VALUE(t, term_is_reference)
@@ -1791,7 +1791,7 @@ proc nif_erlang_ref_to_list*(ctx: ptr Context; argc: cint; argv: ptr term): term
     dec(i)
   return prev
 
-proc nif_erlang_fun_to_list*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_fun_to_list*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var t: term = argv[0]
   VALIDATE_VALUE(t, term_is_function)
@@ -1816,12 +1816,12 @@ proc nif_erlang_fun_to_list*(ctx: ptr Context; argc: cint; argv: ptr term): term
     dec(i)
   return prev
 
-proc nif_erlang_error*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_error*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var r: term = argv[0]
   RAISE_ERROR(r)
 
-proc nif_erlang_make_fun_3*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_erlang_make_fun_3*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var module_term: term = argv[0]
   var function_term: term = argv[1]
@@ -1833,7 +1833,7 @@ proc nif_erlang_make_fun_3*(ctx: ptr Context; argc: cint; argv: ptr term): term 
 
 ##  AtomVM extension
 
-proc nif_atomvm_read_priv*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_atomvm_read_priv*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var app_term: term = argv[0]
   var path_term: term = argv[1]

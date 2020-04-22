@@ -24,11 +24,11 @@ proc consume_gpio_mailbox*(ctx: ptr Context) {.cdecl.}
 proc port_atom_to_gpio_port*(ctx: ptr Context; port_atom: term): uint32_t {.cdecl.}
 proc gpio_port_to_rcc_port*(gpio_port: uint32_t): uint16_t {.cdecl.}
 proc gpio_port_to_name*(gpio_port: uint32_t): char {.cdecl.}
-proc gpiodriver_init*(ctx: ptr Context) {.cdecl.} =
+proc gpiodriver_init*(ctx: ptr Context) =
   ctx.native_handler = consume_gpio_mailbox
   ctx.platform_data = nil
 
-proc consume_gpio_mailbox*(ctx: ptr Context) {.cdecl.} =
+proc consume_gpio_mailbox*(ctx: ptr Context) =
   var ret: term
   var message: ptr Message = mailbox_dequeue(ctx)
   var msg: term = message.message
@@ -79,7 +79,7 @@ proc consume_gpio_mailbox*(ctx: ptr Context) {.cdecl.} =
   free(message)
   mailbox_send(target, ret)
 
-proc port_atom_to_gpio_port*(ctx: ptr Context; port_atom: term): uint32_t {.cdecl.} =
+proc port_atom_to_gpio_port*(ctx: ptr Context; port_atom: term): uint32_t =
   if port_atom == A_ATOM:
     return GPIOA
   elif port_atom == B_ATOM:
@@ -95,7 +95,7 @@ proc port_atom_to_gpio_port*(ctx: ptr Context; port_atom: term): uint32_t {.cdec
   else:
     return 0
 
-proc gpio_port_to_rcc_port*(gpio_port: uint32_t): uint16_t {.cdecl.} =
+proc gpio_port_to_rcc_port*(gpio_port: uint32_t): uint16_t =
   case gpio_port
   of GPIOA:
     return RCC_GPIOA
@@ -112,7 +112,7 @@ proc gpio_port_to_rcc_port*(gpio_port: uint32_t): uint16_t {.cdecl.} =
   else:
     return 0
 
-proc gpio_port_to_name*(gpio_port: uint32_t): char {.cdecl.} =
+proc gpio_port_to_name*(gpio_port: uint32_t): char =
   case gpio_port
   of GPIOA:
     return 'A'

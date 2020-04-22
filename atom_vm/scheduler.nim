@@ -21,7 +21,7 @@ import
   debug, list, scheduler, sys, utils
 
 proc scheduler_execute_native_handlers*(global: ptr GlobalContext) {.cdecl.}
-proc update_timer_wheel*(global: ptr GlobalContext) {.cdecl.} =
+proc update_timer_wheel*(global: ptr GlobalContext) =
   var tw: ptr TimerWheel = global.timer_wheel
   var last_seen_millis: uint32_t = global.last_seen_millis
   if timer_wheel_is_empty(tw):
@@ -39,7 +39,7 @@ proc update_timer_wheel*(global: ptr GlobalContext) {.cdecl.} =
     inc(i)
   global.last_seen_millis = millis_now
 
-proc scheduler_wait*(global: ptr GlobalContext; c: ptr Context): ptr Context {.cdecl.} =
+proc scheduler_wait*(global: ptr GlobalContext; c: ptr Context): ptr Context =
   when defined(DEBUG_PRINT_READY_PROCESSES):
     debug_print_processes_list(global.ready_processes)
   scheduler_make_waiting(global, c)
@@ -64,7 +64,7 @@ proc scheduler_execute_native_handler*(global: ptr GlobalContext; c: ptr Context
   ##  so call to native_handler must be the last action here.
   c.native_handler(c)
 
-proc scheduler_next*(global: ptr GlobalContext; c: ptr Context): ptr Context {.cdecl.} =
+proc scheduler_next*(global: ptr GlobalContext; c: ptr Context): ptr Context =
   inc(c.reductions, DEFAULT_REDUCTIONS_AMOUNT)
   update_timer_wheel(global)
   sys_consume_pending_events(global)
@@ -85,26 +85,26 @@ proc scheduler_next*(global: ptr GlobalContext; c: ptr Context): ptr Context {.c
     tmp = item.next
   return c
 
-proc scheduler_make_ready*(global: ptr GlobalContext; c: ptr Context) {.cdecl.} =
+proc scheduler_make_ready*(global: ptr GlobalContext; c: ptr Context) =
   list_remove(addr(c.processes_list_head))
   list_append(addr(global.ready_processes), addr(c.processes_list_head))
 
-proc scheduler_make_waiting*(global: ptr GlobalContext; c: ptr Context) {.cdecl.} =
+proc scheduler_make_waiting*(global: ptr GlobalContext; c: ptr Context) =
   list_remove(addr(c.processes_list_head))
   list_append(addr(global.waiting_processes), addr(c.processes_list_head))
 
-proc scheduler_terminate*(c: ptr Context) {.cdecl.} =
+proc scheduler_terminate*(c: ptr Context) =
   list_remove(addr(c.processes_list_head))
   if not c.leader:
     context_destroy(c)
 
-proc scheduler_timeout_callback*(it: ptr TimerWheelItem) {.cdecl.} =
+proc scheduler_timeout_callback*(it: ptr TimerWheelItem) =
   timer_wheel_item_init(it, nil, 0)
   var ctx: ptr Context = GET_LIST_ENTRY(it, Context, timer_wheel_head)
   ctx.flags = (ctx.flags or WaitingTimeoutExpired) and not WaitingTimeout
   scheduler_make_ready(ctx.global, ctx)
 
-proc scheduler_set_timeout*(ctx: ptr Context; timeout: uint32_t) {.cdecl.} =
+proc scheduler_set_timeout*(ctx: ptr Context; timeout: uint32_t) =
   var glb: ptr GlobalContext = ctx.global
   ctx.flags = ctx.flags or WaitingTimeout
   var tw: ptr TimerWheel = glb.timer_wheel
@@ -117,7 +117,7 @@ proc scheduler_set_timeout*(ctx: ptr Context; timeout: uint32_t) {.cdecl.} =
   timer_wheel_item_init(twi, scheduler_timeout_callback, expiry)
   timer_wheel_insert(tw, twi)
 
-proc scheduler_cancel_timeout*(ctx: ptr Context) {.cdecl.} =
+proc scheduler_cancel_timeout*(ctx: ptr Context) =
   var glb: ptr GlobalContext = ctx.global
   ctx.flags = ctx.flags and not (WaitingTimeout or WaitingTimeoutExpired)
   var tw: ptr TimerWheel = glb.timer_wheel
@@ -126,7 +126,7 @@ proc scheduler_cancel_timeout*(ctx: ptr Context) {.cdecl.} =
     timer_wheel_remove(tw, twi)
     timer_wheel_item_init(twi, nil, 0)
 
-proc scheduler_execute_native_handlers*(global: ptr GlobalContext) {.cdecl.} =
+proc scheduler_execute_native_handlers*(global: ptr GlobalContext) =
   var item: ptr ListHead
   var tmp: ptr ListHead
   ##  TODO: FIXME
@@ -140,7 +140,7 @@ proc scheduler_execute_native_handlers*(global: ptr GlobalContext) {.cdecl.} =
     item = tmp
     tmp = item.next
 
-proc schudule_processes_count*(global: ptr GlobalContext): cint {.cdecl.} =
+proc schudule_processes_count*(global: ptr GlobalContext): cint =
   if not global.processes_table:
     return 0
   var count: cint = 0

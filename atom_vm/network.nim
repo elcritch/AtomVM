@@ -25,7 +25,7 @@ var start_a*: cstring = "\x05start"
 
 var ifconfig_a*: cstring = "\bifconfig"
 
-proc network_consume_mailbox*(ctx: ptr Context) {.cdecl.} =
+proc network_consume_mailbox*(ctx: ptr Context) =
   var message: ptr Message = mailbox_dequeue(ctx)
   var msg: term = message.message
   if port_is_standard_port_command(msg):
@@ -49,7 +49,7 @@ proc network_consume_mailbox*(ctx: ptr Context) {.cdecl.} =
     fprintf(stderr, "WARNING: Invalid port command.  Unable to send reply")
   free(message)
 
-proc network_init*(ctx: ptr Context; opts: term) {.cdecl.} =
+proc network_init*(ctx: ptr Context; opts: term) =
   UNUSED(opts)
   ctx.native_handler = network_consume_mailbox
   ctx.platform_data = nil

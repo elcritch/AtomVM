@@ -82,7 +82,7 @@ proc write_atom_c_string*(ctx: ptr Context; buf: cstring; bufsize: csize; t: ter
 ##  NIFs
 ##
 
-proc nif_esp_random*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_esp_random*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   UNUSED(argv)
   var r: uint32_t = esp_random()
@@ -90,7 +90,7 @@ proc nif_esp_random*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl
     RAISE_ERROR(OUT_OF_MEMORY_ATOM)
   return term_make_boxed_int(r, ctx)
 
-proc nif_esp_random_bytes*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_esp_random_bytes*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   VALIDATE_VALUE(argv[0], term_is_integer)
   var len: avm_int_t = term_to_int(argv[0])
@@ -114,14 +114,14 @@ proc nif_esp_random_bytes*(ctx: ptr Context; argc: cint; argv: ptr term): term {
     free(buf)
     return binary
 
-proc nif_esp_restart*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_esp_restart*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(ctx)
   UNUSED(argc)
   UNUSED(argv)
   esp_restart()
   return OK_ATOM
 
-proc nif_esp_reset_reason*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_esp_reset_reason*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   UNUSED(argv)
   var reason: esp_reset_reason_t = esp_reset_reason()
@@ -151,7 +151,7 @@ proc nif_esp_reset_reason*(ctx: ptr Context; argc: cint; argv: ptr term): term {
   else:
     return UNDEFINED_ATOM
 
-proc nif_esp_nvs_get_binary*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_esp_nvs_get_binary*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   VALIDATE_VALUE(argv[0], term_is_atom)
   VALIDATE_VALUE(argv[1], term_is_atom)
@@ -202,7 +202,7 @@ proc nif_esp_nvs_get_binary*(ctx: ptr Context; argc: cint; argv: ptr term): term
             namespace, key, err)
     RAISE_ERROR(term_from_int(err))
 
-proc nif_esp_nvs_set_binary*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_esp_nvs_set_binary*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   VALIDATE_VALUE(argv[0], term_is_atom)
   VALIDATE_VALUE(argv[1], term_is_atom)
@@ -235,7 +235,7 @@ proc nif_esp_nvs_set_binary*(ctx: ptr Context; argc: cint; argv: ptr term): term
             namespace, key, size, err)
     RAISE_ERROR(term_from_int(err))
 
-proc nif_esp_nvs_erase_key*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_esp_nvs_erase_key*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   VALIDATE_VALUE(argv[0], term_is_atom)
   VALIDATE_VALUE(argv[1], term_is_atom)
@@ -267,7 +267,7 @@ proc nif_esp_nvs_erase_key*(ctx: ptr Context; argc: cint; argv: ptr term): term 
             namespace, key, err)
     RAISE_ERROR(term_from_int(err))
 
-proc nif_esp_nvs_erase_all*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_esp_nvs_erase_all*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   VALIDATE_VALUE(argv[0], term_is_atom)
   var namespace: array[MAX_NVS_KEY_SIZE + 1, char]
@@ -292,7 +292,7 @@ proc nif_esp_nvs_erase_all*(ctx: ptr Context; argc: cint; argv: ptr term): term 
             err)
     RAISE_ERROR(term_from_int(err))
 
-proc nif_esp_nvs_reformat*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_esp_nvs_reformat*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   UNUSED(argv)
   var err: esp_err_t = nvs_flash_erase()
@@ -311,7 +311,7 @@ proc nif_esp_nvs_reformat*(ctx: ptr Context; argc: cint; argv: ptr term): term {
     fprintf(stderr, "Unable to initialize NVS partition. err=%i\n", err)
     RAISE_ERROR(term_from_int(err))
 
-proc nif_rom_md5*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_rom_md5*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var data: term = argv[0]
   VALIDATE_VALUE(data, term_is_binary)
@@ -323,7 +323,7 @@ proc nif_rom_md5*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} 
   MD5Final(digest, addr(md5))
   return term_from_literal_binary(digest, MD5_DIGEST_LENGTH, ctx)
 
-proc nif_atomvm_platform*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
+proc nif_atomvm_platform*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(ctx)
   UNUSED(argc)
   UNUSED(argv)
@@ -389,7 +389,7 @@ proc nif_atomvm_platform*(ctx: ptr Context; argc: cint; argv: ptr term): term {.
 ##      .nif_ptr = nif_atomvm_platform
 ##  };
 
-proc platform_nifs_get_nif*(nifname: cstring): ptr Nif {.cdecl.} =
+proc platform_nifs_get_nif*(nifname: cstring): ptr Nif =
   if strcmp("atomvm:random/0", nifname) == 0:
     TRACE("Resolved platform nif %s ...\n", nifname)
     return addr(esp_random_nif)

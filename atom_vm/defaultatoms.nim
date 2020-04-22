@@ -81,7 +81,7 @@ var all_atom*: cstring = "\x03all"
 
 var start_atom*: cstring = "\x05start"
 
-proc defaultatoms_init*(glb: ptr GlobalContext) {.cdecl.} =
+proc defaultatoms_init*(glb: ptr GlobalContext) =
   var ok: cint = 1
   ok = ok and globalcontext_insert_atom(glb, false_atom) == FALSE_ATOM_INDEX
   ok = ok and globalcontext_insert_atom(glb, true_atom) == TRUE_ATOM_INDEX

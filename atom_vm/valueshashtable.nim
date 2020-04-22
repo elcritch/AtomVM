@@ -30,7 +30,7 @@ type
     value*: culong
 
 
-proc valueshashtable_new*(): ptr ValuesHashTable {.cdecl.} =
+proc valueshashtable_new*(): ptr ValuesHashTable =
   var htable: ptr ValuesHashTable = malloc(sizeof(ValuesHashTable))
   if IS_NULL_PTR(htable):
     return nil
@@ -43,7 +43,7 @@ proc valueshashtable_new*(): ptr ValuesHashTable {.cdecl.} =
   return htable
 
 proc valueshashtable_insert*(hash_table: ptr ValuesHashTable; key: culong;
-                            value: culong): cint {.cdecl.} =
+                            value: culong): cint =
   var index: clong = key mod hash_table.capacity
   var node: ptr HNode = hash_table.buckets[index]
   if node:
@@ -69,7 +69,7 @@ proc valueshashtable_insert*(hash_table: ptr ValuesHashTable; key: culong;
   return 1
 
 proc valueshashtable_get_value*(hash_table: ptr ValuesHashTable; key: culong;
-                               default_value: culong): culong {.cdecl.} =
+                               default_value: culong): culong =
   var index: clong = key mod hash_table.capacity
   var node: ptr HNode = hash_table.buckets[index]
   while node:

@@ -30,7 +30,7 @@ type
     transaction*: spi_transaction_t
 
 
-proc spidriver_init*(ctx: ptr Context; opts: term) {.cdecl.} =
+proc spidriver_init*(ctx: ptr Context; opts: term) =
   var spi_data: ptr SPIData = calloc(1, sizeof(SPIData))
   ctx.native_handler = spidriver_consume_mailbox
   ctx.platform_data = spi_data
@@ -75,7 +75,7 @@ proc spidriver_init*(ctx: ptr Context; opts: term) {.cdecl.} =
     TRACE("spi_bus_add_device return code: %i\n", ret)
 
 proc spidriver_transfer_at*(ctx: ptr Context; address: uint64_t; data_len: cint;
-                           data: uint32_t; ok: ptr bool): uint32_t {.cdecl.} =
+                           data: uint32_t; ok: ptr bool): uint32_t =
   TRACE("--- SPI transfer ---\n")
   TRACE("spi: address: %x, tx: %x\n", cast[cint](address), cast[cint](data))
   var spi_data: ptr SPIData = ctx.platform_data
@@ -123,7 +123,7 @@ proc make_read_result_tuple*(read_value: uint32_t; ctx: ptr Context): term {.inl
   term_put_tuple_element(result_tuple, 1, read_value_term)
   return result_tuple
 
-proc spidriver_read_at*(ctx: ptr Context; req: term): term {.cdecl.} =
+proc spidriver_read_at*(ctx: ptr Context; req: term): term =
   ## cmd is at index 0
   var address_term: term = term_get_tuple_element(req, 1)
   var len_term: term = term_get_tuple_element(req, 2)
@@ -135,7 +135,7 @@ proc spidriver_read_at*(ctx: ptr Context; req: term): term {.cdecl.} =
     return ERROR_ATOM
   return make_read_result_tuple(read_value, ctx)
 
-proc spidriver_write_at*(ctx: ptr Context; req: term): term {.cdecl.} =
+proc spidriver_write_at*(ctx: ptr Context; req: term): term =
   ## cmd is at index 0
   var address_term: term = term_get_tuple_element(req, 1)
   var len_term: term = term_get_tuple_element(req, 2)
@@ -150,7 +150,7 @@ proc spidriver_write_at*(ctx: ptr Context; req: term): term {.cdecl.} =
     return ERROR_ATOM
   return make_read_result_tuple(read_value, ctx)
 
-proc spidriver_consume_mailbox*(ctx: ptr Context) {.cdecl.} =
+proc spidriver_consume_mailbox*(ctx: ptr Context) =
   var message: ptr Message = mailbox_dequeue(ctx)
   var msg: term = message.message
   var pid: term = term_get_tuple_element(msg, 0)

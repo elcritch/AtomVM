@@ -34,7 +34,7 @@ else:
     FUN_FMT* = "#Fun<erl_eval.%lu.%llu>"
 var empty_tuple*: term = 0
 
-proc term_display*(fd: ptr FILE; t: term; ctx: ptr Context) {.cdecl.} =
+proc term_display*(fd: ptr FILE; t: term; ctx: ptr Context) =
   if term_is_atom(t):
     var atom_index: cint = term_to_atom_index(t)
     var atom_string: AtomString = cast[AtomString](valueshashtable_get_value(
@@ -143,7 +143,7 @@ proc term_display*(fd: ptr FILE; t: term; ctx: ptr Context) {.cdecl.} =
   else:
     fprintf(fd, "Unknown term type: %li", t)
 
-proc term_type_to_index*(t: term): cint {.cdecl.} =
+proc term_type_to_index*(t: term): cint =
   if term_is_invalid_term(t):
     return 0
   elif term_is_number(t):
@@ -167,7 +167,7 @@ proc term_type_to_index*(t: term): cint {.cdecl.} =
   else:
     abort()
 
-proc term_compare*(t: term; other: term; ctx: ptr Context): cint {.cdecl.} =
+proc term_compare*(t: term; other: term; ctx: ptr Context): cint =
   var temp_stack: TempStack
   temp_stack_init(addr(temp_stack))
   temp_stack_push(addr(temp_stack), t)

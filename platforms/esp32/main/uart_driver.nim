@@ -40,7 +40,7 @@ type
 ##  TODO: FIXME
 ##  static void IRAM_ATTR uart_isr_handler(void *arg)
 
-proc uart_isr_handler*(arg: pointer) {.cdecl.} =
+proc uart_isr_handler*(arg: pointer) =
   var rxfifo_len: uint16_t
   var interrupt_status: uint16_t
   interrupt_status = UART0.int_st.val
@@ -56,13 +56,13 @@ proc uart_isr_handler*(arg: pointer) {.cdecl.} =
                          UART_RXFIFO_FULL_INT_CLR or UART_RXFIFO_TOUT_INT_CLR)
   xQueueSendFromISR(event_queue, addr(arg), nil)
 
-proc send_message*(pid: term; message: term; global: ptr GlobalContext) {.cdecl.} =
+proc send_message*(pid: term; message: term; global: ptr GlobalContext) =
   var local_process_id: cint = term_to_local_process_id(pid)
   var target: ptr Context = globalcontext_get_process(global, local_process_id)
   if LIKELY(target):
     mailbox_send(target, message)
 
-proc uart_interrupt_callback*(listener: ptr EventListener) {.cdecl.} =
+proc uart_interrupt_callback*(listener: ptr EventListener) =
   var uart_data: ptr UARTData = listener.data
   if uart_data.reader_process_pid != term_invalid_term():
     var count: cuint = uxQueueMessagesWaiting(uart_data.rxqueue)
@@ -98,7 +98,7 @@ proc uart_interrupt_callback*(listener: ptr EventListener) {.cdecl.} =
     uart_data.reader_process_pid = term_invalid_term()
     uart_data.reader_ref_ticks = 0
 
-proc uart_driver_init*(ctx: ptr Context; opts: term) {.cdecl.} =
+proc uart_driver_init*(ctx: ptr Context; opts: term) =
   var uart_name_term: term = interop_proplist_get_value(opts, NAME_ATOM)
   var uart_speed_term: term = interop_proplist_get_value_default(opts, SPEED_ATOM,
       term_from_int(115200))
@@ -197,7 +197,7 @@ proc uart_driver_init*(ctx: ptr Context; opts: term) {.cdecl.} =
                     addr(isr_handle))
   uart_enable_rx_intr(uart_num)
 
-proc uart_driver_do_read*(ctx: ptr Context; msg: term) {.cdecl.} =
+proc uart_driver_do_read*(ctx: ptr Context; msg: term) =
   var glb: ptr GlobalContext = ctx.global
   var uart_data: ptr UARTData = ctx.platform_data
   var pid: term = term_get_tuple_element(msg, 0)
@@ -243,7 +243,7 @@ proc uart_driver_do_read*(ctx: ptr Context; msg: term) {.cdecl.} =
     uart_data.reader_process_pid = pid
     uart_data.reader_ref_ticks = term_to_ref_ticks(`ref`)
 
-proc uart_driver_do_write*(ctx: ptr Context; msg: term) {.cdecl.} =
+proc uart_driver_do_write*(ctx: ptr Context; msg: term) =
   var glb: ptr GlobalContext = ctx.global
   var uart_data: ptr UARTData = ctx.platform_data
   var pid: term = term_get_tuple_element(msg, 0)
@@ -263,7 +263,7 @@ proc uart_driver_do_write*(ctx: ptr Context; msg: term) {.cdecl.} =
   term_put_tuple_element(result_tuple, 1, OK_ATOM)
   send_message(pid, result_tuple, glb)
 
-proc uart_driver_consume_mailbox*(ctx: ptr Context) {.cdecl.} =
+proc uart_driver_consume_mailbox*(ctx: ptr Context) =
   while not list_is_empty(addr(ctx.mailbox)):
     var message: ptr Message = mailbox_dequeue(ctx)
     var msg: term = message.message

@@ -26,7 +26,7 @@ const
 proc mailbox_message_memory*(msg: ptr Message): ptr term {.inline, cdecl.} =
   return addr(msg.message) + 1
 
-proc mailbox_send*(c: ptr Context; t: term) {.cdecl.} =
+proc mailbox_send*(c: ptr Context; t: term) =
   TRACE("Sending 0x%lx to pid %i\n", t, c.process_id)
   var estimated_mem_usage: culong = memory_estimate_usage(t)
   var m: ptr Message = malloc(sizeof((Message)) +
@@ -43,7 +43,7 @@ proc mailbox_send*(c: ptr Context; t: term) {.cdecl.} =
     c.jump_to_on_restore = nil
   scheduler_make_ready(c.global, c)
 
-proc mailbox_receive*(c: ptr Context): term {.cdecl.} =
+proc mailbox_receive*(c: ptr Context): term =
   var m: ptr Message = GET_LIST_ENTRY(list_first(addr(c.mailbox)), Message,
                                  mailbox_list_head)
   list_remove(addr(m.mailbox_list_head))
@@ -58,14 +58,14 @@ proc mailbox_receive*(c: ptr Context): term {.cdecl.} =
   TRACE("Pid %i is receiving 0x%lx.\n", c.process_id, rt)
   return rt
 
-proc mailbox_dequeue*(c: ptr Context): ptr Message {.cdecl.} =
+proc mailbox_dequeue*(c: ptr Context): ptr Message =
   var m: ptr Message = GET_LIST_ENTRY(list_first(addr(c.mailbox)), Message,
                                  mailbox_list_head)
   list_remove(addr(m.mailbox_list_head))
   TRACE("Pid %i is dequeueing 0x%lx.\n", c.process_id, m.message)
   return m
 
-proc mailbox_peek*(c: ptr Context): term {.cdecl.} =
+proc mailbox_peek*(c: ptr Context): term =
   var m: ptr Message = GET_LIST_ENTRY(list_first(addr(c.mailbox)), Message,
                                  mailbox_list_head)
   TRACE("Pid %i is peeking 0x%lx.\n", c.process_id, m.message)
@@ -78,7 +78,7 @@ proc mailbox_peek*(c: ptr Context): term {.cdecl.} =
   var rt: term = memory_copy_term_tree(addr(c.heap_ptr), m.message)
   return rt
 
-proc mailbox_remove*(c: ptr Context) {.cdecl.} =
+proc mailbox_remove*(c: ptr Context) =
   if UNLIKELY(list_is_empty(addr(c.mailbox))):
     TRACE("Pid %i tried to remove a message from an empty mailbox.\n",
           c.process_id)

@@ -54,53 +54,53 @@ proc bif_registry_get_handler*(module: AtomString; function: AtomString; arity: 
     return nil
   return nameAndPtr.function
 
-proc bif_erlang_self_0*(ctx: ptr Context): term {.cdecl.} =
+proc bif_erlang_self_0*(ctx: ptr Context): term =
   return term_from_local_process_id(ctx.process_id)
 
-proc bif_erlang_byte_size_1*(ctx: ptr Context; live: cint; arg1: term): term {.cdecl.} =
+proc bif_erlang_byte_size_1*(ctx: ptr Context; live: cint; arg1: term): term =
   UNUSED(live)
   VALIDATE_VALUE(arg1, term_is_binary)
   return term_from_int32(term_binary_size(arg1))
 
-proc bif_erlang_bit_size_1*(ctx: ptr Context; live: cint; arg1: term): term {.cdecl.} =
+proc bif_erlang_bit_size_1*(ctx: ptr Context; live: cint; arg1: term): term =
   UNUSED(live)
   VALIDATE_VALUE(arg1, term_is_binary)
   return term_from_int32(term_binary_size(arg1) * 8)
 
-proc bif_erlang_is_atom_1*(ctx: ptr Context; arg1: term): term {.cdecl.} =
+proc bif_erlang_is_atom_1*(ctx: ptr Context; arg1: term): term =
   UNUSED(ctx)
   return if term_is_atom(arg1): TRUE_ATOM else: FALSE_ATOM
 
-proc bif_erlang_is_binary_1*(ctx: ptr Context; arg1: term): term {.cdecl.} =
+proc bif_erlang_is_binary_1*(ctx: ptr Context; arg1: term): term =
   UNUSED(ctx)
   return if term_is_binary(arg1): TRUE_ATOM else: FALSE_ATOM
 
-proc bif_erlang_is_integer_1*(ctx: ptr Context; arg1: term): term {.cdecl.} =
+proc bif_erlang_is_integer_1*(ctx: ptr Context; arg1: term): term =
   UNUSED(ctx)
   return if term_is_any_integer(arg1): TRUE_ATOM else: FALSE_ATOM
 
-proc bif_erlang_is_list_1*(ctx: ptr Context; arg1: term): term {.cdecl.} =
+proc bif_erlang_is_list_1*(ctx: ptr Context; arg1: term): term =
   UNUSED(ctx)
   return if term_is_list(arg1): TRUE_ATOM else: FALSE_ATOM
 
-proc bif_erlang_is_number_1*(ctx: ptr Context; arg1: term): term {.cdecl.} =
+proc bif_erlang_is_number_1*(ctx: ptr Context; arg1: term): term =
   UNUSED(ctx)
   ## TODO: change to term_is_number
   return if term_is_any_integer(arg1): TRUE_ATOM else: FALSE_ATOM
 
-proc bif_erlang_is_pid_1*(ctx: ptr Context; arg1: term): term {.cdecl.} =
+proc bif_erlang_is_pid_1*(ctx: ptr Context; arg1: term): term =
   UNUSED(ctx)
   return if term_is_pid(arg1): TRUE_ATOM else: FALSE_ATOM
 
-proc bif_erlang_is_reference_1*(ctx: ptr Context; arg1: term): term {.cdecl.} =
+proc bif_erlang_is_reference_1*(ctx: ptr Context; arg1: term): term =
   UNUSED(ctx)
   return if term_is_reference(arg1): TRUE_ATOM else: FALSE_ATOM
 
-proc bif_erlang_is_tuple_1*(ctx: ptr Context; arg1: term): term {.cdecl.} =
+proc bif_erlang_is_tuple_1*(ctx: ptr Context; arg1: term): term =
   UNUSED(ctx)
   return if term_is_tuple(arg1): TRUE_ATOM else: FALSE_ATOM
 
-proc bif_erlang_length_1*(ctx: ptr Context; live: cint; arg1: term): term {.cdecl.} =
+proc bif_erlang_length_1*(ctx: ptr Context; live: cint; arg1: term): term =
   UNUSED(live)
   VALIDATE_VALUE(arg1, term_is_list)
   var proper: cint
@@ -109,15 +109,15 @@ proc bif_erlang_length_1*(ctx: ptr Context; live: cint; arg1: term): term {.cdec
     RAISE_ERROR(BADARG_ATOM)
   return term_from_int(len)
 
-proc bif_erlang_hd_1*(ctx: ptr Context; arg1: term): term {.cdecl.} =
+proc bif_erlang_hd_1*(ctx: ptr Context; arg1: term): term =
   VALIDATE_VALUE(arg1, term_is_nonempty_list)
   return term_get_list_head(arg1)
 
-proc bif_erlang_tl_1*(ctx: ptr Context; arg1: term): term {.cdecl.} =
+proc bif_erlang_tl_1*(ctx: ptr Context; arg1: term): term =
   VALIDATE_VALUE(arg1, term_is_nonempty_list)
   return term_get_list_tail(arg1)
 
-proc bif_erlang_element_2*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_element_2*(ctx: ptr Context; arg1: term; arg2: term): term =
   VALIDATE_VALUE(arg1, term_is_integer)
   VALIDATE_VALUE(arg2, term_is_tuple)
   ##  indexes are 1 based
@@ -127,7 +127,7 @@ proc bif_erlang_element_2*(ctx: ptr Context; arg1: term; arg2: term): term {.cde
   else:
     RAISE_ERROR(BADARG_ATOM)
 
-proc bif_erlang_tuple_size_1*(ctx: ptr Context; arg1: term): term {.cdecl.} =
+proc bif_erlang_tuple_size_1*(ctx: ptr Context; arg1: term): term =
   VALIDATE_VALUE(arg1, term_is_tuple)
   return term_from_int32(term_get_tuple_arity(arg1))
 
@@ -158,12 +158,12 @@ when BOXED_TERMS_REQUIRED_FOR_INT64 > 1:
     else:
       return term_from_int(value)
 
-proc add_overflow_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} =
+proc add_overflow_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
   var val1: avm_int_t = term_to_int(arg1)
   var val2: avm_int_t = term_to_int(arg2)
   return make_boxed_int(ctx, val1 + val2)
 
-proc add_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} =
+proc add_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
   ##  TODO: FIXME
   when not defined(AVM_NO_FP):
     var use_float: cint = 0
@@ -171,20 +171,20 @@ proc add_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.}
   if term_is_boxed_integer(arg1):
     size = term_boxed_size(arg1)
   when not defined(AVM_NO_FP):
-    proc `if`(arg1: term_is_float): `else` {.cdecl.} =
+    proc `if`(arg1: term_is_float): `else` =
       use_float = 1
 
-  proc `if`(term_is_integer: `not`): `else` {.cdecl.} =
+  proc `if`(term_is_integer: `not`): `else` =
     TRACE("error: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2)
     RAISE_ERROR(BADARITH_ATOM)
 
   if term_is_boxed_integer(arg2):
     size = size or term_boxed_size(arg2)
   when not defined(AVM_NO_FP):
-    proc `if`(arg2: term_is_float): `else` {.cdecl.} =
+    proc `if`(arg2: term_is_float): `else` =
       use_float = 1
 
-  proc `if`(term_is_integer: `not`): `else` {.cdecl.} =
+  proc `if`(term_is_integer: `not`): `else` =
     TRACE("error: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2)
     RAISE_ERROR(BADARITH_ATOM)
 
@@ -233,7 +233,7 @@ proc add_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.}
   else:
     RAISE_ERROR(OVERFLOW_ATOM)
 
-proc bif_erlang_add_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_add_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =
   UNUSED(live)
   if LIKELY(term_is_integer(arg1) and term_is_integer(arg2)):
     ## TODO: use long integer instead, and term_to_longint
@@ -246,32 +246,32 @@ proc bif_erlang_add_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): te
   else:
     return add_boxed_helper(ctx, arg1, arg2)
 
-proc sub_overflow_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} =
+proc sub_overflow_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
   var val1: avm_int_t = term_to_int(arg1)
   var val2: avm_int_t = term_to_int(arg2)
   return make_boxed_int(ctx, val1 - val2)
 
-proc sub_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} =
+proc sub_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
   when not defined(AVM_NO_FP):
     var use_float: cint = 0
   var size: cint = 0
   if term_is_boxed_integer(arg1):
     size = term_boxed_size(arg1)
   when not defined(AVM_NO_FP):
-    proc `if`(arg1: term_is_float): `else` {.cdecl.} =
+    proc `if`(arg1: term_is_float): `else` =
       use_float = 1
 
-  proc `if`(term_is_integer: `not`): `else` {.cdecl.} =
+  proc `if`(term_is_integer: `not`): `else` =
     TRACE("error: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2)
     RAISE_ERROR(BADARITH_ATOM)
 
   if term_is_boxed_integer(arg2):
     size = size or term_boxed_size(arg2)
   when not defined(AVM_NO_FP):
-    proc `if`(arg2: term_is_float): `else` {.cdecl.} =
+    proc `if`(arg2: term_is_float): `else` =
       use_float = 1
 
-  proc `if`(term_is_integer: `not`): `else` {.cdecl.} =
+  proc `if`(term_is_integer: `not`): `else` =
     TRACE("error: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2)
     RAISE_ERROR(BADARITH_ATOM)
 
@@ -319,7 +319,7 @@ proc sub_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.}
   else:
     RAISE_ERROR(OVERFLOW_ATOM)
 
-proc bif_erlang_sub_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_sub_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =
   UNUSED(live)
   if LIKELY(term_is_integer(arg1) and term_is_integer(arg2)):
     ## TODO: use long integer instead, and term_to_longint
@@ -332,7 +332,7 @@ proc bif_erlang_sub_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): te
   else:
     return sub_boxed_helper(ctx, arg1, arg2)
 
-proc mul_overflow_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} =
+proc mul_overflow_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
   var val1: avm_int_t = term_to_int(arg1)
   var val2: avm_int_t = term_to_int(arg2)
   var res: avm_int_t
@@ -343,27 +343,27 @@ proc mul_overflow_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdec
   else:
     RAISE_ERROR(OVERFLOW_ATOM)
 
-proc mul_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} =
+proc mul_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
   when not defined(AVM_NO_FP):
     var use_float: cint = 0
   var size: cint = 0
   if term_is_boxed_integer(arg1):
     size = term_boxed_size(arg1)
   when not defined(AVM_NO_FP):
-    proc `if`(arg1: term_is_float): `else` {.cdecl.} =
+    proc `if`(arg1: term_is_float): `else` =
       use_float = 1
 
-  proc `if`(term_is_integer: `not`): `else` {.cdecl.} =
+  proc `if`(term_is_integer: `not`): `else` =
     TRACE("error: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2)
     RAISE_ERROR(BADARITH_ATOM)
 
   if term_is_boxed_integer(arg2):
     size = size or term_boxed_size(arg2)
   when not defined(AVM_NO_FP):
-    proc `if`(arg2: term_is_float): `else` {.cdecl.} =
+    proc `if`(arg2: term_is_float): `else` =
       use_float = 1
 
-  proc `if`(term_is_integer: `not`): `else` {.cdecl.} =
+  proc `if`(term_is_integer: `not`): `else` =
     TRACE("error: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2)
     RAISE_ERROR(BADARITH_ATOM)
 
@@ -412,7 +412,7 @@ proc mul_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.}
   else:
     RAISE_ERROR(OVERFLOW_ATOM)
 
-proc bif_erlang_mul_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_mul_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =
   UNUSED(live)
   if LIKELY(term_is_integer(arg1) and term_is_integer(arg2)):
     var res: avm_int_t
@@ -425,7 +425,7 @@ proc bif_erlang_mul_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): te
   else:
     return mul_boxed_helper(ctx, arg1, arg2)
 
-proc div_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} =
+proc div_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
   var size: cint = 0
   if term_is_boxed_integer(arg1):
     size = term_boxed_size(arg1)
@@ -473,7 +473,7 @@ proc div_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.}
   else:
     RAISE_ERROR(OVERFLOW_ATOM)
 
-proc bif_erlang_div_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_div_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =
   UNUSED(live)
   if LIKELY(term_is_integer(arg1) and term_is_integer(arg2)):
     var operand_b: avm_int_t = term_to_int(arg2)
@@ -488,7 +488,7 @@ proc bif_erlang_div_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): te
   else:
     return div_boxed_helper(ctx, arg1, arg2)
 
-proc neg_boxed_helper*(ctx: ptr Context; arg1: term): term {.cdecl.} =
+proc neg_boxed_helper*(ctx: ptr Context; arg1: term): term =
   when not defined(AVM_NO_FP):
     if term_is_float(arg1):
       var farg1: avm_float_t = term_conv_to_float(arg1)
@@ -534,7 +534,7 @@ proc neg_boxed_helper*(ctx: ptr Context; arg1: term): term {.cdecl.} =
     TRACE("error: arg1: 0x%lx\n", arg1)
     RAISE_ERROR(BADARITH_ATOM)
 
-proc bif_erlang_neg_1*(ctx: ptr Context; live: cint; arg1: term): term {.cdecl.} =
+proc bif_erlang_neg_1*(ctx: ptr Context; live: cint; arg1: term): term =
   UNUSED(live)
   if LIKELY(term_is_integer(arg1)):
     var int_val: avm_int_t = term_to_int(arg1)
@@ -545,7 +545,7 @@ proc bif_erlang_neg_1*(ctx: ptr Context; live: cint; arg1: term): term {.cdecl.}
   else:
     return neg_boxed_helper(ctx, arg1)
 
-proc abs_boxed_helper*(ctx: ptr Context; arg1: term): term {.cdecl.} =
+proc abs_boxed_helper*(ctx: ptr Context; arg1: term): term =
   when not defined(AVM_NO_FP):
     if term_is_float(arg1):
       var farg1: avm_float_t = term_conv_to_float(arg1)
@@ -597,7 +597,7 @@ proc abs_boxed_helper*(ctx: ptr Context; arg1: term): term {.cdecl.} =
     TRACE("error: arg1: 0x%lx\n", arg1)
     RAISE_ERROR(BADARG_ATOM)
 
-proc bif_erlang_abs_1*(ctx: ptr Context; live: cint; arg1: term): term {.cdecl.} =
+proc bif_erlang_abs_1*(ctx: ptr Context; live: cint; arg1: term): term =
   UNUSED(live)
   if LIKELY(term_is_integer(arg1)):
     var int_val: avm_int_t = term_to_int(arg1)
@@ -611,7 +611,7 @@ proc bif_erlang_abs_1*(ctx: ptr Context; live: cint; arg1: term): term {.cdecl.}
   else:
     return abs_boxed_helper(ctx, arg1)
 
-proc rem_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} =
+proc rem_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
   var size: cint = 0
   if term_is_boxed_integer(arg1):
     size = term_boxed_size(arg1)
@@ -648,7 +648,7 @@ proc rem_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.}
   else:
     RAISE_ERROR(OVERFLOW_ATOM)
 
-proc bif_erlang_rem_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_rem_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =
   UNUSED(live)
   if LIKELY(term_is_integer(arg1) and term_is_integer(arg2)):
     var operand_b: avm_int_t = term_to_int(arg2)
@@ -659,7 +659,7 @@ proc bif_erlang_rem_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): te
   else:
     return rem_boxed_helper(ctx, arg1, arg2)
 
-proc bif_erlang_ceil_1*(ctx: ptr Context; live: cint; arg1: term): term {.cdecl.} =
+proc bif_erlang_ceil_1*(ctx: ptr Context; live: cint; arg1: term): term =
   UNUSED(live)
   when not defined(AVM_NO_FP):
     if term_is_float(arg1):
@@ -680,7 +680,7 @@ proc bif_erlang_ceil_1*(ctx: ptr Context; live: cint; arg1: term): term {.cdecl.
   else:
     RAISE_ERROR(BADARG_ATOM)
 
-proc bif_erlang_floor_1*(ctx: ptr Context; live: cint; arg1: term): term {.cdecl.} =
+proc bif_erlang_floor_1*(ctx: ptr Context; live: cint; arg1: term): term =
   UNUSED(live)
   when not defined(AVM_NO_FP):
     if term_is_float(arg1):
@@ -701,7 +701,7 @@ proc bif_erlang_floor_1*(ctx: ptr Context; live: cint; arg1: term): term {.cdecl
   else:
     RAISE_ERROR(BADARG_ATOM)
 
-proc bif_erlang_round_1*(ctx: ptr Context; live: cint; arg1: term): term {.cdecl.} =
+proc bif_erlang_round_1*(ctx: ptr Context; live: cint; arg1: term): term =
   UNUSED(live)
   when not defined(AVM_NO_FP):
     if term_is_float(arg1):
@@ -722,7 +722,7 @@ proc bif_erlang_round_1*(ctx: ptr Context; live: cint; arg1: term): term {.cdecl
   else:
     RAISE_ERROR(BADARG_ATOM)
 
-proc bif_erlang_trunc_1*(ctx: ptr Context; live: cint; arg1: term): term {.cdecl.} =
+proc bif_erlang_trunc_1*(ctx: ptr Context; live: cint; arg1: term): term =
   UNUSED(live)
   when not defined(AVM_NO_FP):
     if term_is_float(arg1):
@@ -762,7 +762,7 @@ proc bitwise_helper*(ctx: ptr Context; live: cint; arg1: term; arg2: term; op: b
 proc bor*(a: int64_t; b: int64_t): int64_t {.inline, cdecl.} =
   return a or b
 
-proc bif_erlang_bor_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_bor_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =
   if LIKELY(term_is_integer(arg1) and term_is_integer(arg2)):
     return arg1 or arg2
   else:
@@ -771,7 +771,7 @@ proc bif_erlang_bor_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): te
 proc band*(a: int64_t; b: int64_t): int64_t {.inline, cdecl.} =
   return a and b
 
-proc bif_erlang_band_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_band_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =
   if LIKELY(term_is_integer(arg1) and term_is_integer(arg2)):
     return arg1 and arg2
   else:
@@ -780,34 +780,34 @@ proc bif_erlang_band_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): t
 proc bxor*(a: int64_t; b: int64_t): int64_t {.inline, cdecl.} =
   return a xor b
 
-proc bif_erlang_bxor_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_bxor_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =
   if LIKELY(term_is_integer(arg1) and term_is_integer(arg2)):
     return (arg1 xor arg2) or TERM_INTEGER_TAG
   else:
     return bitwise_helper(ctx, live, arg1, arg2, bxor)
 
-proc bif_erlang_bsl_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_bsl_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =
   UNUSED(live)
   if LIKELY(term_is_integer(arg1) and term_is_integer(arg2)):
     return term_from_int32(term_to_int32(arg1) shl term_to_int32(arg2))
   else:
     RAISE_ERROR(BADARITH_ATOM)
 
-proc bif_erlang_bsr_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_bsr_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =
   UNUSED(live)
   if LIKELY(term_is_integer(arg1) and term_is_integer(arg2)):
     return term_from_int32(term_to_int32(arg1) shr term_to_int32(arg2))
   else:
     RAISE_ERROR(BADARITH_ATOM)
 
-proc bif_erlang_bnot_1*(ctx: ptr Context; live: cint; arg1: term): term {.cdecl.} =
+proc bif_erlang_bnot_1*(ctx: ptr Context; live: cint; arg1: term): term =
   UNUSED(live)
   if LIKELY(term_is_integer(arg1)):
     return not arg1 or TERM_INTEGER_TAG
   else:
     RAISE_ERROR(BADARITH_ATOM)
 
-proc bif_erlang_not_1*(ctx: ptr Context; arg1: term): term {.cdecl.} =
+proc bif_erlang_not_1*(ctx: ptr Context; arg1: term): term =
   if arg1 == TRUE_ATOM:
     return FALSE_ATOM
   elif arg1 == FALSE_ATOM:
@@ -815,7 +815,7 @@ proc bif_erlang_not_1*(ctx: ptr Context; arg1: term): term {.cdecl.} =
   else:
     RAISE_ERROR(BADARG_ATOM)
 
-proc bif_erlang_and_2*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_and_2*(ctx: ptr Context; arg1: term; arg2: term): term =
   if (arg1 == FALSE_ATOM) and (arg2 == FALSE_ATOM):
     return FALSE_ATOM
   elif (arg1 == FALSE_ATOM) and (arg2 == TRUE_ATOM):
@@ -827,7 +827,7 @@ proc bif_erlang_and_2*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.}
   else:
     RAISE_ERROR(BADARG_ATOM)
 
-proc bif_erlang_or_2*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_or_2*(ctx: ptr Context; arg1: term; arg2: term): term =
   if (arg1 == FALSE_ATOM) and (arg2 == FALSE_ATOM):
     return FALSE_ATOM
   elif (arg1 == FALSE_ATOM) and (arg2 == TRUE_ATOM):
@@ -839,7 +839,7 @@ proc bif_erlang_or_2*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} 
   else:
     RAISE_ERROR(BADARG_ATOM)
 
-proc bif_erlang_xor_2*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_xor_2*(ctx: ptr Context; arg1: term; arg2: term): term =
   if (arg1 == FALSE_ATOM) and (arg2 == FALSE_ATOM):
     return FALSE_ATOM
   elif (arg1 == FALSE_ATOM) and (arg2 == TRUE_ATOM):
@@ -851,14 +851,14 @@ proc bif_erlang_xor_2*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.}
   else:
     RAISE_ERROR(BADARG_ATOM)
 
-proc bif_erlang_equal_to_2*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_equal_to_2*(ctx: ptr Context; arg1: term; arg2: term): term =
   UNUSED(ctx)
   if term_equals(arg1, arg2, ctx):
     return TRUE_ATOM
   else:
     return FALSE_ATOM
 
-proc bif_erlang_not_equal_to_2*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_not_equal_to_2*(ctx: ptr Context; arg1: term; arg2: term): term =
   UNUSED(ctx)
   ## TODO: fix this implementation
   ## it should compare any kind of type, and 5.0 != 5 is false
@@ -885,14 +885,14 @@ proc bif_erlang_exactly_not_equal_to_2*(ctx: ptr Context; arg1: term; arg2: term
   else:
     return FALSE_ATOM
 
-proc bif_erlang_greater_than_2*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_greater_than_2*(ctx: ptr Context; arg1: term; arg2: term): term =
   UNUSED(ctx)
   if term_compare(arg1, arg2, ctx) > 0:
     return TRUE_ATOM
   else:
     return FALSE_ATOM
 
-proc bif_erlang_less_than_2*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} =
+proc bif_erlang_less_than_2*(ctx: ptr Context; arg1: term; arg2: term): term =
   UNUSED(ctx)
   if term_compare(arg1, arg2, ctx) < 0:
     return TRUE_ATOM

@@ -38,7 +38,7 @@ proc `==`*(a, b: AtomString): bool =
   else:
     return system.`==`(a, b)
 
-proc atom_write_mfa*(module: AtomString; function: AtomString; arity: uint): string {.cdecl.} =
+proc atom_write_mfa*(module: AtomString; function: AtomString; arity: uint): string =
   ## @brief Write module:function/arity to the supplied buffer.
   ##
   ## @details Write module:function/arity to the supplied buffer.  This function will abort

@@ -26,14 +26,14 @@ type
     size*: uint32_t
 
 
-proc iff_align*(size: uint32_t): uint32_t {.cdecl.} =
+proc iff_align*(size: uint32_t): uint32_t =
   return ((size + 4 - 1) shr 2) shl 2
 
-proc iff_is_valid_beam*(beam_data: pointer): cint {.cdecl.} =
+proc iff_is_valid_beam*(beam_data: pointer): cint =
   return memcmp(beam_data, "FOR1", 4) == 0
 
 proc scan_iff*(iff_binary: pointer; buf_size: cint; offsets: ptr culong;
-              sizes: ptr culong) {.cdecl.} =
+              sizes: ptr culong) =
   var data: ptr uint8_t = iff_binary
   memset(offsets, 0, sizeof(cast[culong](MAX_OFFS[])))
   memset(sizes, 0, sizeof(cast[culong](MAX_SIZES[])))

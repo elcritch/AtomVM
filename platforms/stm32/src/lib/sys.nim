@@ -28,12 +28,12 @@ var system_millis*: uint32_t
 
 ##  Called when systick fires
 
-proc sys_tick_handler*() {.cdecl.} =
+proc sys_tick_handler*() =
   inc(system_millis)
 
 ##  Sleep for delay milliseconds
 
-proc msleep*(delay: uint32_t) {.cdecl.} =
+proc msleep*(delay: uint32_t) =
   ##  TODO: use a smarter sleep instead of busy waiting
   var wake: uint32_t = system_millis + delay
   while wake > system_millis:
@@ -48,27 +48,27 @@ proc timespec_diff_to_ms*(timespec1: ptr timespec; timespec2: ptr timespec): int
   return (timespec1.tv_sec - timespec2.tv_sec) * 1000 +
       (timespec1.tv_nsec - timespec2.tv_nsec) div 1000000
 
-proc sys_init_platform*(glb: ptr GlobalContext) {.cdecl.} =
+proc sys_init_platform*(glb: ptr GlobalContext) =
   UNUSED(glb)
 
-proc sys_consume_pending_events*(glb: ptr GlobalContext) {.cdecl.} =
+proc sys_consume_pending_events*(glb: ptr GlobalContext) =
   UNUSED(glb)
 
-proc sys_set_timestamp_from_relative_to_abs*(t: ptr timespec; millis: int32_t) {.cdecl.} =
+proc sys_set_timestamp_from_relative_to_abs*(t: ptr timespec; millis: int32_t) =
   sys_clock_gettime(t)
   inc(t.tv_sec, millis div 1000)
   inc(t.tv_nsec, (millis mod 1000) * 1000000)
 
-proc sys_time*(t: ptr timespec) {.cdecl.} =
+proc sys_time*(t: ptr timespec) =
   sys_clock_gettime(t)
 
-proc sys_millis*(): uint32_t {.cdecl.} =
+proc sys_millis*(): uint32_t =
   return system_millis
 
-proc sys_start_millis_timer*() {.cdecl.} =
+proc sys_start_millis_timer*() =
   discard
 
-proc sys_stop_millis_timer*() {.cdecl.} =
+proc sys_stop_millis_timer*() =
   discard
 
 proc sys_load_module*(global: ptr GlobalContext; module_name: cstring): ptr Module {.
@@ -95,8 +95,8 @@ proc sys_create_port*(glb: ptr GlobalContext; driver_name: cstring; opts: term):
     return nil
   return new_ctx
 
-proc sys_get_info*(ctx: ptr Context; key: term): term {.cdecl.} =
+proc sys_get_info*(ctx: ptr Context; key: term): term =
   return UNDEFINED_ATOM
 
-proc sys_sleep*(glb: ptr GlobalContext) {.cdecl.} =
+proc sys_sleep*(glb: ptr GlobalContext) =
   UNUSED(glb)

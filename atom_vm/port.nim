@@ -20,13 +20,13 @@
 import
   port, context, globalcontext, mailbox, defaultatoms
 
-proc port_create_tuple2*(ctx: ptr Context; a: term; b: term): term {.cdecl.} =
+proc port_create_tuple2*(ctx: ptr Context; a: term; b: term): term =
   var terms: array[2, term]
   terms[0] = a
   terms[1] = b
   return port_create_tuple_n(ctx, 2, terms)
 
-proc port_create_tuple3*(ctx: ptr Context; a: term; b: term; c: term): term {.cdecl.} =
+proc port_create_tuple3*(ctx: ptr Context; a: term; b: term; c: term): term =
   var terms: array[3, term]
   terms[0] = a
   terms[1] = b
@@ -42,7 +42,7 @@ proc port_create_tuple_n*(ctx: ptr Context; num_terms: csize; terms: ptr term): 
     inc(i)
   return ret
 
-proc port_create_error_tuple*(ctx: ptr Context; reason: term): term {.cdecl.} =
+proc port_create_error_tuple*(ctx: ptr Context; reason: term): term =
   return port_create_tuple2(ctx, ERROR_ATOM, reason)
 
 proc port_create_sys_error_tuple*(ctx: ptr Context; syscall: term; errno: cint): term {.
@@ -50,19 +50,19 @@ proc port_create_sys_error_tuple*(ctx: ptr Context; syscall: term; errno: cint):
   var reason: term = port_create_tuple2(ctx, syscall, term_from_int32(errno))
   return port_create_error_tuple(ctx, reason)
 
-proc port_create_ok_tuple*(ctx: ptr Context; t: term): term {.cdecl.} =
+proc port_create_ok_tuple*(ctx: ptr Context; t: term): term =
   return port_create_tuple2(ctx, OK_ATOM, t)
 
-proc port_send_reply*(ctx: ptr Context; pid: term; `ref`: term; reply: term) {.cdecl.} =
+proc port_send_reply*(ctx: ptr Context; pid: term; `ref`: term; reply: term) =
   var msg: term = port_create_tuple2(ctx, `ref`, reply)
   port_send_message(ctx, pid, msg)
 
-proc port_send_message*(ctx: ptr Context; pid: term; msg: term) {.cdecl.} =
+proc port_send_message*(ctx: ptr Context; pid: term; msg: term) =
   var local_process_id: cint = term_to_local_process_id(pid)
   var target: ptr Context = globalcontext_get_process(ctx.global, local_process_id)
   mailbox_send(target, msg)
 
-proc port_ensure_available*(ctx: ptr Context; size: csize) {.cdecl.} =
+proc port_ensure_available*(ctx: ptr Context; size: csize) =
   if context_avail_free_memory(ctx) < size:
     case memory_ensure_free(ctx, size)
     of MEMORY_GC_OK:
@@ -77,7 +77,7 @@ proc port_ensure_available*(ctx: ptr Context; size: csize) {.cdecl.} =
               __FILE__, __LINE__)
       abort()
 
-proc port_is_standard_port_command*(t: term): cint {.cdecl.} =
+proc port_is_standard_port_command*(t: term): cint =
   if not term_is_tuple(t):
     return 0
   elif term_get_tuple_arity(t) != 3:

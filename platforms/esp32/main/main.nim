@@ -23,7 +23,7 @@ import
   esp32_sys, nvs_flash
 
 proc avm_partition*(size: ptr cint): pointer {.cdecl.}
-proc app_main*() {.cdecl.} =
+proc app_main*() =
   nvs_flash_init()
   tcpip_adapter_init()
   esp32_sys_queue_init()
@@ -68,7 +68,7 @@ proc app_main*() {.cdecl.} =
     ##  ..
     vTaskDelay(5000 div portTICK_PERIOD_MS)
 
-proc avm_partition*(size: ptr cint): pointer {.cdecl.} =
+proc avm_partition*(size: ptr cint): pointer =
   var partition: ptr esp_partition_t = esp_partition_find_first(
       ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "main.avm")
   if not partition:

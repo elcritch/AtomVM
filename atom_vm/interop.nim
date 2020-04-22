@@ -20,7 +20,7 @@
 import
   interop, tempstack
 
-proc interop_term_to_string*(t: term; ok: ptr cint): cstring {.cdecl.} =
+proc interop_term_to_string*(t: term; ok: ptr cint): cstring =
   if term_is_list(t):
     return interop_list_to_string(t, ok)
   elif term_is_binary(t):
@@ -32,7 +32,7 @@ proc interop_term_to_string*(t: term; ok: ptr cint): cstring {.cdecl.} =
     ok[] = 0
     return nil
 
-proc interop_binary_to_string*(binary: term): cstring {.cdecl.} =
+proc interop_binary_to_string*(binary: term): cstring =
   var len: cint = term_binary_size(binary)
   var str: cstring = malloc(len + 1)
   if IS_NULL_PTR(str):
@@ -41,7 +41,7 @@ proc interop_binary_to_string*(binary: term): cstring {.cdecl.} =
   str[len] = 0
   return str
 
-proc interop_list_to_string*(list: term; ok: ptr cint): cstring {.cdecl.} =
+proc interop_list_to_string*(list: term; ok: ptr cint): cstring =
   var proper: cint
   var len: cint = term_list_length(list, addr(proper))
   if UNLIKELY(not proper):
@@ -70,7 +70,7 @@ proc interop_list_to_string*(list: term; ok: ptr cint): cstring {.cdecl.} =
   ok[] = 1
   return str
 
-proc interop_proplist_get_value*(list: term; key: term): term {.cdecl.} =
+proc interop_proplist_get_value*(list: term; key: term): term =
   return interop_proplist_get_value_default(list, key, term_nil())
 
 proc interop_proplist_get_value_default*(list: term; key: term; default_value: term): term {.
@@ -86,7 +86,7 @@ proc interop_proplist_get_value_default*(list: term; key: term; default_value: t
     t = t_ptr[]
   return default_value
 
-proc interop_iolist_size*(t: term; ok: ptr cint): cint {.cdecl.} =
+proc interop_iolist_size*(t: term; ok: ptr cint): cint =
   if term_is_binary(t):
     ok[] = 1
     return term_binary_size(t)
@@ -117,7 +117,7 @@ proc interop_iolist_size*(t: term; ok: ptr cint): cint {.cdecl.} =
   ok[] = 1
   return acc
 
-proc interop_write_iolist*(t: term; p: cstring): cint {.cdecl.} =
+proc interop_write_iolist*(t: term; p: cstring): cint =
   if term_is_binary(t):
     var len: cint = term_binary_size(t)
     memcpy(p, term_binary_data(t), len)

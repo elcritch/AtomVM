@@ -47,7 +47,7 @@ proc active_recv_callback*(listener: ptr EventListener) {.cdecl.}
 proc passive_recv_callback*(listener: ptr EventListener) {.cdecl.}
 proc active_recvfrom_callback*(listener: ptr EventListener) {.cdecl.}
 proc passive_recvfrom_callback*(listener: ptr EventListener) {.cdecl.}
-proc socket_tuple_to_addr*(addr_tuple: term): uint32_t {.cdecl.} =
+proc socket_tuple_to_addr*(addr_tuple: term): uint32_t =
   return ((term_to_int32(term_get_tuple_element(addr_tuple, 0)) and 0x000000FF) shl
       24) or
       ((term_to_int32(term_get_tuple_element(addr_tuple, 1)) and 0x000000FF) shl
@@ -56,7 +56,7 @@ proc socket_tuple_to_addr*(addr_tuple: term): uint32_t {.cdecl.} =
       8) or
       (term_to_int32(term_get_tuple_element(addr_tuple, 3)) and 0x000000FF)
 
-proc socket_tuple_from_addr*(ctx: ptr Context; `addr`: uint32_t): term {.cdecl.} =
+proc socket_tuple_from_addr*(ctx: ptr Context; `addr`: uint32_t): term =
   var terms: array[4, term]
   terms[0] = term_from_int32((`addr` shr 24) and 0x000000FF)
   terms[1] = term_from_int32((`addr` shr 16) and 0x000000FF)
@@ -65,13 +65,13 @@ proc socket_tuple_from_addr*(ctx: ptr Context; `addr`: uint32_t): term {.cdecl.}
   return port_create_tuple_n(ctx, 4, terms)
 
 proc socket_create_packet_term*(ctx: ptr Context; buf: cstring; len: ssize_t;
-                               is_binary: cint): term {.cdecl.} =
+                               is_binary: cint): term =
   if is_binary:
     return term_from_literal_binary(cast[pointer](buf), len, ctx)
   else:
     return term_from_string(cast[ptr uint8_t](buf), len, ctx)
 
-proc socket_driver_create_data*(): pointer {.cdecl.} =
+proc socket_driver_create_data*(): pointer =
   var data: ptr SocketDriverData = calloc(1, sizeof(SocketDriverData))
   data.sockfd = -1
   data.proto = term_invalid_term()
@@ -83,10 +83,10 @@ proc socket_driver_create_data*(): pointer {.cdecl.} =
   data.active_listener = nil
   return cast[pointer](data)
 
-proc socket_driver_delete_data*(data: pointer) {.cdecl.} =
+proc socket_driver_delete_data*(data: pointer) =
   free(data)
 
-proc do_bind*(ctx: ptr Context; address: term; port: term): term {.cdecl.} =
+proc do_bind*(ctx: ptr Context; address: term; port: term): term =
   var socket_data: ptr SocketDriverData = cast[ptr SocketDriverData](ctx.platform_data)
   var serveraddr: sockaddr_in
   UNUSED(address)
@@ -115,7 +115,7 @@ proc do_bind*(ctx: ptr Context; address: term; port: term): term {.cdecl.} =
       return OK_ATOM
 
 proc init_udp_socket*(ctx: ptr Context; socket_data: ptr SocketDriverData;
-                     params: term; active: term): term {.cdecl.} =
+                     params: term; active: term): term =
   var glb: ptr GlobalContext = ctx.global
   var platform: ptr GenericUnixPlatformData = glb.platform_data
   var sockfd: cint = socket(AF_INET, SOCK_DGRAM, 0)
@@ -148,7 +148,7 @@ proc init_udp_socket*(ctx: ptr Context; socket_data: ptr SocketDriverData;
   return ret
 
 proc do_connect*(socket_data: ptr SocketDriverData; ctx: ptr Context; address: term;
-                port: term): term {.cdecl.} =
+                port: term): term =
   ##  TODO handle IP addresses
   if not term_is_list(address):
     return port_create_error_tuple(ctx, BADARG_ATOM)
@@ -189,7 +189,7 @@ proc do_connect*(socket_data: ptr SocketDriverData; ctx: ptr Context; address: t
     return OK_ATOM
 
 proc init_client_tcp_socket*(ctx: ptr Context; socket_data: ptr SocketDriverData;
-                            params: term; active: term): term {.cdecl.} =
+                            params: term; active: term): term =
   var glb: ptr GlobalContext = ctx.global
   var platform: ptr GenericUnixPlatformData = glb.platform_data
   var sockfd: cint = socket(AF_INET, SOCK_STREAM, 0)
@@ -227,7 +227,7 @@ proc do_listen*(socket_data: ptr SocketDriverData; ctx: ptr Context; params: ter
     return OK_ATOM
 
 proc init_server_tcp_socket*(ctx: ptr Context; socket_data: ptr SocketDriverData;
-                            params: term): term {.cdecl.} =
+                            params: term): term =
   var sockfd: cint = socket(AF_INET, SOCK_STREAM, 0)
   if sockfd == -1:
     return port_create_sys_error_tuple(ctx, SOCKET_ATOM, errno)
@@ -251,7 +251,7 @@ proc init_server_tcp_socket*(ctx: ptr Context; socket_data: ptr SocketDriverData
   return ret
 
 proc init_accepting_socket*(ctx: ptr Context; socket_data: ptr SocketDriverData;
-                           fd: term; active: term): term {.cdecl.} =
+                           fd: term; active: term): term =
   var glb: ptr GlobalContext = ctx.global
   var platform: ptr GenericUnixPlatformData = glb.platform_data
   socket_data.sockfd = term_to_int(fd)
@@ -268,7 +268,7 @@ proc init_accepting_socket*(ctx: ptr Context; socket_data: ptr SocketDriverData;
     socket_data.active_listener = listener
   return OK_ATOM
 
-proc socket_driver_do_init*(ctx: ptr Context; params: term): term {.cdecl.} =
+proc socket_driver_do_init*(ctx: ptr Context; params: term): term =
   var socket_data: ptr SocketDriverData = cast[ptr SocketDriverData](ctx.platform_data)
   if not term_is_list(params):
     return port_create_error_tuple(ctx, BADARG_ATOM)
@@ -337,7 +337,7 @@ proc socket_driver_do_init*(ctx: ptr Context; params: term): term {.cdecl.} =
   else:
     return port_create_error_tuple(ctx, BADARG_ATOM)
 
-proc socket_driver_do_close*(ctx: ptr Context) {.cdecl.} =
+proc socket_driver_do_close*(ctx: ptr Context) =
   var glb: ptr GlobalContext = ctx.global
   var platform: ptr GenericUnixPlatformData = glb.platform_data
   var socket_data: ptr SocketDriverData = cast[ptr SocketDriverData](ctx.platform_data)
@@ -353,12 +353,12 @@ proc socket_driver_do_close*(ctx: ptr Context) {.cdecl.} =
 ##  INET API
 ##
 
-proc socket_driver_get_port*(ctx: ptr Context): term {.cdecl.} =
+proc socket_driver_get_port*(ctx: ptr Context): term =
   var socket_data: ptr SocketDriverData = cast[ptr SocketDriverData](ctx.platform_data)
   port_ensure_available(ctx, 7)
   return port_create_ok_tuple(ctx, term_from_int(socket_data.port))
 
-proc socket_driver_sockname*(ctx: ptr Context): term {.cdecl.} =
+proc socket_driver_sockname*(ctx: ptr Context): term =
   var socket_data: ptr SocketDriverData = cast[ptr SocketDriverData](ctx.platform_data)
   var `addr`: sockaddr_in
   var addrlen: socklen_t = sizeof((`addr`))
@@ -373,7 +373,7 @@ proc socket_driver_sockname*(ctx: ptr Context): term {.cdecl.} =
     var port_term: term = term_from_int(ntohs(`addr`.sin_port))
     return port_create_tuple2(ctx, addr_term, port_term)
 
-proc socket_driver_peername*(ctx: ptr Context): term {.cdecl.} =
+proc socket_driver_peername*(ctx: ptr Context): term =
   var socket_data: ptr SocketDriverData = cast[ptr SocketDriverData](ctx.platform_data)
   var `addr`: sockaddr_in
   var addrlen: socklen_t = sizeof((`addr`))
@@ -392,7 +392,7 @@ proc socket_driver_peername*(ctx: ptr Context): term {.cdecl.} =
 ##  send operations
 ##
 
-proc socket_driver_do_send*(ctx: ptr Context; buffer: term): term {.cdecl.} =
+proc socket_driver_do_send*(ctx: ptr Context; buffer: term): term =
   var socket_data: ptr SocketDriverData = cast[ptr SocketDriverData](ctx.platform_data)
   var buf: cstring
   var len: csize
@@ -421,7 +421,7 @@ proc socket_driver_do_send*(ctx: ptr Context; buffer: term): term {.cdecl.} =
     return port_create_ok_tuple(ctx, sent_atom)
 
 proc socket_driver_do_sendto*(ctx: ptr Context; dest_address: term; dest_port: term;
-                             buffer: term): term {.cdecl.} =
+                             buffer: term): term =
   var socket_data: ptr SocketDriverData = cast[ptr SocketDriverData](ctx.platform_data)
   var `addr`: sockaddr_in
   memset(addr(`addr`), 0, sizeof(sockaddr_in))
@@ -468,7 +468,7 @@ type
     ref_ticks*: uint64_t
 
 
-proc active_recv_callback*(listener: ptr EventListener) {.cdecl.} =
+proc active_recv_callback*(listener: ptr EventListener) =
   var ctx: ptr Context = cast[ptr Context](listener.data)
   var socket_data: ptr SocketDriverData = cast[ptr SocketDriverData](ctx.platform_data)
   ##
@@ -510,7 +510,7 @@ proc active_recv_callback*(listener: ptr EventListener) {.cdecl.} =
     port_send_message(ctx, pid, msg)
   free(buf)
 
-proc passive_recv_callback*(listener: ptr EventListener) {.cdecl.} =
+proc passive_recv_callback*(listener: ptr EventListener) =
   var recvfrom_data: ptr RecvFromData = cast[ptr RecvFromData](listener.data)
   var ctx: ptr Context = recvfrom_data.ctx
   var socket_data: ptr SocketDriverData = cast[ptr SocketDriverData](ctx.platform_data)
@@ -555,7 +555,7 @@ proc passive_recv_callback*(listener: ptr EventListener) {.cdecl.} =
   free(recvfrom_data)
   free(buf)
 
-proc active_recvfrom_callback*(listener: ptr EventListener) {.cdecl.} =
+proc active_recvfrom_callback*(listener: ptr EventListener) =
   var ctx: ptr Context = cast[ptr Context](listener.data)
   var socket_data: ptr SocketDriverData = cast[ptr SocketDriverData](ctx.platform_data)
   ##
@@ -598,7 +598,7 @@ proc active_recvfrom_callback*(listener: ptr EventListener) {.cdecl.} =
     port_send_message(ctx, pid, msg)
   free(buf)
 
-proc passive_recvfrom_callback*(listener: ptr EventListener) {.cdecl.} =
+proc passive_recvfrom_callback*(listener: ptr EventListener) =
   var recvfrom_data: ptr RecvFromData = cast[ptr RecvFromData](listener.data)
   var ctx: ptr Context = recvfrom_data.ctx
   var socket_data: ptr SocketDriverData = cast[ptr SocketDriverData](ctx.platform_data)
@@ -650,7 +650,7 @@ proc passive_recvfrom_callback*(listener: ptr EventListener) {.cdecl.} =
   free(buf)
 
 proc do_recv*(ctx: ptr Context; pid: term; `ref`: term; length: term; timeout: term;
-             handler: event_handler_t) {.cdecl.} =
+             handler: event_handler_t) =
   UNUSED(timeout)
   var glb: ptr GlobalContext = ctx.global
   var platform: ptr GenericUnixPlatformData = glb.platform_data
@@ -684,18 +684,18 @@ proc do_recv*(ctx: ptr Context; pid: term; `ref`: term; length: term; timeout: t
   linkedlist_append(addr(platform.listeners), addr(listener.listeners_list_head))
 
 proc socket_driver_do_recvfrom*(ctx: ptr Context; pid: term; `ref`: term; length: term;
-                               timeout: term) {.cdecl.} =
+                               timeout: term) =
   do_recv(ctx, pid, `ref`, length, timeout, passive_recvfrom_callback)
 
 proc socket_driver_do_recv*(ctx: ptr Context; pid: term; `ref`: term; length: term;
-                           timeout: term) {.cdecl.} =
+                           timeout: term) =
   do_recv(ctx, pid, `ref`, length, timeout, passive_recv_callback)
 
 ##
 ##  accept
 ##
 
-proc accept_callback*(listener: ptr EventListener) {.cdecl.} =
+proc accept_callback*(listener: ptr EventListener) =
   var recvfrom_data: ptr RecvFromData = cast[ptr RecvFromData](listener.data)
   var ctx: ptr Context = recvfrom_data.ctx
   var socket_data: ptr SocketDriverData = cast[ptr SocketDriverData](ctx.platform_data)
@@ -783,7 +783,7 @@ var sockname_a*: cstring = "\bsockname"
 
 var peername_a*: cstring = "\bpeername"
 
-proc socket_consume_mailbox*(ctx: ptr Context) {.cdecl.} =
+proc socket_consume_mailbox*(ctx: ptr Context) =
   TRACE("START socket_consume_mailbox\n")
   if UNLIKELY(ctx.native_handler != socket_consume_mailbox):
     abort()
@@ -843,7 +843,7 @@ proc socket_consume_mailbox*(ctx: ptr Context) {.cdecl.} =
   free(message)
   TRACE("END socket_consume_mailbox\n")
 
-proc socket_init*(ctx: ptr Context; opts: term) {.cdecl.} =
+proc socket_init*(ctx: ptr Context; opts: term) =
   UNUSED(opts)
   var data: pointer = socket_driver_create_data()
   ctx.native_handler = socket_consume_mailbox

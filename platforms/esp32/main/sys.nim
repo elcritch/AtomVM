@@ -35,7 +35,7 @@ var esp32_atom*: cstring = "\x05esp32"
 
 var event_queue*: xQueueHandle = nil
 
-proc esp32_sys_queue_init*() {.cdecl.} =
+proc esp32_sys_queue_init*() =
   event_queue = xQueueCreate(EVENT_QUEUE_LEN, sizeof(pointer))
 
 proc sys_clock_gettime*(t: ptr timespec) {.inline, cdecl.} =
@@ -43,7 +43,7 @@ proc sys_clock_gettime*(t: ptr timespec) {.inline, cdecl.} =
   t.tv_sec = (ticks * portTICK_PERIOD_MS) div 1000
   t.tv_nsec = ((ticks * portTICK_PERIOD_MS) mod 1000) * 1000000
 
-proc receive_events*(glb: ptr GlobalContext; wait_ticks: TickType_t) {.cdecl.} =
+proc receive_events*(glb: ptr GlobalContext; wait_ticks: TickType_t) =
   var platform: ptr ESP32PlatformData = glb.platform_data
   var sender: pointer = nil
   while xQueueReceive(event_queue, addr(sender), wait_ticks) == pdTRUE:
@@ -64,17 +64,17 @@ proc receive_events*(glb: ptr GlobalContext; wait_ticks: TickType_t) {.cdecl.} =
       listener_lh = listener_lh.next
     TRACE("sys: handler not found for: %p\n", cast[pointer](sender))
 
-proc sys_consume_pending_events*(glb: ptr GlobalContext) {.cdecl.} =
+proc sys_consume_pending_events*(glb: ptr GlobalContext) =
   receive_events(glb, 0)
 
 proc sys_event_listener_init*(listener: ptr EventListener; sender: pointer;
-                             handler: event_handler_t; data: pointer) {.cdecl.} =
+                             handler: event_handler_t; data: pointer) =
   list_init(addr(listener.listeners_list_head))
   listener.sender = sender
   listener.handler = handler
   listener.data = data
 
-proc sys_time*(t: ptr timespec) {.cdecl.} =
+proc sys_time*(t: ptr timespec) =
   var tv: timeval
   if UNLIKELY(gettimeofday(addr(tv), nil)):
     fprintf(stderr, "Failed gettimeofday.\n")
@@ -82,18 +82,18 @@ proc sys_time*(t: ptr timespec) {.cdecl.} =
   t.tv_sec = tv.tv_sec
   t.tv_nsec = tv.tv_usec * 1000
 
-proc sys_init_platform*(glb: ptr GlobalContext) {.cdecl.} =
+proc sys_init_platform*(glb: ptr GlobalContext) =
   var platform: ptr ESP32PlatformData = malloc(sizeof(ESP32PlatformData))
   list_init(addr(platform.listeners))
   glb.platform_data = platform
 
-proc sys_start_millis_timer*() {.cdecl.} =
+proc sys_start_millis_timer*() =
   discard
 
-proc sys_stop_millis_timer*() {.cdecl.} =
+proc sys_stop_millis_timer*() =
   discard
 
-proc sys_millis*(): uint32_t {.cdecl.} =
+proc sys_millis*(): uint32_t =
   var ticks: TickType_t = xTaskGetTickCount()
   return ticks * portTICK_PERIOD_MS
 
@@ -141,7 +141,7 @@ proc sys_create_port*(glb: ptr GlobalContext; driver_name: cstring; opts: term):
     return sys_create_port_fallback(new_ctx, driver_name, opts)
   return new_ctx
 
-proc sys_get_info*(ctx: ptr Context; key: term): term {.cdecl.} =
+proc sys_get_info*(ctx: ptr Context; key: term): term =
   if key == context_make_atom(ctx, esp_free_heap_size_atom):
     return term_from_int32(esp_get_free_heap_size())
   if key == context_make_atom(ctx, esp_chip_info_atom):
@@ -163,6 +163,6 @@ proc sys_get_info*(ctx: ptr Context; key: term): term {.cdecl.} =
     return term_from_string(cast[ptr uint8_t](str), n, ctx)
   return UNDEFINED_ATOM
 
-proc sys_sleep*(glb: ptr GlobalContext) {.cdecl.} =
+proc sys_sleep*(glb: ptr GlobalContext) =
   UNUSED(glb)
   vTaskDelay(1)

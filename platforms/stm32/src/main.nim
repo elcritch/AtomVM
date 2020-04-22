@@ -24,7 +24,7 @@ const
   CLOCK_FREQUENCY* = (168000000)
 
 proc _write*(file: cint; `ptr`: cstring; len: cint): cint {.cdecl.}
-proc clock_setup*() {.cdecl.} =
+proc clock_setup*() =
   ##  Use external clock, set divider for 168 MHz clock frequency
   rcc_clock_setup_hse_3v3(addr(rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_168MHZ]))
   ##  Enable clock for USART2 GPIO
@@ -32,7 +32,7 @@ proc clock_setup*() {.cdecl.} =
   ##  Enable clock for USART2
   rcc_periph_clock_enable(RCC_USART2)
 
-proc usart_setup*() {.cdecl.} =
+proc usart_setup*() =
   ##  Setup GPIO pins for USART2 transmit
   gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO2)
   ##  Setup USART2 TX pin as alternate function
@@ -49,7 +49,7 @@ proc usart_setup*() {.cdecl.} =
 ##  Set up a timer to create 1ms ticks
 ##  The handler is in sys.c
 
-proc systick_setup*() {.cdecl.} =
+proc systick_setup*() =
   ##  clock rate / 1000 to get 1ms interrupt rate
   systick_set_reload(CLOCK_FREQUENCY div 1000)
   systick_set_clocksource(STK_CSR_CLKSOURCE_AHB)
@@ -59,7 +59,7 @@ proc systick_setup*() {.cdecl.} =
 ##  Use USART_CONSOLE as a console.
 ##  This is a syscall for newlib
 
-proc _write*(file: cint; `ptr`: cstring; len: cint): cint {.cdecl.} =
+proc _write*(file: cint; `ptr`: cstring; len: cint): cint =
   var i: cint
   if file == STDOUT_FILENO or file == STDERR_FILENO:
     i = 0
@@ -72,7 +72,7 @@ proc _write*(file: cint; `ptr`: cstring; len: cint): cint {.cdecl.} =
   errno = EIO
   return -1
 
-proc main*(): cint {.cdecl.} =
+proc main*(): cint =
   clock_setup()
   systick_setup()
   usart_setup()

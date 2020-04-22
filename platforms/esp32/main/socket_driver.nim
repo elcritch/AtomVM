@@ -33,7 +33,7 @@ proc udp_handler*(ctx: ptr Context) {.cdecl.}
 proc socket_consume_mailbox*(ctx: ptr Context) {.cdecl.}
 var ealready_atom*: cstring = "\bealready"
 
-proc socket_tuple_to_addr*(addr_tuple: term): uint32_t {.cdecl.} =
+proc socket_tuple_to_addr*(addr_tuple: term): uint32_t =
   return ((term_to_int32(term_get_tuple_element(addr_tuple, 0)) and 0x000000FF) shl
       24) or
       ((term_to_int32(term_get_tuple_element(addr_tuple, 1)) and 0x000000FF) shl
@@ -42,7 +42,7 @@ proc socket_tuple_to_addr*(addr_tuple: term): uint32_t {.cdecl.} =
       8) or
       (term_to_int32(term_get_tuple_element(addr_tuple, 3)) and 0x000000FF)
 
-proc socket_tuple_from_addr*(ctx: ptr Context; `addr`: uint32_t): term {.cdecl.} =
+proc socket_tuple_from_addr*(ctx: ptr Context; `addr`: uint32_t): term =
   var terms: array[4, term]
   terms[0] = term_from_int32((`addr` shr 24) and 0x000000FF)
   terms[1] = term_from_int32((`addr` shr 16) and 0x000000FF)
@@ -50,11 +50,11 @@ proc socket_tuple_from_addr*(ctx: ptr Context; `addr`: uint32_t): term {.cdecl.}
   terms[3] = term_from_int32(`addr` and 0x000000FF)
   return port_create_tuple_n(ctx, 4, terms)
 
-proc tuple_to_ip_addr*(address_tuple: term; out_addr: ptr ip_addr_t) {.cdecl.} =
+proc tuple_to_ip_addr*(address_tuple: term; out_addr: ptr ip_addr_t) =
   out_addr.`type` = IPADDR_TYPE_V4
   out_addr.u_addr.ip4.`addr` = htonl(socket_tuple_to_addr(address_tuple))
 
-proc socket_addr_to_tuple*(ctx: ptr Context; `addr`: ptr ip_addr_t): term {.cdecl.} =
+proc socket_addr_to_tuple*(ctx: ptr Context; `addr`: ptr ip_addr_t): term =
   var addr_tuple: term
   case IP_GET_TYPE(`addr`)
   of IPADDR_TYPE_V4:
@@ -117,7 +117,7 @@ type
 
 var netconn_events*: xQueueHandle = nil
 
-proc socket_events_handler*(listener: ptr EventListener) {.cdecl.} =
+proc socket_events_handler*(listener: ptr EventListener) =
   TRACE("socket_events_handler\n")
   var glb: ptr GlobalContext = listener.data
   var platform: ptr ESP32PlatformData = glb.platform_data
@@ -162,7 +162,7 @@ proc socket_events_handler*(listener: ptr EventListener) {.cdecl.} =
       TRACE("Got event for unknown conn: %p, evt: %i, len: %i\n", netconn,
             cast[cint](evt), cast[cint](len))
 
-proc socket_driver_init*(glb: ptr GlobalContext) {.cdecl.} =
+proc socket_driver_init*(glb: ptr GlobalContext) =
   TRACE("Initializing socket driver\n")
   netconn_events = xQueueCreate(32, sizeof(NetconnEvent))
   var socket_listener: ptr EventListener = malloc(sizeof((EventListener)))
@@ -174,7 +174,7 @@ proc socket_driver_init*(glb: ptr GlobalContext) {.cdecl.} =
   TRACE("Socket driver init: done\n")
 
 proc socket_data_init*(data: ptr SocketData; ctx: ptr Context; conn: ptr netconn;
-                      `type`: socket_type; platform: ptr ESP32PlatformData) {.cdecl.} =
+                      `type`: socket_type; platform: ptr ESP32PlatformData) =
   data.`type` = `type`
   data.conn = conn
   data.ctx = ctx
@@ -212,7 +212,7 @@ proc tcp_client_socket_data_new*(ctx: ptr Context; conn: ptr netconn;
 
 proc udp_socket_data_new*(ctx: ptr Context; conn: ptr netconn;
                          platform: ptr ESP32PlatformData;
-                         controlling_process_pid: term): ptr UDPSocketData {.cdecl.} =
+                         controlling_process_pid: term): ptr UDPSocketData =
   var udp_data: ptr UDPSocketData = malloc(sizeof(UDPSocketData))
   if IS_NULL_PTR(udp_data):
     return nil
@@ -220,7 +220,7 @@ proc udp_socket_data_new*(ctx: ptr Context; conn: ptr netconn;
   udp_data.socket_data.controlling_process_pid = controlling_process_pid
   return udp_data
 
-proc send_message*(pid: term; message: term; global: ptr GlobalContext) {.cdecl.} =
+proc send_message*(pid: term; message: term; global: ptr GlobalContext) =
   var local_process_id: cint = term_to_local_process_id(pid)
   var target: ptr Context = globalcontext_get_process(global, local_process_id)
   mailbox_send(target, message)
@@ -228,7 +228,7 @@ proc send_message*(pid: term; message: term; global: ptr GlobalContext) {.cdecl.
 ##  TODO: FIXME
 ##  void ESP_IRAM_ATTR socket_callback(struct netconn *netconn, enum netconn_evt evt, u16_t len)
 
-proc socket_callback*(netconn: ptr netconn; evt: netconn_evt; len: u16_t) {.cdecl.} =
+proc socket_callback*(netconn: ptr netconn; evt: netconn_evt; len: u16_t) =
   var event: NetconnEvent
   event.netconn = netconn
   event.evt = evt
@@ -244,7 +244,7 @@ proc socket_callback*(netconn: ptr netconn; evt: netconn_evt; len: u16_t) {.cdec
   if result != pdTRUE:
     fprintf(stderr, "socket: failed to enqueue: %i to event_queue.\n", result)
 
-proc accept_conn*(accepter: ptr TCPServerAccepter; ctx: ptr Context) {.cdecl.} =
+proc accept_conn*(accepter: ptr TCPServerAccepter; ctx: ptr Context) =
   TRACE("Going to accept a TCP connection\n")
   var tcp_data: ptr TCPServerSocketData = ctx.platform_data
   var glb: ptr GlobalContext = ctx.global
@@ -278,7 +278,7 @@ proc accept_conn*(accepter: ptr TCPServerAccepter; ctx: ptr Context) {.cdecl.} =
   term_put_tuple_element(return_tuple, 1, result_tuple)
   send_message(pid, return_tuple, glb)
 
-proc do_accept*(ctx: ptr Context; msg: term) {.cdecl.} =
+proc do_accept*(ctx: ptr Context; msg: term) =
   var tcp_data: ptr TCPServerSocketData = ctx.platform_data
   var pid: term = term_get_tuple_element(msg, 0)
   var `ref`: term = term_get_tuple_element(msg, 1)
@@ -307,7 +307,7 @@ proc do_accept*(ctx: ptr Context; msg: term) {.cdecl.} =
       accept_conn(accepter, ctx)
       dec(tcp_data.ready_connections)
 
-proc tcp_client_handler*(ctx: ptr Context) {.cdecl.} =
+proc tcp_client_handler*(ctx: ptr Context) =
   TRACE("tcp_client_handler\n")
   var tcp_data: ptr TCPClientSocketData = ctx.platform_data
   var glb: ptr GlobalContext = ctx.global
@@ -383,7 +383,7 @@ proc tcp_client_handler*(ctx: ptr Context) {.cdecl.} =
   TRACE("\n")
   send_message(pid, result_tuple, glb)
 
-proc tcp_server_handler*(ctx: ptr Context) {.cdecl.} =
+proc tcp_server_handler*(ctx: ptr Context) =
   TRACE("tcp_server_handler\n")
   var tcp_data: ptr TCPServerSocketData = ctx.platform_data
   var accepter_head: ptr ListHead
@@ -406,7 +406,7 @@ proc tcp_server_handler*(ctx: ptr Context) {.cdecl.} =
   else:
     inc(tcp_data.ready_connections)
 
-proc udp_handler*(ctx: ptr Context) {.cdecl.} =
+proc udp_handler*(ctx: ptr Context) =
   TRACE("udp_client_handler\n")
   var udp_data: ptr UDPSocketData = ctx.platform_data
   var glb: ptr GlobalContext = ctx.global
@@ -492,7 +492,7 @@ proc udp_handler*(ctx: ptr Context) {.cdecl.} =
   TRACE("\n")
   send_message(pid, result_tuple, glb)
 
-proc bool_term_to_bool*(b: term; ok: ptr bool): bool {.cdecl.} =
+proc bool_term_to_bool*(b: term; ok: ptr bool): bool =
   case b
   of TRUE_ATOM:
     ok[] = true
@@ -504,7 +504,7 @@ proc bool_term_to_bool*(b: term; ok: ptr bool): bool {.cdecl.} =
     ok[] = false
     return false
 
-proc do_connect*(ctx: ptr Context; msg: term) {.cdecl.} =
+proc do_connect*(ctx: ptr Context; msg: term) =
   var glb: ptr GlobalContext = ctx.global
   var platform: ptr ESP32PlatformData = glb.platform_data
   var cmd: term = term_get_tuple_element(msg, 2)
@@ -561,7 +561,7 @@ proc do_connect*(ctx: ptr Context; msg: term) {.cdecl.} =
   term_put_tuple_element(return_tuple, 1, OK_ATOM)
   send_message(pid, return_tuple, glb)
 
-proc do_listen*(ctx: ptr Context; msg: term) {.cdecl.} =
+proc do_listen*(ctx: ptr Context; msg: term) =
   var glb: ptr GlobalContext = ctx.global
   var platform: ptr ESP32PlatformData = glb.platform_data
   var cmd: term = term_get_tuple_element(msg, 2)
@@ -614,7 +614,7 @@ proc do_listen*(ctx: ptr Context; msg: term) {.cdecl.} =
   term_put_tuple_element(return_tuple, 1, OK_ATOM)
   send_message(pid, return_tuple, glb)
 
-proc do_udp_open*(ctx: ptr Context; msg: term) {.cdecl.} =
+proc do_udp_open*(ctx: ptr Context; msg: term) =
   var glb: ptr GlobalContext = ctx.global
   var platform: ptr ESP32PlatformData = glb.platform_data
   var cmd: term = term_get_tuple_element(msg, 2)
@@ -668,7 +668,7 @@ proc do_udp_open*(ctx: ptr Context; msg: term) {.cdecl.} =
 ##  Required for compatibility with existing erlang libraries
 ##  TODO: remove this when not required anymore
 
-proc do_init*(ctx: ptr Context; msg: term) {.cdecl.} =
+proc do_init*(ctx: ptr Context; msg: term) =
   var cmd: term = term_get_tuple_element(msg, 2)
   var params: term = term_get_tuple_element(cmd, 1)
   if interop_proplist_get_value_default(params, LISTEN_ATOM, FALSE_ATOM) ==
@@ -684,7 +684,7 @@ proc do_init*(ctx: ptr Context; msg: term) {.cdecl.} =
     TRACE("udp_open\n")
     do_udp_open(ctx, msg)
 
-proc do_send*(ctx: ptr Context; msg: term) {.cdecl.} =
+proc do_send*(ctx: ptr Context; msg: term) =
   var glb: ptr GlobalContext = ctx.global
   var tcp_data: ptr TCPServerSocketData = ctx.platform_data
   var pid: term = term_get_tuple_element(msg, 0)
@@ -711,7 +711,7 @@ proc do_send*(ctx: ptr Context; msg: term) {.cdecl.} =
   term_put_tuple_element(return_tuple, 1, OK_ATOM)
   send_message(pid, return_tuple, glb)
 
-proc do_sendto*(ctx: ptr Context; msg: term) {.cdecl.} =
+proc do_sendto*(ctx: ptr Context; msg: term) =
   var glb: ptr GlobalContext = ctx.global
   var udp_data: ptr UDPSocketData = ctx.platform_data
   var pid: term = term_get_tuple_element(msg, 0)
@@ -747,7 +747,7 @@ proc do_sendto*(ctx: ptr Context; msg: term) {.cdecl.} =
   term_put_tuple_element(return_tuple, 1, OK_ATOM)
   send_message(pid, return_tuple, glb)
 
-proc do_close*(ctx: ptr Context; msg: term) {.cdecl.} =
+proc do_close*(ctx: ptr Context; msg: term) =
   var glb: ptr GlobalContext = ctx.global
   var tcp_data: ptr TCPServerSocketData = ctx.platform_data
   var pid: term = term_get_tuple_element(msg, 0)
@@ -767,7 +767,7 @@ proc do_close*(ctx: ptr Context; msg: term) {.cdecl.} =
   free(tcp_data)
   scheduler_terminate(ctx)
 
-proc do_recvfrom*(ctx: ptr Context; msg: term) {.cdecl.} =
+proc do_recvfrom*(ctx: ptr Context; msg: term) =
   var glb: ptr GlobalContext = ctx.global
   var socket_data: ptr SocketData = ctx.platform_data
   var pid: term = term_get_tuple_element(msg, 0)
@@ -835,7 +835,7 @@ proc do_recvfrom*(ctx: ptr Context; msg: term) {.cdecl.} =
     socket_data.passive_receiver_process_pid = pid
     socket_data.passive_ref_ticks = term_to_ref_ticks(`ref`)
 
-proc do_get_port*(ctx: ptr Context; msg: term) {.cdecl.} =
+proc do_get_port*(ctx: ptr Context; msg: term) =
   var glb: ptr GlobalContext = ctx.global
   var socket_data: ptr SocketData = ctx.platform_data
   var pid: term = term_get_tuple_element(msg, 0)
@@ -855,7 +855,7 @@ proc do_get_port*(ctx: ptr Context; msg: term) {.cdecl.} =
   term_put_tuple_element(result_tuple, 1, error_ok_tuple)
   send_message(pid, result_tuple, glb)
 
-proc do_sockname*(ctx: ptr Context; msg: term) {.cdecl.} =
+proc do_sockname*(ctx: ptr Context; msg: term) =
   var glb: ptr GlobalContext = ctx.global
   var socket_data: ptr SocketData = ctx.platform_data
   var pid: term = term_get_tuple_element(msg, 0)
@@ -883,7 +883,7 @@ proc do_sockname*(ctx: ptr Context; msg: term) {.cdecl.} =
   term_put_tuple_element(result_tuple, 1, return_msg)
   send_message(pid, result_tuple, glb)
 
-proc do_peername*(ctx: ptr Context; msg: term) {.cdecl.} =
+proc do_peername*(ctx: ptr Context; msg: term) =
   var glb: ptr GlobalContext = ctx.global
   var socket_data: ptr SocketData = ctx.platform_data
   var pid: term = term_get_tuple_element(msg, 0)
@@ -911,7 +911,7 @@ proc do_peername*(ctx: ptr Context; msg: term) {.cdecl.} =
   term_put_tuple_element(result_tuple, 1, return_msg)
   send_message(pid, result_tuple, glb)
 
-proc socket_consume_mailbox*(ctx: ptr Context) {.cdecl.} =
+proc socket_consume_mailbox*(ctx: ptr Context) =
   while not list_is_empty(addr(ctx.mailbox)):
     var message: ptr Message = mailbox_dequeue(ctx)
     var msg: term = message.message
@@ -956,7 +956,7 @@ proc socket_consume_mailbox*(ctx: ptr Context) {.cdecl.} =
       TRACE("badarg\n")
     free(message)
 
-proc socket_init*(ctx: ptr Context; opts: term) {.cdecl.} =
+proc socket_init*(ctx: ptr Context; opts: term) =
   UNUSED(opts)
   ctx.native_handler = socket_consume_mailbox
   ctx.platform_data = nil

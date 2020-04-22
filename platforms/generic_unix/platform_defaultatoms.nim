@@ -76,7 +76,7 @@ var fd_atom*: cstring = "\x02fd"
 
 var generic_unix_atom*: cstring = "\fgeneric_unix"
 
-proc platform_defaultatoms_init*(glb: ptr GlobalContext) {.cdecl.} =
+proc platform_defaultatoms_init*(glb: ptr GlobalContext) =
   var ok: cint = 1
   ok = ok and globalcontext_insert_atom(glb, proto_atom) == PROTO_ATOM_INDEX
   ok = ok and globalcontext_insert_atom(glb, udp_atom) == UDP_ATOM_INDEX

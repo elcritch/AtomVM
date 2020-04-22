@@ -20,7 +20,7 @@
 import
   gpio_driver
 
-proc gpiodriver_init*(ctx: ptr Context) {.cdecl.} =
+proc gpiodriver_init*(ctx: ptr Context) =
   UNUSED(ctx)
   fprintf(stderr, "Unsupported driver on this platform: gpiodriver\n")
   abort()

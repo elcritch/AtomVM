@@ -182,7 +182,7 @@ var even_atom*: cstring = "\x04even"
 
 var odd_atom*: cstring = "\x03odd"
 
-proc platform_defaultatoms_init*(glb: ptr GlobalContext) {.cdecl.} =
+proc platform_defaultatoms_init*(glb: ptr GlobalContext) =
   var ok: cint = 1
   ok = ok and
       globalcontext_insert_atom(glb, set_level_atom) == SET_LEVEL_ATOM_INDEX

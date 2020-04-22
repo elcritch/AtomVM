@@ -37,12 +37,12 @@ proc memory_shallow_copy_term*(t: term; new_heap: ptr ptr term; move: cint): ter
 ##  TODO: FIXME
 ##  HOT_FUNC term *memory_heap_alloc(Context *c, uint32_t size)
 
-proc memory_heap_alloc*(c: ptr Context; size: uint32_t): ptr term {.cdecl.} =
+proc memory_heap_alloc*(c: ptr Context; size: uint32_t): ptr term =
   var allocated: ptr term = c.heap_ptr
   inc(c.heap_ptr, size)
   return allocated
 
-proc memory_ensure_free*(c: ptr Context; size: uint32_t): MemoryGCResult {.cdecl.} =
+proc memory_ensure_free*(c: ptr Context; size: uint32_t): MemoryGCResult =
   var free_space: csize = context_avail_free_memory(c)
   if free_space < size + MIN_FREE_SPACE_SIZE:
     var memory_size: csize = context_memory_size(c)
@@ -61,7 +61,7 @@ proc memory_ensure_free*(c: ptr Context; size: uint32_t): MemoryGCResult {.cdecl
         return MEMORY_GC_ERROR_FAILED_ALLOCATION
   return MEMORY_GC_OK
 
-proc memory_gc_and_shrink*(c: ptr Context): MemoryGCResult {.cdecl.} =
+proc memory_gc_and_shrink*(c: ptr Context): MemoryGCResult =
   if context_avail_free_memory(c) >= MIN_FREE_SPACE_SIZE * 2:
     if UNLIKELY(memory_gc(c, context_memory_size(c) -
         context_avail_free_memory(c) div 2) != MEMORY_GC_OK):
@@ -72,7 +72,7 @@ proc push_to_stack*(stack: ptr ptr term; value: term) {.inline, cdecl.} =
   stack[] = (stack[]) - 1
   stack[][] = value
 
-proc memory_gc*(ctx: ptr Context; new_size: cint): MemoryGCResult {.cdecl.} =
+proc memory_gc*(ctx: ptr Context; new_size: cint): MemoryGCResult =
   TRACE("Going to perform gc\n")
   inc(new_size, ctx.heap_fragments_size)
   ctx.heap_fragments_size = 0
@@ -138,7 +138,7 @@ proc memory_replace_with_moved_marker*(to_be_replaced: ptr term; replace_with: t
 proc memory_dereference_moved_marker*(moved_marker: ptr term): term {.inline, cdecl.} =
   return moved_marker[1]
 
-proc memory_copy_term_tree*(new_heap: ptr ptr term; t: term): term {.cdecl.} =
+proc memory_copy_term_tree*(new_heap: ptr ptr term; t: term): term =
   TRACE("Copy term tree: 0x%lx, heap: 0x%p\n", t, new_heap[])
   var temp_start: ptr term = new_heap[]
   var copied_term: term = memory_shallow_copy_term(t, new_heap, 0)
@@ -153,7 +153,7 @@ proc memory_copy_term_tree*(new_heap: ptr ptr term; t: term): term {.cdecl.} =
   new_heap[] = temp_end
   return copied_term
 
-proc memory_estimate_usage*(t: term): culong {.cdecl.} =
+proc memory_estimate_usage*(t: term): culong =
   var acc: culong = 0
   var temp_stack: TempStack
   temp_stack_init(addr(temp_stack))
@@ -197,7 +197,7 @@ proc memory_estimate_usage*(t: term): culong {.cdecl.} =
   return acc
 
 proc memory_scan_and_copy*(mem_start: ptr term; mem_end: ptr term;
-                          new_heap_pos: ptr ptr term; move: cint) {.cdecl.} =
+                          new_heap_pos: ptr ptr term; move: cint) =
   var `ptr`: ptr term = mem_start
   var new_heap: ptr term = new_heap_pos[]
   while `ptr` < mem_end:
@@ -271,7 +271,7 @@ proc memory_scan_and_copy*(mem_start: ptr term; mem_end: ptr term;
 ##  TODO: FIXME
 ##  HOT_FUNC static term memory_shallow_copy_term(term t, term **new_heap, int move)
 
-proc memory_shallow_copy_term*(t: term; new_heap: ptr ptr term; move: cint): term {.cdecl.} =
+proc memory_shallow_copy_term*(t: term; new_heap: ptr ptr term; move: cint): term =
   if term_is_atom(t):
     return t
   elif term_is_integer(t):

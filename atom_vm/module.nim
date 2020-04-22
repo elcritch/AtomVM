@@ -65,7 +65,7 @@ proc module_populate_atoms_table*(this_module: ptr Module; table_data: ptr uint8
   return MODULE_LOAD_OK
 
 proc module_build_imported_functions_table*(this_module: ptr Module;
-    table_data: ptr uint8_t): ModuleLoadResult {.cdecl.} =
+    table_data: ptr uint8_t): ModuleLoadResult =
   var functions_count: cint = READ_32_ALIGNED(table_data + 8)
   this_module.imported_funcs = calloc(functions_count, sizeof(pointer))
   if IS_NULL_PTR(this_module.imported_funcs):
@@ -109,7 +109,7 @@ proc module_build_imported_functions_table*(this_module: ptr Module;
 
 when defined(ENABLE_ADVANCED_TRACE):
   proc module_get_imported_function_module_and_name*(this_module: ptr Module;
-      index: cint; module_atom: ptr AtomString; function_atom: ptr AtomString) {.cdecl.} =
+      index: cint; module_atom: ptr AtomString; function_atom: ptr AtomString) =
     var table_data: ptr uint8_t = cast[ptr uint8_t](this_module.import_table)
     var functions_count: cint = READ_32_ALIGNED(table_data + 8)
     if UNLIKELY(index > functions_count):
@@ -138,11 +138,11 @@ proc module_search_exported_function*(this_module: ptr Module;
     inc(i)
   return 0
 
-proc module_add_label*(`mod`: ptr Module; index: cint; `ptr`: pointer) {.cdecl.} =
+proc module_add_label*(`mod`: ptr Module; index: cint; `ptr`: pointer) =
   `mod`.labels[index] = `ptr`
 
 proc module_new_from_iff_binary*(global: ptr GlobalContext; iff_binary: pointer;
-                                size: culong): ptr Module {.cdecl.} =
+                                size: culong): ptr Module =
   var beam_file: ptr uint8_t = cast[pointer](iff_binary)
   var offsets: array[MAX_OFFS, culong]
   var sizes: array[MAX_SIZES, culong]
@@ -197,7 +197,7 @@ proc module_new_from_iff_binary*(global: ptr GlobalContext; iff_binary: pointer;
 ##  TODO: FIXME
 ##  COLD_FUNC void module_destroy(Module *module)
 
-proc module_destroy*(module: ptr Module) {.cdecl.} =
+proc module_destroy*(module: ptr Module) =
   free(module.labels)
   free(module.imported_funcs)
   free(module.literals_table)
@@ -206,7 +206,7 @@ proc module_destroy*(module: ptr Module) {.cdecl.} =
   free(module)
 
 when defined(WITH_ZLIB):
-  proc module_uncompress_literals*(litT: ptr uint8_t; size: cint): pointer {.cdecl.} =
+  proc module_uncompress_literals*(litT: ptr uint8_t; size: cint): pointer =
     var required_buf_size: cuint = READ_32_ALIGNED(
         litT + LITT_UNCOMPRESSED_SIZE_OFFSET)
     var outBuf: ptr uint8_t = malloc(required_buf_size)
@@ -232,7 +232,7 @@ when defined(WITH_ZLIB):
     inflateEnd(addr(infstream))
     return outBuf
 
-proc module_build_literals_table*(literalsBuf: pointer): ptr pointer {.cdecl.} =
+proc module_build_literals_table*(literalsBuf: pointer): ptr pointer =
   var terms_count: uint32_t = READ_32_ALIGNED(literalsBuf)
   var pos: ptr uint8_t = cast[ptr uint8_t](literalsBuf) + sizeof((uint32_t))
   var literals_table: ptr pointer = calloc(terms_count, sizeof((void * `const`)))
@@ -247,7 +247,7 @@ proc module_build_literals_table*(literalsBuf: pointer): ptr pointer {.cdecl.} =
     inc(i)
   return literals_table
 
-proc module_load_literal*(`mod`: ptr Module; index: cint; ctx: ptr Context): term {.cdecl.} =
+proc module_load_literal*(`mod`: ptr Module; index: cint; ctx: ptr Context): term =
   return externalterm_to_term(`mod`.literals_table[index], ctx, 1)
 
 proc module_resolve_function*(`mod`: ptr Module; import_table_index: cint): ptr ExportedFunction {.
