@@ -18,8 +18,10 @@
 ## *************************************************************************
 
 import
+  term, atom
   globalcontext, atomshashtable, defaultatoms, list, utils, valueshashtable, sys,
   context
+
 
 type
   RegisteredProcess* {.bycopy.} = object

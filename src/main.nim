@@ -26,14 +26,11 @@ var ok_a*: string = "\x02ok"
 proc main*(argc: cint; argv: stringArray): cint {.cdecl.} =
   if argc < 2:
     printf("Need .beam file\n")
-    return EXIT_FAILURE
+    quit(0)
 
-  var mapped_file: ptr MappedFile = mapped_file_open_beam(argv[1])
+  var mapped_file = memfiles.open(cstring(argv[1]), mode = fmRead, mappedSize = -1)
 
-  if IS_NULL_PTR(mapped_file):
-    return EXIT_FAILURE
-
-  var glb: ptr GlobalContext = globalcontext_new()
+  var glb: GlobalContext = globalcontext_new()
   var startup_beam: pointer
   var startup_beam_size: uint32_t
   var startup_module_name: string = argv[1]
