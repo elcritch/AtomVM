@@ -18,8 +18,9 @@
 ## *************************************************************************
 
 import
-  globalcontext, atomshashtable, defaultatoms, list, utils, valueshashtable, sys,
-  context
+  globalcontext, atomshashtable, defaultatoms,
+  valueshashtable, sys, context,
+  src/libAtomVM/atom
 
 type
   Context* {.bycopy.} = object
@@ -34,9 +35,9 @@ type
     processes_table*: ref seq[Context]
     registered_processes*: ref seq[Context]
     last_process_id*: int32
-    atoms_table*: ref Table[AtomString]
-    atoms_ids_table*: ref ValuesHashTable
-    modules_table*: ref AtomsHashTable
+    atoms_table*: ref Table[AtomString, uint32]
+    atoms_ids_table*: ref Table[uint32, AtomString]
+    modules_table*: ref Table[AtromString, uint32]
     modules_by_index*: ref ref Module
     loaded_modules_count*: int
     avmpack_data*: ref seq[byte]
