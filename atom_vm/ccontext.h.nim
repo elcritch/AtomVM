@@ -51,7 +51,7 @@ type
 ##  @param parent_context the Context that owns the memory.
 ##
 
-proc ccontext_init*(ccontext: ptr CContext; parent_context: ptr Context) {.inline, cdecl.} =
+proc ccontext_init*(ccontext: ptr CContext; parent_context: ptr Context)  =
   ccontext.ctx = parent_context
   ccontext.terms_count = 0
 
@@ -62,7 +62,7 @@ proc ccontext_init*(ccontext: ptr CContext; parent_context: ptr Context) {.inlin
 ##  @param ccontext the current CContext.
 ##
 
-proc ccontext_release_all_refs*(ccontext: ptr CContext) {.inline, cdecl.} =
+proc ccontext_release_all_refs*(ccontext: ptr CContext)  =
   inc(ccontext.ctx.e, ccontext.terms_count)
   ccontext.terms_count = 0
 
@@ -76,7 +76,7 @@ proc ccontext_release_all_refs*(ccontext: ptr CContext) {.inline, cdecl.} =
 ##  @return a new term reference.
 ##
 
-proc ccontext_make_term_ref*(ccontext: ptr CContext; t: term): term_ref {.inline, cdecl.} =
+proc ccontext_make_term_ref*(ccontext: ptr CContext; t: term): term_ref  =
   var ctx: ptr Context = ccontext.ctx
   if ctx.heap_ptr > ctx.e - 1:
     case memory_ensure_free(ctx, 1)
@@ -104,7 +104,7 @@ proc ccontext_make_term_ref*(ccontext: ptr CContext; t: term): term_ref {.inline
 ##  @param tref the term reference that will be released.
 ##
 
-proc ccontext_kill_term_ref*(ccontext: ptr CContext; tref: term_ref) {.inline, cdecl.} =
+proc ccontext_kill_term_ref*(ccontext: ptr CContext; tref: term_ref)  =
   (ccontext.ctx.e + ccontext.terms_count - tref)[] = term_nil()
 
 ##
@@ -115,5 +115,5 @@ proc ccontext_kill_term_ref*(ccontext: ptr CContext; tref: term_ref) {.inline, c
 ##  @param tref a reference to a term.
 ##
 
-proc ccontext_get_term*(ccontext: ptr CContext; tref: term_ref): term {.inline, cdecl.} =
+proc ccontext_get_term*(ccontext: ptr CContext; tref: term_ref): term  =
   return (ccontext.ctx.e + ccontext.terms_count - tref)[]

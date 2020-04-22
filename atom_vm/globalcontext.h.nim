@@ -179,5 +179,5 @@ proc globalcontext_insert_module*(global: ptr GlobalContext; module: ptr Module;
 
 proc globalcontext_get_module*(global: ptr GlobalContext;
                               module_name_atom: AtomString): ptr Module {.cdecl.}
-proc globalcontext_get_ref_ticks*(global: ptr GlobalContext): uint64_t {.inline, cdecl.} =
+proc globalcontext_get_ref_ticks*(global: ptr GlobalContext): uint64_t  =
   return inc(global.ref_ticks)

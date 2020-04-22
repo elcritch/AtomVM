@@ -39,7 +39,7 @@ proc msleep*(delay: uint32_t) =
   while wake > system_millis:
     nil
 
-proc sys_clock_gettime*(t: ptr timespec) {.inline, cdecl.} =
+proc sys_clock_gettime*(t: ptr timespec)  =
   t.tv_sec = system_millis div 1000
   t.tv_nsec = (system_millis mod 1000) * 1000000
 

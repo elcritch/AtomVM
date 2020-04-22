@@ -24,13 +24,13 @@ type
     size*: cint
 
 
-proc temp_stack_init*(temp_stack: ptr TempStack) {.inline, cdecl.} =
+proc temp_stack_init*(temp_stack: ptr TempStack)  =
   temp_stack.size = 8
   temp_stack.stack_end = (cast[ptr term](malloc(temp_stack.size * sizeof((term))))) +
       temp_stack.size
   temp_stack.stack_pos = temp_stack.stack_end
 
-proc temp_stack_destory*(temp_stack: ptr TempStack) {.inline, cdecl.} =
+proc temp_stack_destory*(temp_stack: ptr TempStack)  =
   free(temp_stack.stack_end - temp_stack.size)
 
 proc temp_stack_grow*(temp_stack: ptr TempStack) =
@@ -45,16 +45,16 @@ proc temp_stack_grow*(temp_stack: ptr TempStack) =
   temp_stack.stack_pos = new_stack_pos
   temp_stack.size = new_size
 
-proc temp_stack_is_empty*(temp_stack: ptr TempStack): cint {.inline, cdecl.} =
+proc temp_stack_is_empty*(temp_stack: ptr TempStack): cint  =
   return temp_stack.stack_end == temp_stack.stack_pos
 
-proc temp_stack_push*(temp_stack: ptr TempStack; value: term) {.inline, cdecl.} =
+proc temp_stack_push*(temp_stack: ptr TempStack; value: term)  =
   if temp_stack.stack_end - temp_stack.stack_pos == temp_stack.size - 1:
     temp_stack_grow(temp_stack)
   dec(temp_stack.stack_pos)
   temp_stack.stack_pos[] = value
 
-proc temp_stack_pop*(temp_stack: ptr TempStack): term {.inline, cdecl.} =
+proc temp_stack_pop*(temp_stack: ptr TempStack): term  =
   var value: term = temp_stack.stack_pos[]
   inc(temp_stack.stack_pos)
   return value

@@ -23,7 +23,7 @@ import
 const
   ADDITIONAL_PROCESSING_MEMORY_SIZE* = 4
 
-proc mailbox_message_memory*(msg: ptr Message): ptr term {.inline, cdecl.} =
+proc mailbox_message_memory*(msg: ptr Message): ptr term  =
   return addr(msg.message) + 1
 
 proc mailbox_send*(c: ptr Context; t: term) =

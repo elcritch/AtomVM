@@ -131,18 +131,18 @@ proc bif_erlang_tuple_size_1*(ctx: ptr Context; arg1: term): term =
   VALIDATE_VALUE(arg1, term_is_tuple)
   return term_from_int32(term_get_tuple_arity(arg1))
 
-proc make_boxed_int*(ctx: ptr Context; value: avm_int_t): term {.inline, cdecl.} =
+proc make_boxed_int*(ctx: ptr Context; value: avm_int_t): term  =
   if UNLIKELY(memory_ensure_free(ctx, BOXED_INT_SIZE) != MEMORY_GC_OK):
     RAISE_ERROR(OUT_OF_MEMORY_ATOM)
   return term_make_boxed_int(value, ctx)
 
 when BOXED_TERMS_REQUIRED_FOR_INT64 > 1:
-  proc make_boxed_int64*(ctx: ptr Context; value: avm_int64_t): term {.inline, cdecl.} =
+  proc make_boxed_int64*(ctx: ptr Context; value: avm_int64_t): term  =
     if UNLIKELY(memory_ensure_free(ctx, BOXED_INT64_SIZE) != MEMORY_GC_OK):
       RAISE_ERROR(OUT_OF_MEMORY_ATOM)
     return term_make_boxed_int64(value, ctx)
 
-proc make_maybe_boxed_int*(ctx: ptr Context; value: avm_int_t): term {.inline, cdecl.} =
+proc make_maybe_boxed_int*(ctx: ptr Context; value: avm_int_t): term  =
   if (value < MIN_NOT_BOXED_INT) or (value > MAX_NOT_BOXED_INT):
     return make_boxed_int(ctx, value)
   else:
@@ -759,7 +759,7 @@ proc bitwise_helper*(ctx: ptr Context; live: cint; arg1: term; arg2: term; op: b
   else:
     return make_maybe_boxed_int(ctx, result)
 
-proc bor*(a: int64_t; b: int64_t): int64_t {.inline, cdecl.} =
+proc bor*(a: int64_t; b: int64_t): int64_t  =
   return a or b
 
 proc bif_erlang_bor_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =
@@ -768,7 +768,7 @@ proc bif_erlang_bor_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): te
   else:
     return bitwise_helper(ctx, live, arg1, arg2, bor)
 
-proc band*(a: int64_t; b: int64_t): int64_t {.inline, cdecl.} =
+proc band*(a: int64_t; b: int64_t): int64_t  =
   return a and b
 
 proc bif_erlang_band_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =
@@ -777,7 +777,7 @@ proc bif_erlang_band_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): t
   else:
     return bitwise_helper(ctx, live, arg1, arg2, band)
 
-proc bxor*(a: int64_t; b: int64_t): int64_t {.inline, cdecl.} =
+proc bxor*(a: int64_t; b: int64_t): int64_t  =
   return a xor b
 
 proc bif_erlang_bxor_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =

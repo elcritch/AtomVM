@@ -22,72 +22,70 @@ type
   TimerWheelItem* = object
 
   timer_wheel_callback_t* = proc (a1: ptr TimerWheelItem) {.cdecl.}
-  TimerWheel* = object
-    slots*: seq[]
-    slots_count*: cint
-    timers*: cint
-    monotonic_time*: uint64_t
+  TimerWheel* = ref object
+    slots*: seq[TimerWheelItem]
+    timers*: int
+    monotonic_time*: uint64
 
-  TimerWheelItem* = object
-    expiry_time*: uint64_t
+  TimerWheelItem* = ref object
+    expiry_time*: uint64
     head*: ListHead
     callback*: ptr timer_wheel_callback_t
 
-when ported:
-  proc timer_wheel_new*(slots_count: cint): ptr TimerWheel {.cdecl.}
-  proc timer_wheel_tick*(tw: ptr TimerWheel) {.cdecl.}
-  proc timer_wheel_insert*(tw: ptr TimerWheel; item: ptr TimerWheelItem) {.inline, cdecl.} =
-    var expiry_time: uint64_t = item.expiry_time
-    var slot: cint = expiry_time mod tw.slots_count
-    inc(tw.timers)
-    list_append(addr(tw.slots[slot]), addr(item.head))
+proc timer_wheel_new*(slots_count: cint): TimerWheel
+proc timer_wheel_tick*(tw: ptr TimerWheel) 
+proc timer_wheel_insert*(tw: ptr TimerWheel; item: ptr TimerWheelItem)  =
+  var expiry_time: uint64_t = item.expiry_time
+  var slot: cint = expiry_time mod tw.slots_count
+  inc(tw.timers)
+  list_append(addr(tw.slots[slot]), addr(item.head))
 
-  proc timer_wheel_remove*(tw: ptr TimerWheel; item: ptr TimerWheelItem) {.inline, cdecl.} =
-    dec(tw.timers)
-    list_remove(addr(item.head))
+proc timer_wheel_remove*(tw: ptr TimerWheel; item: ptr TimerWheelItem)  =
+  dec(tw.timers)
+  list_remove(addr(item.head))
 
-  proc timer_wheel_is_empty*(tw: ptr TimerWheel): bool {.inline, cdecl.} =
-    return tw.timers == 0
+proc timer_wheel_is_empty*(tw: ptr TimerWheel): bool  =
+  return tw.timers == 0
 
-  proc timer_wheel_timers_count*(tw: ptr TimerWheel): cint {.inline, cdecl.} =
-    return tw.timers
+proc timer_wheel_timers_count*(tw: ptr TimerWheel): cint  =
+  return tw.timers
 
-  proc timer_wheel_item_init*(it: ptr TimerWheelItem; cb: timer_wheel_callback_t;
-                            expiry: uint64_t) {.inline, cdecl.} =
-    it.expiry_time = expiry
-    it.callback = cb
+proc timer_wheel_item_init*(it: ptr TimerWheelItem; cb: timer_wheel_callback_t;
+                          expiry: uint64_t)  =
+  it.expiry_time = expiry
+  it.callback = cb
 
-  proc timer_wheel_expiry_to_monotonic*(tw: ptr TimerWheel; expiry: uint32_t): uint64_t {.
-      inline, cdecl.} =
-    return tw.monotonic_time + expiry
+proc timer_wheel_expiry_to_monotonic*(tw: ptr TimerWheel; expiry: uint32_t): uint64_t {.
+    inline, cdecl.} =
+  return tw.monotonic_time + expiry
 
-  proc timer_wheel_new*(slots_count: cint): ptr TimerWheel =
-    var tw: ptr TimerWheel = malloc(sizeof(TimerWheel))
-    tw.slots = malloc(sizeof(cast[ListHead](slots_count[])))
-    var i: cint = 0
-    while i < slots_count:
-      list_init(addr(tw.slots[i]))
-      inc(i)
-    tw.slots_count = slots_count
-    tw.timers = 0
-    tw.monotonic_time = 0
-    return tw
+proc timer_wheel_new*(slots_count: cint): ptr TimerWheel =
+  var tw: ptr TimerWheel = malloc(sizeof(TimerWheel))
+  tw.slots = malloc(sizeof(cast[ListHead](slots_count[])))
+  var i: cint = 0
+  while i < slots_count:
+    list_init(addr(tw.slots[i]))
+    inc(i)
+  tw.slots_count = slots_count
+  tw.timers = 0
+  tw.monotonic_time = 0
+  return tw
 
-  proc timer_wheel_tick*(tw: ptr TimerWheel) =
-    inc(tw.monotonic_time)
-    var monotonic_time: uint64_t = tw.monotonic_time
-    var pos: cint = tw.monotonic_time mod tw.slots_count
-    var item: ptr ListHead
-    var tmp: ptr ListHead
-    ##  TODO: FIXME
-    ##  MUTABLE_LIST_FOR_EACH(item, tmp, &tw->slots[pos]) {
-    item = (addr(tw.slots[pos])).next
+proc timer_wheel_tick*(tw: ptr TimerWheel) =
+  inc(tw.monotonic_time)
+  var monotonic_time: uint64_t = tw.monotonic_time
+  var pos: cint = tw.monotonic_time mod tw.slots_count
+  var item: ptr ListHead
+  var tmp: ptr ListHead
+  ##  TODO: FIXME
+  ##  MUTABLE_LIST_FOR_EACH(item, tmp, &tw->slots[pos]) {
+  item = (addr(tw.slots[pos])).next
+  tmp = item.next
+  while item != (addr(tw.slots[pos])):
+    var ti: ptr TimerWheelItem = GET_LIST_ENTRY(item, struct, TimerWheelItem, head)
+    if ti.expiry_time <= monotonic_time:
+      dec(tw.timers)
+      list_remove(item)
+      ti.callback(ti)
+    item = tmp
     tmp = item.next
-    while item != (addr(tw.slots[pos])):
-      var ti: ptr TimerWheelItem = GET_LIST_ENTRY(item, struct, TimerWheelItem, head)
-      if ti.expiry_time <= monotonic_time:
-        dec(tw.timers)
-        list_remove(item)
-        ti.callback(ti)
-      item = tmp
-      tmp = item.next

@@ -23,7 +23,7 @@ import
 const
   AVMPACK_SIZE* = 24
 
-proc pad*(size: cint): cint {.inline, cdecl.} =
+proc pad*(size: cint): cint  =
   return ((size + 4 - 1) shr 2) shl 2
 
 proc avmpack_is_valid*(avmpack_binary: pointer; size: uint32_t): cint =

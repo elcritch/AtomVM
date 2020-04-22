@@ -510,7 +510,7 @@ proc nifs_get*(module: AtomString; function: AtomString; arity: cint): ptr Nif =
     return platform_nifs_get_nif(nifname)
   return nameAndPtr.nif
 
-proc make_maybe_boxed_int64*(ctx: ptr Context; value: avm_int64_t): term {.inline, cdecl.} =
+proc make_maybe_boxed_int64*(ctx: ptr Context; value: avm_int64_t): term  =
   when BOXED_TERMS_REQUIRED_FOR_INT64 == 2:
     if (value < AVM_INT_MIN) or (value > AVM_INT_MAX):
       if UNLIKELY(memory_ensure_free(ctx, BOXED_INT64_SIZE) != MEMORY_GC_OK):

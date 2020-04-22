@@ -56,7 +56,7 @@ template GET_LIST_ENTRY*(list_item, `type`, list_head_member: untyped): untyped 
 ##
 
 proc linkedlist_insert*(new_item: ptr ListHead; prev_head: ptr ListHead;
-                       next_head: ptr ListHead) {.inline, cdecl.} =
+                       next_head: ptr ListHead)  =
   new_item.prev = prev_head
   new_item.next = next_head
   next_head.prev = new_item
@@ -88,7 +88,7 @@ proc linkedlist_remove*(list: ptr ptr ListHead; remove_item: ptr ListHead) {.inl
 ##  @param new_item the item that is going to be appended to the end of the list
 ##
 
-proc linkedlist_append*(list: ptr ptr ListHead; new_item: ptr ListHead) {.inline, cdecl.} =
+proc linkedlist_append*(list: ptr ptr ListHead; new_item: ptr ListHead)  =
   if list[] == nil:
     linkedlist_insert(new_item, new_item, new_item)
     list[] = new_item
@@ -103,7 +103,7 @@ proc linkedlist_append*(list: ptr ptr ListHead; new_item: ptr ListHead) {.inline
 ##  @param new_item the list head that is going to be prepended to the list
 ##
 
-proc linkedlist_prepend*(list: ptr ptr ListHead; new_item: ptr ListHead) {.inline, cdecl.} =
+proc linkedlist_prepend*(list: ptr ptr ListHead; new_item: ptr ListHead)  =
   if list[] == nil:
     linkedlist_insert(new_item, new_item, new_item)
   else:
@@ -117,7 +117,7 @@ proc linkedlist_prepend*(list: ptr ptr ListHead; new_item: ptr ListHead) {.inlin
 ##  @param list a pointer to the linked list
 ##
 
-proc linkedlist_length*(list: ptr ListHead): csize {.inline, cdecl.} =
+proc linkedlist_length*(list: ptr ListHead): csize  =
   if list == nil:
     return 0
   else:

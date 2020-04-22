@@ -54,7 +54,7 @@ proc atom_are_equals*(a: AtomString; b: AtomString): cint {.cdecl.}
 ##  @returns the specified atom string length.
 ##
 
-proc atom_string_len*(atom_str: AtomString): cint {.inline, cdecl.} =
+proc atom_string_len*(atom_str: AtomString): cint  =
   return (cast[ptr uint8_t](atom_str))[]
 
 ## *
@@ -65,7 +65,7 @@ proc atom_string_len*(atom_str: AtomString): cint {.inline, cdecl.} =
 ##  @returns const pointer to string data (chars array).
 ##
 
-proc atom_string_data*(atom_str: AtomString): pointer {.inline, cdecl.} =
+proc atom_string_data*(atom_str: AtomString): pointer  =
   return (cast[ptr uint8_t](atom_str)) + 1
 
 ## *

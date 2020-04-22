@@ -68,7 +68,7 @@ proc memory_gc_and_shrink*(c: ptr Context): MemoryGCResult =
       fprintf(stderr, "Failed to allocate memory: %s:%i.\n", __FILE__, __LINE__)
   return MEMORY_GC_OK
 
-proc push_to_stack*(stack: ptr ptr term; value: term) {.inline, cdecl.} =
+proc push_to_stack*(stack: ptr ptr term; value: term)  =
   stack[] = (stack[]) - 1
   stack[][] = value
 
@@ -126,7 +126,7 @@ proc memory_gc*(ctx: ptr Context; new_size: cint): MemoryGCResult =
   ctx.e = stack_ptr
   return MEMORY_GC_OK
 
-proc memory_is_moved_marker*(t: ptr term): cint {.inline, cdecl.} =
+proc memory_is_moved_marker*(t: ptr term): cint  =
   ##  0x2B is an unused tag
   return t[] == 0x0000002B
 
@@ -135,7 +135,7 @@ proc memory_replace_with_moved_marker*(to_be_replaced: ptr term; replace_with: t
   to_be_replaced[0] = 0x0000002B
   to_be_replaced[1] = replace_with
 
-proc memory_dereference_moved_marker*(moved_marker: ptr term): term {.inline, cdecl.} =
+proc memory_dereference_moved_marker*(moved_marker: ptr term): term  =
   return moved_marker[1]
 
 proc memory_copy_term_tree*(new_heap: ptr ptr term; t: term): term =

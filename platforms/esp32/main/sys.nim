@@ -38,7 +38,7 @@ var event_queue*: xQueueHandle = nil
 proc esp32_sys_queue_init*() =
   event_queue = xQueueCreate(EVENT_QUEUE_LEN, sizeof(pointer))
 
-proc sys_clock_gettime*(t: ptr timespec) {.inline, cdecl.} =
+proc sys_clock_gettime*(t: ptr timespec)  =
   var ticks: TickType_t = xTaskGetTickCount()
   t.tv_sec = (ticks * portTICK_PERIOD_MS) div 1000
   t.tv_nsec = ((ticks * portTICK_PERIOD_MS) mod 1000) * 1000000
