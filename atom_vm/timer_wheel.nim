@@ -19,11 +19,11 @@
 
 
 type
-  TimerWheelItem* = object
-
+  # TODO: Fixme
   timer_wheel_callback* = proc (a1: ptr TimerWheelItem) {.cdecl.}
+
   TimerWheel* = ref object
-    slots*: seq[TimerWheelItem]
+    slots*: seq[seq[TimerWheelItem]]
     timers*: int
     monotonic_time*: uint64
 
@@ -32,17 +32,16 @@ type
     head*: ListHead
     callback*: ptr timer_wheel_callback
 
-proc timer_wheel_new*(slots_count: cint): TimerWheel
-proc timer_wheel_tick*(tw: ptr TimerWheel) 
-proc timer_wheel_insert*(tw: ptr TimerWheel; item: ptr TimerWheelItem)  =
+proc timer_wheel_insert*(tw: var TimerWheel; item: sink var TimerWheelItem)  =
   var expiry_time: uint64 = item.expiry_time
-  var slot: cint = expiry_time mod tw.slots_count
+  var slot: int = expiry_time mod tw.slots_count
   inc(tw.timers)
-  list_append(addr(tw.slots[slot]), addr(item.head))
+  tw.slots[slot].add item
 
 proc timer_wheel_remove*(tw: ptr TimerWheel; item: ptr TimerWheelItem)  =
   dec(tw.timers)
   list_remove(addr(item.head))
+  tw.slots[slot].remove item
 
 proc timer_wheel_is_empty*(tw: ptr TimerWheel): bool  =
   return tw.timers == 0
