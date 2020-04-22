@@ -25,7 +25,7 @@ proc spidriver_consume_mailbox*(ctx: ptr Context) {.cdecl.}
 proc spidriver_transfer_at*(ctx: ptr Context; address: uint64_t; data_len: cint;
                            data: uint32_t; ok: ptr bool): uint32_t {.cdecl.}
 type
-  SPIData* {.bycopy.} = object
+  SPIData* = object
     handle*: spi_device_handle_t
     transaction*: spi_transaction_t
 

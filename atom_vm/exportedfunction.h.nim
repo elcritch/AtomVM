@@ -42,20 +42,20 @@ type
 
 
 type
-  ExportedFunction* {.bycopy.} = object
+  ExportedFunction* = object
     `type`*: FunctionType
 
-  Nif* {.bycopy.} = object
+  Nif* = object
     base*: ExportedFunction
     nif_ptr*: NifImpl
 
-  UnresolvedFunctionCall* {.bycopy.} = object
+  UnresolvedFunctionCall* = object
     base*: ExportedFunction
     module_atom_index*: cint
     function_atom_index*: cint
     arity*: cint
 
-  ModuleFunction* {.bycopy.} = object
+  ModuleFunction* = object
     base*: ExportedFunction
     target*: ptr Module
     label*: cint
@@ -74,7 +74,7 @@ template EXPORTED_FUNCTION_TO_MODULE_FUNCTION*(`func`: untyped): untyped =
       (cast[culong](addr((cast[ptr ModuleFunction](0)).base))))))
 
 type
-  imported_func* {.bycopy.} = object {.union.}
+  imported_func* = object {.union.}
     `func`*: ptr ExportedFunction
     bif*: BifImpl
 

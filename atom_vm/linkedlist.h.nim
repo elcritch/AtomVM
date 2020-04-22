@@ -31,7 +31,7 @@
 ##
 
 type
-  ListHead* {.bycopy.} = object
+  ListHead* = object
     next*: ptr ListHead
     prev*: ptr ListHead
 

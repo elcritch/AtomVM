@@ -18,7 +18,7 @@
 ## *************************************************************************
 
 type
-  MappedFile* {.bycopy.} = object
+  MappedFile* = object
     fd*: cint
     mapped*: pointer
     size*: culong

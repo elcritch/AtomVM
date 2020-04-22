@@ -29,7 +29,7 @@ proc consume_gpio_mailbox*(ctx: ptr Context) {.cdecl.}
 
 proc gpio_isr_handler*(arg: pointer) {.cdecl.}
 type
-  GPIOListenerData* {.bycopy.} = object
+  GPIOListenerData* = object
     target_context*: ptr Context
     gpio*: cint
 

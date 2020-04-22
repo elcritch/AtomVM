@@ -21,7 +21,7 @@ import
   iff, utils
 
 type
-  IFFRecord* {.bycopy.} = object
+  IFFRecord* = object
     name*: array[4, char]
     size*: uint32_t
 

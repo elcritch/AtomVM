@@ -61,32 +61,15 @@ proc globalcontext_new*(): GlobalContext =
   glb.processes_table = @[]
   glb.registered_processes = @[]
   glb.last_process_id = 0
-  glb.atoms_table = initTable()
+  glb.atoms_table = initTable[AtomString, AtomId](8)
+  glb.atoms_ids_table = initTable[AtomId, AtomString](8)
 
-  if IS_NULL_PTR(glb.atoms_table):
-    free(glb)
-    return nil
-  glb.atoms_ids_table = valueshashtable_new()
-  if IS_NULL_PTR(glb.atoms_ids_table):
-    free(glb.atoms_table)
-    free(glb)
-    return nil
-  defaultatoms_init(glb)
-  glb.modules_by_index = nil
-  glb.loaded_modules_count = 0
-  glb.modules_table = atomshashtable_new()
-  if IS_NULL_PTR(glb.modules_table):
-    free(glb.atoms_ids_table)
-    free(glb.atoms_table)
-    free(glb)
-    return nil
+  # defaultatoms_init(glb)
+
+  glb.modules_by_index = @[]
+  glb.modules_table = initTable[AtomString, AtomId](8)
+
   glb.timer_wheel = timer_wheel_new(16)
-  if IS_NULL_PTR(glb.timer_wheel):
-    free(glb.modules_table)
-    free(glb.atoms_ids_table)
-    free(glb.atoms_table)
-    free(glb)
-    return nil
   glb.last_seen_millis = 0
   glb.ref_ticks = 0
   sys_init_platform(glb)

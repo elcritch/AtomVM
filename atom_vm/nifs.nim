@@ -1498,7 +1498,7 @@ proc nif_increment_port_count*(ctx: ptr Context; accum: pointer): pointer {.cdec
     return accum
 
 type
-  ContextAccumulator* {.bycopy.} = object
+  ContextAccumulator* = object
     ctx*: ptr Context
     result*: term
 

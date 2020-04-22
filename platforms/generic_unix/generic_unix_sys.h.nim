@@ -19,13 +19,13 @@
 
 type
   event_handler_t* = proc (listener: ptr EventListener) {.cdecl.}
-  EventListener* {.bycopy.} = object
+  EventListener* = object
     listeners_list_head*: ListHead
     handler*: event_handler_t
     data*: pointer
     fd*: cint
 
-  GenericUnixPlatformData* {.bycopy.} = object
+  GenericUnixPlatformData* = object
     listeners*: ptr ListHead
 
 

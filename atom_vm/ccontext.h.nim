@@ -38,7 +38,7 @@ type
 ##
 
 type
-  CContext* {.bycopy.} = object
+  CContext* = object
     ctx*: ptr Context
     terms_count*: cuint
 

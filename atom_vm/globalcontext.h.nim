@@ -27,13 +27,13 @@ import
   atom, term, linkedlist
 
 type
-  Context* {.bycopy.} = object
+  Context* = object
 
-  GlobalContext* {.bycopy.} = object
+  GlobalContext* = object
 
-  Module* {.bycopy.} = object
+  Module* = object
 
-  GlobalContext* {.bycopy.} = object
+  GlobalContext* = object
     ready_processes*: ListHead
     waiting_processes*: ListHead
     processes_table*: ptr ListHead

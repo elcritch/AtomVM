@@ -18,7 +18,7 @@
 ## *************************************************************************
 
 type
-  TempStack* {.bycopy.} = object
+  TempStack* = object
     stack_end*: ptr term
     stack_pos*: ptr term
     size*: cint

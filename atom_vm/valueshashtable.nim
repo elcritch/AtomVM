@@ -24,7 +24,7 @@ const
   DEFAULT_SIZE* = 8
 
 type
-  HNode* {.bycopy.} = object
+  HNode* = object
     next*: ptr HNode
     key*: culong
     value*: culong

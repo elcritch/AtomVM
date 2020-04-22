@@ -40,7 +40,7 @@ proc wifi_event_handler*(ctx: pointer; event: ptr system_event_t): esp_err_t {.c
 var wifi_event_group*: EventGroupHandle_t
 
 type
-  ClientData* {.bycopy.} = object
+  ClientData* = object
     ctx*: ptr Context
     pid*: term
     ref_ticks*: uint64_t

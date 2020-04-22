@@ -80,7 +80,7 @@ type
 
 
 type
-  SocketData* {.bycopy.} = object
+  SocketData* = object
     sockets_head*: ListHead
     conn*: ptr netconn
     ctx*: ptr Context
@@ -93,23 +93,23 @@ type
     active* {.bitsize: 1.}: bool
     binary* {.bitsize: 1.}: bool
 
-  TCPClientSocketData* {.bycopy.} = object
+  TCPClientSocketData* = object
     socket_data*: SocketData
 
-  TCPServerSocketData* {.bycopy.} = object
+  TCPServerSocketData* = object
     socket_data*: SocketData
     ready_connections*: cint
     accepters_list_head*: ListHead
 
-  TCPServerAccepter* {.bycopy.} = object
+  TCPServerAccepter* = object
     accepter_head*: ListHead
     accepting_process_pid*: term
     ref_ticks*: uint64_t
 
-  UDPSocketData* {.bycopy.} = object
+  UDPSocketData* = object
     socket_data*: SocketData
 
-  NetconnEvent* {.bycopy.} = object
+  NetconnEvent* = object
     netconn*: ptr netconn
     evt*: netconn_evt
     len*: u16_t

@@ -26,7 +26,7 @@ proc i2cdriver_end_transmission*(ctx: ptr Context; pid: term): term {.cdecl.}
 proc i2cdriver_write_byte*(ctx: ptr Context; pid: term; req: term): term {.cdecl.}
 proc i2cdriver_consume_mailbox*(ctx: ptr Context) {.cdecl.}
 type
-  I2CData* {.bycopy.} = object
+  I2CData* = object
     cmd*: i2c_cmd_handle_t
     transmitting_pid*: term
 

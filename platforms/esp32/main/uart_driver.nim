@@ -28,7 +28,7 @@ const
   UART_BUF_SIZE* = 256
 
 type
-  UARTData* {.bycopy.} = object
+  UARTData* = object
     rxqueue*: xQueueHandle
     listener*: EventListener
     reader_process_pid*: term

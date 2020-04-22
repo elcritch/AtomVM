@@ -27,7 +27,7 @@ import
   list, term, context
 
 type
-  Message* {.bycopy.} = object
+  Message* = object
     mailbox_list_head*: ListHead
     msg_memory_size*: cint
     message*: term

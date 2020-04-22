@@ -21,16 +21,16 @@ import
   list
 
 type
-  TimerWheelItem* {.bycopy.} = object
+  TimerWheelItem* = object
 
   timer_wheel_callback_t* = proc (a1: ptr TimerWheelItem) {.cdecl.}
-  TimerWheel* {.bycopy.} = object
+  TimerWheel* = object
     slots*: ptr ListHead
     slots_count*: cint
     timers*: cint
     monotonic_time*: uint64_t
 
-  TimerWheelItem* {.bycopy.} = object
+  TimerWheelItem* = object
     expiry_time*: uint64_t
     head*: ListHead
     callback*: ptr timer_wheel_callback_t

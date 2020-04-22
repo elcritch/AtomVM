@@ -17,8 +17,49 @@
 ##    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA .        *
 ## *************************************************************************
 
-import
-  timer_wheel
+
+type
+  TimerWheelItem* = object
+
+  timer_wheel_callback_t* = proc (a1: ptr TimerWheelItem) {.cdecl.}
+  TimerWheel* = object
+    slots*: ptr ListHead
+    slots_count*: cint
+    timers*: cint
+    monotonic_time*: uint64_t
+
+  TimerWheelItem* = object
+    expiry_time*: uint64_t
+    head*: ListHead
+    callback*: ptr timer_wheel_callback_t
+
+
+proc timer_wheel_new*(slots_count: cint): ptr TimerWheel {.cdecl.}
+proc timer_wheel_tick*(tw: ptr TimerWheel) {.cdecl.}
+proc timer_wheel_insert*(tw: ptr TimerWheel; item: ptr TimerWheelItem) {.inline, cdecl.} =
+  var expiry_time: uint64_t = item.expiry_time
+  var slot: cint = expiry_time mod tw.slots_count
+  inc(tw.timers)
+  list_append(addr(tw.slots[slot]), addr(item.head))
+
+proc timer_wheel_remove*(tw: ptr TimerWheel; item: ptr TimerWheelItem) {.inline, cdecl.} =
+  dec(tw.timers)
+  list_remove(addr(item.head))
+
+proc timer_wheel_is_empty*(tw: ptr TimerWheel): bool {.inline, cdecl.} =
+  return tw.timers == 0
+
+proc timer_wheel_timers_count*(tw: ptr TimerWheel): cint {.inline, cdecl.} =
+  return tw.timers
+
+proc timer_wheel_item_init*(it: ptr TimerWheelItem; cb: timer_wheel_callback_t;
+                           expiry: uint64_t) {.inline, cdecl.} =
+  it.expiry_time = expiry
+  it.callback = cb
+
+proc timer_wheel_expiry_to_monotonic*(tw: ptr TimerWheel; expiry: uint32_t): uint64_t {.
+    inline, cdecl.} =
+  return tw.monotonic_time + expiry
 
 proc timer_wheel_new*(slots_count: cint): ptr TimerWheel {.cdecl.} =
   var tw: ptr TimerWheel = malloc(sizeof(TimerWheel))

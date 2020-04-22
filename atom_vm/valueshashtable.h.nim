@@ -18,7 +18,7 @@
 ## *************************************************************************
 
 type
-  ValuesHashTable* {.bycopy.} = object
+  ValuesHashTable* = object
     capacity*: cint
     count*: cint
     buckets*: ptr ptr HNode

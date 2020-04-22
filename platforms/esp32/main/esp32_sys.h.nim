@@ -25,13 +25,13 @@ const
 
 type
   event_handler_t* = proc (listener: ptr EventListener) {.cdecl.}
-  EventListener* {.bycopy.} = object
+  EventListener* = object
     listeners_list_head*: ListHead
     handler*: event_handler_t
     data*: pointer
     sender*: pointer
 
-  ESP32PlatformData* {.bycopy.} = object
+  ESP32PlatformData* = object
     listeners*: ListHead
     sockets_list_head*: ListHead
 

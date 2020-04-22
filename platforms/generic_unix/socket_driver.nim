@@ -32,7 +32,7 @@ const
   BUFSIZE* = 128
 
 type
-  SocketDriverData* {.bycopy.} = object
+  SocketDriverData* = object
     sockfd*: cint
     proto*: term
     port*: term
@@ -461,7 +461,7 @@ proc socket_driver_do_sendto*(ctx: ptr Context; dest_address: term; dest_port: t
 ##
 
 type
-  RecvFromData* {.bycopy.} = object
+  RecvFromData* = object
     ctx*: ptr Context
     pid*: term
     length*: term
