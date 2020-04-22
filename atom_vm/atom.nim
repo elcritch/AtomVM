@@ -21,6 +21,7 @@ import
   hashes, tables
 
 type
+  AtomId* = distinct uint32
   AtomString* = ref object
     str*: string
 

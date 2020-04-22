@@ -18,37 +18,36 @@
 ## *************************************************************************
 
 import
-  globalcontext, atomshashtable, defaultatoms,
-  valueshashtable, sys, context,
-  src/libAtomVM/atom
+  tables,
+  atom
+  # defaultatoms,
+  # context,
 
 type
-  Context* {.bycopy.} = object
+  Context* = pointer
+  Module* = pointer
+  TimerWheel* = pointer
 
-  GlobalContext* {.bycopy.} = object
-
-  Module* {.bycopy.} = object
-
-  GlobalContext* {.bycopy.} = object
+  GlobalContext* = object
     ready_processes*: seq[Context]
     waiting_processes*: seq[Context]
-    processes_table*: ref seq[Context]
-    registered_processes*: ref seq[Context]
+    processes_table*: seq[Context]
+    registered_processes*: seq[RegisteredProcess]
     last_process_id*: int32
-    atoms_table*: ref Table[AtomString, uint32]
-    atoms_ids_table*: ref Table[uint32, AtomString]
-    modules_table*: ref Table[AtromString, uint32]
-    modules_by_index*: ref ref Module
+    atoms_table*: Table[AtomString, AtomId]
+    atoms_ids_table*: Table[AtomId, AtomString]
+    modules_table*: Table[AtomString, AtomId]
+    modules_by_index*: seq[Module]
     loaded_modules_count*: int
-    avmpack_data*: ref seq[byte]
-    avmpack_platform_data*: ref seq[byte]
-    timer_wheel*: ref TimerWheel
+    avmpack_data*: seq[byte]
+    avmpack_platform_data*: seq[byte]
+    timer_wheel*: TimerWheel
     last_seen_millis*: uint32
     ref_ticks*: uint64
-    platform_data*: ref seq
+    platform_data*: ref seq[byte]
 
-  RegisteredProcess* {.bycopy.} = object
-    registered_processes_list_head*: ListHead
+  RegisteredProcess* = object
+    registered_processes_list_head*: seq[Context]
     atom_index*: cint
     local_process_id*: cint
 
@@ -56,13 +55,13 @@ type
 proc globalcontext_new*(): GlobalContext =
   var glb = GlobalContext()
 
-  list_init(addr(glb.ready_processes))
-  list_init(addr(glb.waiting_processes))
+  glb.ready_processes = @[]
+  glb.waiting_processes = @[]
 
-  glb.processes_table = nil
-  glb.registered_processes = nil
+  glb.processes_table = @[]
+  glb.registered_processes = @[]
   glb.last_process_id = 0
-  glb.atoms_table = atomshashtable_new()
+  glb.atoms_table = initTable()
 
   if IS_NULL_PTR(glb.atoms_table):
     free(glb)
