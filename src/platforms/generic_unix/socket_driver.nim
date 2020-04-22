@@ -64,7 +64,7 @@ proc socket_tuple_from_addr*(ctx: ptr Context; `addr`: uint32_t): term {.cdecl.}
   terms[3] = term_from_int32(`addr` and 0x000000FF)
   return port_create_tuple_n(ctx, 4, terms)
 
-proc socket_create_packet_term*(ctx: ptr Context; buf: string; len: ssize_t;
+proc socket_create_packet_term*(ctx: ptr Context; buf: cstring; len: ssize_t;
                                is_binary: cint): term {.cdecl.} =
   if is_binary:
     return term_from_literal_binary(cast[pointer](buf), len, ctx)
@@ -158,7 +158,7 @@ proc do_connect*(socket_data: ptr SocketDriverData; ctx: ptr Context; address: t
   hints.ai_socktype = SOCK_STREAM
   hints.ai_protocol = IPPROTO_TCP
   var ok: cint
-  var addr_str: string = interop_term_to_string(address, addr(ok))
+  var addr_str: cstring = interop_term_to_string(address, addr(ok))
   if not ok:
     return port_create_error_tuple(ctx, BADARG_ATOM)
   var port_str: array[32, char]
@@ -394,10 +394,10 @@ proc socket_driver_peername*(ctx: ptr Context): term {.cdecl.} =
 
 proc socket_driver_do_send*(ctx: ptr Context; buffer: term): term {.cdecl.} =
   var socket_data: ptr SocketDriverData = cast[ptr SocketDriverData](ctx.platform_data)
-  var buf: string
+  var buf: cstring
   var len: csize
   if term_is_binary(buffer):
-    buf = cast[string](term_binary_data(buffer))
+    buf = cast[cstring](term_binary_data(buffer))
     len = term_binary_size(buffer)
   elif term_is_list(buffer):
     var ok: cint
@@ -428,10 +428,10 @@ proc socket_driver_do_sendto*(ctx: ptr Context; dest_address: term; dest_port: t
   `addr`.sin_family = AF_INET
   `addr`.sin_addr.s_addr = htonl(socket_tuple_to_addr(dest_address))
   `addr`.sin_port = htons(term_to_int32(dest_port))
-  var buf: string
+  var buf: cstring
   var len: csize
   if term_is_binary(buffer):
-    buf = cast[string](term_binary_data(buffer))
+    buf = cast[cstring](term_binary_data(buffer))
     len = term_binary_size(buffer)
   elif term_is_list(buffer):
     var ok: cint
@@ -475,7 +475,7 @@ proc active_recv_callback*(listener: ptr EventListener) {.cdecl.} =
   ##  allocate the receive buffer
   ##
   var buf_size: avm_int_t = term_to_int(socket_data.buffer)
-  var buf: string = malloc(buf_size)
+  var buf: cstring = malloc(buf_size)
   if IS_NULL_PTR(buf):
     fprintf(stderr, "Failed to allocate memory: %s:%i.\n", __FILE__, __LINE__)
     abort()
@@ -520,7 +520,7 @@ proc passive_recv_callback*(listener: ptr EventListener) {.cdecl.} =
   ##  allocate the receive buffer
   ##
   var buf_size: avm_int_t = term_to_int(recvfrom_data.length)
-  var buf: string = malloc(buf_size)
+  var buf: cstring = malloc(buf_size)
   if IS_NULL_PTR(buf):
     fprintf(stderr, "Failed to allocate memory: %s:%i.\n", __FILE__, __LINE__)
     abort()
@@ -562,7 +562,7 @@ proc active_recvfrom_callback*(listener: ptr EventListener) {.cdecl.} =
   ##  allocate the receive buffer
   ##
   var buf_size: avm_int_t = term_to_int(socket_data.buffer)
-  var buf: string = malloc(buf_size)
+  var buf: cstring = malloc(buf_size)
   if IS_NULL_PTR(buf):
     fprintf(stderr, "Failed to allocate memory: %s:%i.\n", __FILE__, __LINE__)
     abort()
@@ -608,7 +608,7 @@ proc passive_recvfrom_callback*(listener: ptr EventListener) {.cdecl.} =
   ##  allocate the receive buffer
   ##
   var buf_size: avm_int_t = term_to_int(recvfrom_data.length)
-  var buf: string = malloc(buf_size)
+  var buf: cstring = malloc(buf_size)
   if IS_NULL_PTR(buf):
     fprintf(stderr, "Failed to allocate memory: %s:%i.\n", __FILE__, __LINE__)
     abort()
@@ -761,27 +761,27 @@ proc socket_driver_do_accept*(ctx: ptr Context; pid: term; `ref`: term; timeout:
 
 ##  TODO define in defaultatoms
 
-var send_a*: string = "\x04send"
+var send_a*: cstring = "\x04send"
 
-var sendto_a*: string = "\x06sendto"
+var sendto_a*: cstring = "\x06sendto"
 
-var init_a*: string = "\x04init"
+var init_a*: cstring = "\x04init"
 
-var bind_a*: string = "\x04bind"
+var bind_a*: cstring = "\x04bind"
 
-var recvfrom_a*: string = "\brecvfrom"
+var recvfrom_a*: cstring = "\brecvfrom"
 
-var recv_a*: string = "\x04recv"
+var recv_a*: cstring = "\x04recv"
 
-var close_a*: string = "\x05close"
+var close_a*: cstring = "\x05close"
 
-var get_port_a*: string = "\bget_port"
+var get_port_a*: cstring = "\bget_port"
 
-var accept_a*: string = "\x06accept"
+var accept_a*: cstring = "\x06accept"
 
-var sockname_a*: string = "\bsockname"
+var sockname_a*: cstring = "\bsockname"
 
-var peername_a*: string = "\bpeername"
+var peername_a*: cstring = "\bpeername"
 
 proc socket_consume_mailbox*(ctx: ptr Context) {.cdecl.} =
   TRACE("START socket_consume_mailbox\n")

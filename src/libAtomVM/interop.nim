@@ -20,11 +20,11 @@
 import
   interop, tempstack
 
-proc interop_term_to_string*(t: term; ok: ptr cint): string {.cdecl.} =
+proc interop_term_to_string*(t: term; ok: ptr cint): cstring {.cdecl.} =
   if term_is_list(t):
     return interop_list_to_string(t, ok)
   elif term_is_binary(t):
-    var str: string = interop_binary_to_string(t)
+    var str: cstring = interop_binary_to_string(t)
     ok[] = str != nil
     return str
   else:
@@ -32,22 +32,22 @@ proc interop_term_to_string*(t: term; ok: ptr cint): string {.cdecl.} =
     ok[] = 0
     return nil
 
-proc interop_binary_to_string*(binary: term): string {.cdecl.} =
+proc interop_binary_to_string*(binary: term): cstring {.cdecl.} =
   var len: cint = term_binary_size(binary)
-  var str: string = malloc(len + 1)
+  var str: cstring = malloc(len + 1)
   if IS_NULL_PTR(str):
     return nil
   memcpy(str, term_binary_data(binary), len)
   str[len] = 0
   return str
 
-proc interop_list_to_string*(list: term; ok: ptr cint): string {.cdecl.} =
+proc interop_list_to_string*(list: term; ok: ptr cint): cstring {.cdecl.} =
   var proper: cint
   var len: cint = term_list_length(list, addr(proper))
   if UNLIKELY(not proper):
     ok[] = 0
     return nil
-  var str: string = malloc(len + 1)
+  var str: cstring = malloc(len + 1)
   if IS_NULL_PTR(str):
     return nil
   var t: term = list
@@ -117,7 +117,7 @@ proc interop_iolist_size*(t: term; ok: ptr cint): cint {.cdecl.} =
   ok[] = 1
   return acc
 
-proc interop_write_iolist*(t: term; p: string): cint {.cdecl.} =
+proc interop_write_iolist*(t: term; p: cstring): cint {.cdecl.} =
   if term_is_binary(t):
     var len: cint = term_binary_size(t)
     memcpy(p, term_binary_data(t), len)

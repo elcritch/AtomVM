@@ -71,7 +71,7 @@ proc sys_start_millis_timer*() {.cdecl.} =
 proc sys_stop_millis_timer*() {.cdecl.} =
   discard
 
-proc sys_load_module*(global: ptr GlobalContext; module_name: string): ptr Module {.
+proc sys_load_module*(global: ptr GlobalContext; module_name: cstring): ptr Module {.
     cdecl.} =
   var beam_module: pointer = nil
   var beam_module_size: uint32_t = 0
@@ -85,7 +85,7 @@ proc sys_load_module*(global: ptr GlobalContext; module_name: string): ptr Modul
   new_module.module_platform_data = nil
   return new_module
 
-proc sys_create_port*(glb: ptr GlobalContext; driver_name: string; opts: term): ptr Context {.
+proc sys_create_port*(glb: ptr GlobalContext; driver_name: cstring; opts: term): ptr Context {.
     cdecl.} =
   var new_ctx: ptr Context = context_new(glb)
   if not strcmp(driver_name, "gpio"):

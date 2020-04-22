@@ -1,5 +1,5 @@
 ## **************************************************************************
-##    Copyright 2017 by Davide Bettio <davide@uninstall.it>                 *
+##    Copyright 2019 by Fred Dushin <fred@dushin.net>                       *
 ##                                                                          *
 ##    This program is free software; you can redistribute it and/or modify  *
 ##    it under the terms of the GNU Lesser General Public License as        *
@@ -18,30 +18,17 @@
 ## *************************************************************************
 
 import
-  mapped_file, utils
+  module, exportedfunction
 
-proc mapped_file_open_beam*(file_name: cstring): ptr MappedFile {.cdecl.} =
-  var mf: ptr MappedFile = malloc(sizeof((MappedFile)))
-  if IS_NULL_PTR(mf):
-    fprintf(stderr, "Unable to allocate MappedFile struct\n")
-    return nil
-  mf.fd = open(file_name, O_RDONLY)
-  if UNLIKELY(mf.fd < 0):
-    free(mf)
-    fprintf(stderr, "Unable to open %s\n", file_name)
-    return nil
-  var file_stats: stat
-  fstat(mf.fd, addr(file_stats))
-  mf.size = file_stats.st_size
-  mf.mapped = mmap(nil, mf.size, PROT_READ, MAP_SHARED, mf.fd, 0)
-  if IS_NULL_PTR(mf.mapped):
-    fprintf(stderr, "Cannot mmap %s\n", file_name)
-    close(mf.fd)
-    free(mf)
-    return nil
-  return mf
+## *
+##  @brief    Returns the Nif assocatiated with a nif name.
+##
+##  @details  This function is used to locate platform-specific Nifs.
+##            Each platform must include an implementation of this function,
+##            even if it just returns NULL.
+##  @param    nifname a null-terminated module:function/arity name
+##  @return   the Nif structure associated with the supplied nif name, or
+##            NULL, if there is no such Nif.
+##
 
-proc mapped_file_close*(mf: ptr MappedFile) {.cdecl.} =
-  munmap(mf.mapped, mf.size)
-  close(mf.fd)
-  free(mf)
+proc platform_nifs_get_nif*(nifname: cstring): ptr Nif {.cdecl.}

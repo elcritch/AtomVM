@@ -53,11 +53,11 @@ template MAX*(x, y: untyped): untyped =
   (if ((x) > (y)): (x) else: (y))
 
 when defined(ENABLE_ADVANCED_TRACE):
-  var trace_calls_atom*: string = "\vtrace_calls"
-  var trace_call_args_atom*: string = "\x0Ftrace_call_args"
-  var trace_returns_atom*: string = "\ctrace_returns"
-  var trace_send_atom*: string = "\ntrace_send"
-  var trace_receive_atom*: string = "\ctrace_receive"
+  var trace_calls_atom*: cstring = "\vtrace_calls"
+  var trace_call_args_atom*: cstring = "\x0Ftrace_call_args"
+  var trace_returns_atom*: cstring = "\ctrace_returns"
+  var trace_send_atom*: cstring = "\ntrace_send"
+  var trace_receive_atom*: cstring = "\ctrace_receive"
 proc process_echo_mailbox*(ctx: ptr Context) {.cdecl.}
 proc process_console_mailbox*(ctx: ptr Context) {.cdecl.}
 proc binary_to_atom*(ctx: ptr Context; argc: cint; argv: ptr term; create_new: cint): term {.
@@ -542,7 +542,7 @@ proc nif_erlang_iolist_to_binary_1*(ctx: ptr Context; argc: cint; argv: ptr term
   var bin_size: cint = interop_iolist_size(t, addr(ok))
   if not ok:
     RAISE_ERROR(BADARG_ATOM)
-  var bin_buf: string = malloc(bin_size)
+  var bin_buf: cstring = malloc(bin_size)
   if IS_NULL_PTR(bin_buf):
     RAISE_ERROR(OUT_OF_MEMORY_ATOM)
   if UNLIKELY(not interop_write_iolist(t, bin_buf)):
@@ -565,7 +565,7 @@ proc nif_erlang_open_port_2*(ctx: ptr Context; argc: cint; argv: ptr term): term
   var t: term = term_get_tuple_element(port_name_tuple, 1)
   ## TODO: validate port name
   var ok: cint
-  var driver_name: string = interop_term_to_string(t, addr(ok))
+  var driver_name: cstring = interop_term_to_string(t, addr(ok))
   if UNLIKELY(not ok):
     ## TODO: handle atoms here
     RAISE_ERROR(BADARG_ATOM)
@@ -634,7 +634,7 @@ proc process_console_mailbox*(ctx: ptr Context) {.cdecl.} =
       var cmd_name: term = term_get_tuple_element(cmd, 0)
       if cmd_name == PUTS_ATOM:
         var ok: cint
-        var str: string = interop_term_to_string(term_get_tuple_element(cmd, 1),
+        var str: cstring = interop_term_to_string(term_get_tuple_element(cmd, 1),
             addr(ok))
         if UNLIKELY(not ok):
           var error: term = port_create_error_tuple(ctx, BADARG_ATOM)
@@ -1005,7 +1005,7 @@ proc nif_erlang_binary_to_integer_1*(ctx: ptr Context; argc: cint; argv: ptr ter
   UNUSED(argc)
   var bin_term: term = argv[0]
   VALIDATE_VALUE(bin_term, term_is_binary)
-  var bin_data: string = term_binary_data(bin_term)
+  var bin_data: cstring = term_binary_data(bin_term)
   var bin_data_size: cint = term_binary_size(bin_term)
   if UNLIKELY((bin_data_size == 0) or (bin_data_size >= 24)):
     RAISE_ERROR(BADARG_ATOM)
@@ -1014,14 +1014,14 @@ proc nif_erlang_binary_to_integer_1*(ctx: ptr Context; argc: cint; argv: ptr ter
   null_terminated_buf[bin_data_size] = '\x00'
   ## TODO: handle 64 bits numbers
   ## TODO: handle errors
-  var endptr: string
+  var endptr: cstring
   var value: uint64_t = strtoll(null_terminated_buf, addr(endptr), 10)
   if endptr[] != '\x00':
     RAISE_ERROR(BADARG_ATOM)
   return make_maybe_boxed_int64(ctx, value)
 
 when not defined(AVM_NO_FP):
-  proc is_valid_float_string*(str: string; len: cint): cint {.cdecl.} =
+  proc is_valid_float_string*(str: cstring; len: cint): cint {.cdecl.} =
     var has_point: cint = 0
     var scientific: cint = 0
     var i: cint = 0
@@ -1042,7 +1042,7 @@ when not defined(AVM_NO_FP):
       inc(i)
     return has_point
 
-  proc parse_float*(ctx: ptr Context; buf: string; len: cint): term {.cdecl.} =
+  proc parse_float*(ctx: ptr Context; buf: cstring; len: cint): term {.cdecl.} =
     if UNLIKELY((len == 0) or (len >= FLOAT_BUF_SIZE - 1)):
       RAISE_ERROR(BADARG_ATOM)
     var null_terminated_buf: array[FLOAT_BUF_SIZE, char]
@@ -1063,7 +1063,7 @@ proc nif_erlang_binary_to_float_1*(ctx: ptr Context; argc: cint; argv: ptr term)
   when not defined(AVM_NO_FP):
     var bin_term: term = argv[0]
     VALIDATE_VALUE(bin_term, term_is_binary)
-    var bin_data: string = term_binary_data(bin_term)
+    var bin_data: cstring = term_binary_data(bin_term)
     var bin_data_size: cint = term_binary_size(bin_term)
     return parse_float(ctx, bin_data, bin_data_size)
   else:
@@ -1082,7 +1082,7 @@ proc nif_erlang_list_to_float_1*(ctx: ptr Context; argc: cint; argv: ptr term): 
     if UNLIKELY(not proper):
       RAISE_ERROR(BADARG_ATOM)
     var ok: cint
-    var string: string = interop_list_to_string(argv[0], addr(ok))
+    var string: cstring = interop_list_to_string(argv[0], addr(ok))
     if UNLIKELY(not ok):
       RAISE_ERROR(BADARG_ATOM)
     var res_term: term = parse_float(ctx, string, len)
@@ -1101,7 +1101,7 @@ proc nif_erlang_binary_to_list_1*(ctx: ptr Context; argc: cint; argv: ptr term):
   var bin_size: cint = term_binary_size(value)
   if UNLIKELY(memory_ensure_free(ctx, bin_size * 2) != MEMORY_GC_OK):
     RAISE_ERROR(OUT_OF_MEMORY_ATOM)
-  var bin_data: string = term_binary_data(argv[0])
+  var bin_data: cstring = term_binary_data(argv[0])
   var prev: term = term_nil()
   var i: cint = bin_size - 1
   while i >= 0:
@@ -1120,7 +1120,7 @@ proc binary_to_atom*(ctx: ptr Context; argc: cint; argv: ptr term; create_new: c
   VALIDATE_VALUE(a_binary, term_is_binary)
   if UNLIKELY(argv[1] != LATIN1_ATOM):
     RAISE_ERROR(BADARG_ATOM)
-  var atom_string: string = interop_binary_to_string(a_binary)
+  var atom_string: cstring = interop_binary_to_string(a_binary)
   if IS_NULL_PTR(atom_string):
     fprintf(stderr, "Failed to alloc temporary string\n")
     abort()
@@ -1130,7 +1130,7 @@ proc binary_to_atom*(ctx: ptr Context; argc: cint; argv: ptr term; create_new: c
     RAISE_ERROR(SYSTEM_LIMIT_ATOM)
   var atom: AtomString = malloc(atom_string_len + 1)
   (cast[ptr uint8_t](atom))[0] = atom_string_len
-  memcpy((cast[string](atom)) + 1, atom_string, atom_string_len)
+  memcpy((cast[cstring](atom)) + 1, atom_string, atom_string_len)
   var global_atom_index: culong = atomshashtable_get_value(ctx.global.atoms_table,
       atom, ULONG_MAX)
   var has_atom: cint = (global_atom_index != ULONG_MAX)
@@ -1158,7 +1158,7 @@ proc list_to_atom*(ctx: ptr Context; argc: cint; argv: ptr term; create_new: cin
   var a_list: term = argv[0]
   VALIDATE_VALUE(a_list, term_is_list)
   var ok: cint
-  var atom_string: string = interop_list_to_string(a_list, addr(ok))
+  var atom_string: cstring = interop_list_to_string(a_list, addr(ok))
   if UNLIKELY(not ok):
     fprintf(stderr, "Failed to alloc temporary string\n")
     abort()
@@ -1168,7 +1168,7 @@ proc list_to_atom*(ctx: ptr Context; argc: cint; argv: ptr term; create_new: cin
     RAISE_ERROR(SYSTEM_LIMIT_ATOM)
   var atom: AtomString = malloc(atom_string_len + 1)
   (cast[ptr uint8_t](atom))[0] = atom_string_len
-  memcpy((cast[string](atom)) + 1, atom_string, atom_string_len)
+  memcpy((cast[cstring](atom)) + 1, atom_string, atom_string_len)
   var global_atom_index: culong = atomshashtable_get_value(ctx.global.atoms_table,
       atom, ULONG_MAX)
   var has_atom: cint = (global_atom_index != ULONG_MAX)
@@ -1196,7 +1196,7 @@ proc nif_erlang_atom_to_binary_2*(ctx: ptr Context; argc: cint; argv: ptr term):
   if UNLIKELY(memory_ensure_free(ctx, term_binary_data_size_in_terms(atom_len) +
       BINARY_HEADER_SIZE) != MEMORY_GC_OK):
     RAISE_ERROR(OUT_OF_MEMORY_ATOM)
-  var atom_data: string = cast[string](atom_string_data(atom_string))
+  var atom_data: cstring = cast[cstring](atom_string_data(atom_string))
   return term_from_literal_binary(atom_data, atom_len, ctx)
 
 proc nif_erlang_atom_to_list_1*(ctx: ptr Context; argc: cint; argv: ptr term): term {.
@@ -1213,7 +1213,7 @@ proc nif_erlang_atom_to_list_1*(ctx: ptr Context; argc: cint; argv: ptr term): t
   var prev: term = term_nil()
   var i: cint = atom_len - 1
   while i >= 0:
-    var c: char = (cast[string](atom_string_data(atom_string)))[i]
+    var c: char = (cast[cstring](atom_string_data(atom_string)))[i]
     prev = term_list_prepend(term_from_int11(c), prev, ctx)
     dec(i)
   return prev
@@ -1253,9 +1253,9 @@ proc nif_erlang_integer_to_list_1*(ctx: ptr Context; argc: cint; argv: ptr term)
 
 when not defined(AVM_NO_FP):
   proc format_float*(value: term; scientific: cint; decimals: cint; compact: cint;
-                    out_buf: string; outbuf_len: cint): cint {.cdecl.} =
+                    out_buf: cstring; outbuf_len: cint): cint {.cdecl.} =
     ##  %lf and %f are the same since C99 due to double promotion.
-    var format: string
+    var format: cstring
     if scientific:
       format = "%.*e"
     else:
@@ -1388,7 +1388,7 @@ proc nif_erlang_list_to_binary_1*(ctx: ptr Context; argc: cint; argv: ptr term):
       BINARY_HEADER_SIZE) != MEMORY_GC_OK):
     RAISE_ERROR(BADARG_ATOM)
   var ok: cint
-  var string: string = interop_list_to_string(argv[0], addr(ok))
+  var string: cstring = interop_list_to_string(argv[0], addr(ok))
   if UNLIKELY(not ok):
     RAISE_ERROR(BADARG_ATOM)
   var bin_term: term = term_from_literal_binary(string, len, ctx)
@@ -1693,7 +1693,7 @@ proc nif_binary_part_3*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cd
   if UNLIKELY(memory_ensure_free(ctx, term_binary_data_size_in_terms(len) +
       BINARY_HEADER_SIZE) != MEMORY_GC_OK):
     RAISE_ERROR(OUT_OF_MEMORY_ATOM)
-  var bin_data: string = term_binary_data(argv[0])
+  var bin_data: cstring = term_binary_data(argv[0])
   return term_from_literal_binary(bin_data + pos, len, ctx)
 
 proc nif_binary_split_2*(ctx: ptr Context; argc: cint; argv: ptr term): term {.cdecl.} =
@@ -1706,9 +1706,9 @@ proc nif_binary_split_2*(ctx: ptr Context; argc: cint; argv: ptr term): term {.c
   var pattern_size: cint = term_binary_size(pattern_term)
   if UNLIKELY(pattern_size == 0):
     RAISE_ERROR(BADARG_ATOM)
-  var bin_data: string = term_binary_data(bin_term)
-  var pattern_data: string = term_binary_data(pattern_term)
-  var found: string = cast[string](memmem(bin_data, bin_size, pattern_data,
+  var bin_data: cstring = term_binary_data(bin_term)
+  var pattern_data: cstring = term_binary_data(pattern_term)
+  var found: cstring = cast[cstring](memmem(bin_data, bin_size, pattern_data,
                                         pattern_size))
   var offset: cint = found - bin_data
   if found:
@@ -1724,7 +1724,7 @@ proc nif_binary_split_2*(ctx: ptr Context; argc: cint; argv: ptr term): term {.c
     if UNLIKELY(memory_ensure_free(ctx, tok_size_in_terms + rest_size_in_terms + 2) !=
         MEMORY_GC_OK):
       RAISE_ERROR(OUT_OF_MEMORY_ATOM)
-    var bin_data: string = term_binary_data(argv[0])
+    var bin_data: cstring = term_binary_data(argv[0])
     var tok: term = term_from_literal_binary(bin_data, tok_size, ctx)
     var rest: term = term_from_literal_binary(bin_data + offset + pattern_size,
         rest_size, ctx)
@@ -1774,9 +1774,9 @@ proc nif_erlang_ref_to_list*(ctx: ptr Context; argc: cint; argv: ptr term): term
   VALIDATE_VALUE(t, term_is_reference)
   ##  TODO: FIXME
   when defined(__clang__):
-    var format: string = "#Ref<0.0.0.%llu>"
+    var format: cstring = "#Ref<0.0.0.%llu>"
   else:
-    var format: string = "#Ref<0.0.0.%lu>"
+    var format: cstring = "#Ref<0.0.0.%lu>"
   ##  2^64 = 18446744073709551616 (20 chars)
   ##  12 chars of static text + '\0'
   var buf: array[33, char]
@@ -1801,9 +1801,9 @@ proc nif_erlang_fun_to_list*(ctx: ptr Context; argc: cint; argv: ptr term): term
   ##  char-len(address) + char-len(32-bit-num) + 16 + '\0' = 47
   ##  20                  10
   when defined(__clang__):
-    var format: string = "#Fun<erl_eval.%lu.%llu>"
+    var format: cstring = "#Fun<erl_eval.%lu.%llu>"
   else:
-    var format: string = "#Fun<erl_eval.%lu.%llu>"
+    var format: cstring = "#Fun<erl_eval.%lu.%llu>"
   var buf: array[47, char]
   snprintf(buf, 47, format, fun_index, cast[culong](fun_module))
   var str_len: cint = strnlen(buf, 47)
@@ -1845,17 +1845,17 @@ proc nif_atomvm_read_priv*(ctx: ptr Context; argc: cint; argv: ptr term): term {
   var atom_string: AtomString = cast[AtomString](valueshashtable_get_value(
       glb.atoms_ids_table, atom_index, cast[culong](nil)))
   var app_len: cint = atom_string_len(atom_string)
-  var app: string = malloc(app_len + 1)
-  memcpy(app, cast[string](atom_string_data(atom_string)), app_len)
+  var app: cstring = malloc(app_len + 1)
+  memcpy(app, cast[cstring](atom_string_data(atom_string)), app_len)
   app[app_len] = '\x00'
   var ok: cint
-  var path: string = interop_term_to_string(path_term, addr(ok))
+  var path: cstring = interop_term_to_string(path_term, addr(ok))
   if UNLIKELY(not ok):
     RAISE_ERROR(BADARG_ATOM)
   if UNLIKELY(not path):
     RAISE_ERROR(OUT_OF_MEMORY_ATOM)
   var complete_path_len: cint = app_len + strlen("/priv/") + strlen(path) + 1
-  var complete_path: string = malloc(complete_path_len)
+  var complete_path: cstring = malloc(complete_path_len)
   snprintf(complete_path, complete_path_len, "%s/priv/%s", app, path)
   free(app)
   free(path)

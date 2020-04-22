@@ -18,12 +18,9 @@
 ## *************************************************************************
 
 import
-  atom, utils, chelpers
+  atom, utils
 
-type
-  AtomString* = pointer
-
-proc atom_string_to_c*(atom_string: AtomString; buf: string; bufsize: cint) {.cdecl.} =
+proc atom_string_to_c*(atom_string: AtomString; buf: cstring; bufsize: cint) {.cdecl.} =
   var atom_len: cint = (cast[ptr uint8_t](atom_string))[]
   if bufsize < atom_len:
     atom_len = bufsize - 1
@@ -40,7 +37,7 @@ proc atom_are_equals*(a: AtomString; b: AtomString): cint {.cdecl.} =
   else:
     return 0
 
-proc atom_write_mfa*(buf: string; buf_size: csize; module: AtomString;
+proc atom_write_mfa*(buf: cstring; buf_size: csize; module: AtomString;
                     function: AtomString; arity: cint) {.cdecl.} =
   var module_name_len: cuint = atom_string_len(module)
   memcpy(buf, atom_string_data(module), module_name_len)

@@ -1,5 +1,5 @@
 ## **************************************************************************
-##    Copyright 2017 by Davide Bettio <davide@uninstall.it>                 *
+##    Copyright 2018 by Fred Dushin <fred@dushin.net>                       *
 ##                                                                          *
 ##    This program is free software; you can redistribute it and/or modify  *
 ##    it under the terms of the GNU Lesser General Public License as        *
@@ -18,30 +18,17 @@
 ## *************************************************************************
 
 import
-  mapped_file, utils
+  globalcontext, context, term, defaultatoms
 
-proc mapped_file_open_beam*(file_name: cstring): ptr MappedFile {.cdecl.} =
-  var mf: ptr MappedFile = malloc(sizeof((MappedFile)))
-  if IS_NULL_PTR(mf):
-    fprintf(stderr, "Unable to allocate MappedFile struct\n")
-    return nil
-  mf.fd = open(file_name, O_RDONLY)
-  if UNLIKELY(mf.fd < 0):
-    free(mf)
-    fprintf(stderr, "Unable to open %s\n", file_name)
-    return nil
-  var file_stats: stat
-  fstat(mf.fd, addr(file_stats))
-  mf.size = file_stats.st_size
-  mf.mapped = mmap(nil, mf.size, PROT_READ, MAP_SHARED, mf.fd, 0)
-  if IS_NULL_PTR(mf.mapped):
-    fprintf(stderr, "Cannot mmap %s\n", file_name)
-    close(mf.fd)
-    free(mf)
-    return nil
-  return mf
-
-proc mapped_file_close*(mf: ptr MappedFile) {.cdecl.} =
-  munmap(mf.mapped, mf.size)
-  close(mf.fd)
-  free(mf)
+proc port_create_tuple2*(ctx: ptr Context; a: term; b: term): term {.cdecl.}
+proc port_create_tuple3*(ctx: ptr Context; a: term; b: term; c: term): term {.cdecl.}
+proc port_create_tuple_n*(ctx: ptr Context; num_terms: csize; terms: ptr term): term {.
+    cdecl.}
+proc port_create_error_tuple*(ctx: ptr Context; reason: term): term {.cdecl.}
+proc port_create_sys_error_tuple*(ctx: ptr Context; syscall: term; errno: cint): term {.
+    cdecl.}
+proc port_create_ok_tuple*(ctx: ptr Context; t: term): term {.cdecl.}
+proc port_send_reply*(ctx: ptr Context; pid: term; `ref`: term; reply: term) {.cdecl.}
+proc port_send_message*(ctx: ptr Context; pid: term; msg: term) {.cdecl.}
+proc port_ensure_available*(ctx: ptr Context; size: csize) {.cdecl.}
+proc port_is_standard_port_command*(msg: term): cint {.cdecl.}

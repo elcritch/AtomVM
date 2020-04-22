@@ -44,7 +44,7 @@ proc debug_display_type*(t: term; ctx: ptr Context) {.cdecl.} =
 ##  TODO: FIXME
 ##  static COLD_FUNC void debug_dump_binary_mem(char *buf, term val, unsigned n)
 
-proc debug_dump_binary_mem*(buf: string; val: term; n: cuint) {.cdecl.} =
+proc debug_dump_binary_mem*(buf: cstring; val: term; n: cuint) {.cdecl.} =
   var i: cuint = 0
   while i < n:
     var bit_i: cint = val shr i and 0x00000001
@@ -55,7 +55,7 @@ proc debug_dump_binary_mem*(buf: string; val: term; n: cuint) {.cdecl.} =
 ##  TODO: FIXME
 ##  static COLD_FUNC void debug_dump_term(Context *ctx, term *pos, const char *region, unsigned i)
 
-proc debug_dump_term*(ctx: ptr Context; pos: ptr term; region: string; i: cuint) {.cdecl.} =
+proc debug_dump_term*(ctx: ptr Context; pos: ptr term; region: cstring; i: cuint) {.cdecl.} =
   var t: term = pos[]
   ##  TODO use TERM_BITS instead
   var buf: array[32 + 1, char]
@@ -69,7 +69,7 @@ proc debug_dump_term*(ctx: ptr Context; pos: ptr term; region: string; i: cuint)
 ##  COLD_FUNC void debug_dump_memory(Context *ctx, term *start, term *end, const char *region)
 
 proc debug_dump_memory*(ctx: ptr Context; start: ptr term; `end`: ptr term;
-                       region: string) {.cdecl.} =
+                       region: cstring) {.cdecl.} =
   var size: culong = `end` - start
   fprintf(stderr, "DEBUG:\n")
   fprintf(stderr, "DEBUG: %s start: 0x%lx\n", region, cast[culong](start))

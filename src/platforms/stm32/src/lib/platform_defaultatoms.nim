@@ -20,31 +20,31 @@
 import
   platform_defaultatoms
 
-var set_level_atom*: string = "\tset_level"
+var set_level_atom*: cstring = "\tset_level"
 
-var input_atom*: string = "\x05input"
+var input_atom*: cstring = "\x05input"
 
-var output_atom*: string = "\x06output"
+var output_atom*: cstring = "\x06output"
 
-var set_direction_atom*: string = "\cset_direction"
+var set_direction_atom*: cstring = "\cset_direction"
 
-var set_int_atom*: string = "\aset_int"
+var set_int_atom*: cstring = "\aset_int"
 
-var gpio_interrupt_atom*: string = "\x0Egpio_interrupt"
+var gpio_interrupt_atom*: cstring = "\x0Egpio_interrupt"
 
-var a_atom*: string = "\x01a"
+var a_atom*: cstring = "\x01a"
 
-var b_atom*: string = "\x01b"
+var b_atom*: cstring = "\x01b"
 
-var c_atom*: string = "\x01c"
+var c_atom*: cstring = "\x01c"
 
-var d_atom*: string = "\x01d"
+var d_atom*: cstring = "\x01d"
 
-var e_atom*: string = "\x01e"
+var e_atom*: cstring = "\x01e"
 
-var f_atom*: string = "\x01f"
+var f_atom*: cstring = "\x01f"
 
-var stm32_atom*: string = "\x05stm32"
+var stm32_atom*: cstring = "\x05stm32"
 
 proc platform_defaultatoms_init*(glb: ptr GlobalContext) {.cdecl.} =
   var ok: cint = 1

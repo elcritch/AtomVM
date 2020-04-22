@@ -52,31 +52,31 @@ const
   MAX_NVS_KEY_SIZE* = 15
   MD5_DIGEST_LENGTH* = 16
 
-var esp_rst_unknown_atom*: string = "\x0Fesp_rst_unknown"
+var esp_rst_unknown_atom*: cstring = "\x0Fesp_rst_unknown"
 
-var esp_rst_poweron*: string = "\x0Fesp_rst_poweron"
+var esp_rst_poweron*: cstring = "\x0Fesp_rst_poweron"
 
-var esp_rst_ext*: string = "\vesp_rst_ext"
+var esp_rst_ext*: cstring = "\vesp_rst_ext"
 
-var esp_rst_sw*: string = "\nesp_rst_sw"
+var esp_rst_sw*: cstring = "\nesp_rst_sw"
 
-var esp_rst_panic*: string = "\cesp_rst_panic"
+var esp_rst_panic*: cstring = "\cesp_rst_panic"
 
-var esp_rst_int_wdt*: string = "\x0Fesp_rst_int_wdt"
+var esp_rst_int_wdt*: cstring = "\x0Fesp_rst_int_wdt"
 
-var esp_rst_task_wdt*: string = "\x10esp_rst_task_wdt"
+var esp_rst_task_wdt*: cstring = "\x10esp_rst_task_wdt"
 
-var esp_rst_wdt*: string = "\vesp_rst_wdt"
+var esp_rst_wdt*: cstring = "\vesp_rst_wdt"
 
-var esp_rst_deepsleep*: string = "\x11esp_rst_deepsleep"
+var esp_rst_deepsleep*: cstring = "\x11esp_rst_deepsleep"
 
-var esp_rst_brownout*: string = "\x10esp_rst_brownout"
+var esp_rst_brownout*: cstring = "\x10esp_rst_brownout"
 
-var esp_rst_sdio*: string = "\fesp_rst_sdio"
+var esp_rst_sdio*: cstring = "\fesp_rst_sdio"
 
 ##                                                         123456789ABCDEF01
 
-proc write_atom_c_string*(ctx: ptr Context; buf: string; bufsize: csize; t: term): cint {.
+proc write_atom_c_string*(ctx: ptr Context; buf: cstring; bufsize: csize; t: term): cint {.
     cdecl.}
 ##
 ##  NIFs
@@ -389,7 +389,7 @@ proc nif_atomvm_platform*(ctx: ptr Context; argc: cint; argv: ptr term): term {.
 ##      .nif_ptr = nif_atomvm_platform
 ##  };
 
-proc platform_nifs_get_nif*(nifname: string): ptr Nif {.cdecl.} =
+proc platform_nifs_get_nif*(nifname: cstring): ptr Nif {.cdecl.} =
   if strcmp("atomvm:random/0", nifname) == 0:
     TRACE("Resolved platform nif %s ...\n", nifname)
     return addr(esp_random_nif)
@@ -429,7 +429,7 @@ proc platform_nifs_get_nif*(nifname: string): ptr Nif {.cdecl.} =
 ##  internal functions
 ##
 
-proc write_atom_c_string*(ctx: ptr Context; buf: string; bufsize: csize; t: term): cint {.
+proc write_atom_c_string*(ctx: ptr Context; buf: cstring; bufsize: csize; t: term): cint {.
     cdecl.} =
   var atom_string: AtomString = globalcontext_atomstring_from_term(ctx.global, t)
   if atom_string == nil:

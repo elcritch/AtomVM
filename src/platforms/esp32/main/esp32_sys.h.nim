@@ -1,5 +1,5 @@
 ## **************************************************************************
-##    Copyright 2017 by Davide Bettio <davide@uninstall.it>                 *
+##    Copyright 2019 by Davide Bettio <davide@uninstall.it>                 *
 ##                                                                          *
 ##    This program is free software; you can redistribute it and/or modify  *
 ##    it under the terms of the GNU Lesser General Public License as        *
@@ -18,30 +18,27 @@
 ## *************************************************************************
 
 import
-  mapped_file, utils
+  freertos/FreeRTOS
 
-proc mapped_file_open_beam*(file_name: cstring): ptr MappedFile {.cdecl.} =
-  var mf: ptr MappedFile = malloc(sizeof((MappedFile)))
-  if IS_NULL_PTR(mf):
-    fprintf(stderr, "Unable to allocate MappedFile struct\n")
-    return nil
-  mf.fd = open(file_name, O_RDONLY)
-  if UNLIKELY(mf.fd < 0):
-    free(mf)
-    fprintf(stderr, "Unable to open %s\n", file_name)
-    return nil
-  var file_stats: stat
-  fstat(mf.fd, addr(file_stats))
-  mf.size = file_stats.st_size
-  mf.mapped = mmap(nil, mf.size, PROT_READ, MAP_SHARED, mf.fd, 0)
-  if IS_NULL_PTR(mf.mapped):
-    fprintf(stderr, "Cannot mmap %s\n", file_name)
-    close(mf.fd)
-    free(mf)
-    return nil
-  return mf
+const
+  EVENT_DESCRIPTORS_COUNT* = 16
 
-proc mapped_file_close*(mf: ptr MappedFile) {.cdecl.} =
-  munmap(mf.mapped, mf.size)
-  close(mf.fd)
-  free(mf)
+type
+  event_handler_t* = proc (listener: ptr EventListener) {.cdecl.}
+  EventListener* {.bycopy.} = object
+    listeners_list_head*: ListHead
+    handler*: event_handler_t
+    data*: pointer
+    sender*: pointer
+
+  ESP32PlatformData* {.bycopy.} = object
+    listeners*: ListHead
+    sockets_list_head*: ListHead
+
+
+var event_queue*: xQueueHandle
+
+proc esp32_sys_queue_init*() {.cdecl.}
+proc sys_event_listener_init*(listener: ptr EventListener; sender: pointer;
+                             handler: event_handler_t; data: pointer) {.cdecl.}
+proc socket_init*(ctx: ptr Context; opts: term) {.cdecl.}

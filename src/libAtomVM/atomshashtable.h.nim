@@ -1,5 +1,5 @@
 ## **************************************************************************
-##    Copyright 2017 by Davide Bettio <davide@uninstall.it>                 *
+##    Copyright 2018 by Davide Bettio <davide@uninstall.it>                 *
 ##                                                                          *
 ##    This program is free software; you can redistribute it and/or modify  *
 ##    it under the terms of the GNU Lesser General Public License as        *
@@ -18,30 +18,21 @@
 ## *************************************************************************
 
 import
-  mapped_file, utils
+  atom
 
-proc mapped_file_open_beam*(file_name: cstring): ptr MappedFile {.cdecl.} =
-  var mf: ptr MappedFile = malloc(sizeof((MappedFile)))
-  if IS_NULL_PTR(mf):
-    fprintf(stderr, "Unable to allocate MappedFile struct\n")
-    return nil
-  mf.fd = open(file_name, O_RDONLY)
-  if UNLIKELY(mf.fd < 0):
-    free(mf)
-    fprintf(stderr, "Unable to open %s\n", file_name)
-    return nil
-  var file_stats: stat
-  fstat(mf.fd, addr(file_stats))
-  mf.size = file_stats.st_size
-  mf.mapped = mmap(nil, mf.size, PROT_READ, MAP_SHARED, mf.fd, 0)
-  if IS_NULL_PTR(mf.mapped):
-    fprintf(stderr, "Cannot mmap %s\n", file_name)
-    close(mf.fd)
-    free(mf)
-    return nil
-  return mf
+type
+  AtomsHashTable* {.bycopy.} = object
+    capacity*: cint
+    count*: cint
+    buckets*: ptr ptr HNode
 
-proc mapped_file_close*(mf: ptr MappedFile) {.cdecl.} =
-  munmap(mf.mapped, mf.size)
-  close(mf.fd)
-  free(mf)
+
+proc atomshashtable_new*(): ptr AtomsHashTable {.cdecl.}
+proc atomshashtable_insert*(hash_table: ptr AtomsHashTable; string: AtomString;
+                           value: culong): cint {.cdecl.}
+proc atomshashtable_get_value*(hash_table: ptr AtomsHashTable; string: AtomString;
+                              default_value: culong): culong {.cdecl.}
+proc atomshashtable_has_key*(hash_table: ptr AtomsHashTable; string: AtomString): cint {.
+    cdecl.}
+template TO_ATOMSHASHTABLE_VALUE*(value: untyped): untyped =
+  (cast[culong]((value)))
