@@ -18,6 +18,7 @@
 ## *************************************************************************
 
 import
+  memfiles,
   atom, avmpack, bif, context, globalcontext, iff, platforms/generic_unix/mapped_file,
   module, utils, term
 
@@ -25,33 +26,39 @@ var ok_a*: cstring = "\x02ok"
 
 proc main*(argc: cint; argv: cstringArray): cint =
   if argc < 2:
-    printf("Need .beam file\n")
-    return EXIT_FAILURE
-  var mapped_file: ptr MappedFile = mapped_file_open_beam(argv[1])
-  if IS_NULL_PTR(mapped_file):
-    return EXIT_FAILURE
-  var glb: ptr GlobalContext = globalcontext_new()
+    echo "Bad Args. Need .beam file"
+    quit(0)
+
+  var mapped_file: MemFile = memfiles.open("/tmp/test.mmap", mode = fmReadWrite, mappedSize = -1)
+
+  var glb: GlobalContext = globalcontext_new()
+
   var startup_beam: pointer
   var startup_beam_size: uint32
-  var startup_module_name: cstring = argv[1]
-  if avmpack_is_valid(mapped_file.mapped, mapped_file.size):
-    glb.avmpack_data = mapped_file.mapped
-    glb.avmpack_platform_data = mapped_file
-    if not avmpack_find_section_by_flag(mapped_file.mapped, 1, addr(startup_beam),
-                                      addr(startup_beam_size),
-                                      addr(startup_module_name)):
+  var startup_module_name: string = $argv[1]
+
+  if avmpack_is_valid(mapped_file):
+    glb.avmpack_data = copy(mapped_file)
+    glb.avmpack_platform_data = copy(mapped_file)
+
+    if not avmpack_find_section_by_flag(
+          mapped_file, 1,
+          startup_beam,
+          startup_beam_size,
+          startup_module_name):
       fprintf(stderr, "%s cannot be started.\n", argv[1])
-      mapped_file_close(mapped_file)
-      return EXIT_FAILURE
-  elif iff_is_valid_beam(mapped_file.mapped):
+      close(mapped_file)
+      quite(1)
+  elif iff_is_valid_beam(mapped_file):
     glb.avmpack_data = nil
     glb.avmpack_platform_data = nil
-    startup_beam = mapped_file.mapped
-    startup_beam_size = mapped_file.size
+    startup_beam = mapped_file
+    startup_beam_size = mapped_file.size.uint32
   else:
     fprintf(stderr, "%s is not a BEAM file.\n", argv[1])
-    mapped_file_close(mapped_file)
-    return EXIT_FAILURE
+    close(mapped_file)
+    quit(1)
+
   var `mod`: ptr Module = module_new_from_iff_binary(glb, startup_beam,
       startup_beam_size)
   if IS_NULL_PTR(`mod`):
