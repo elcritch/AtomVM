@@ -41,13 +41,13 @@ import
 proc module_populate_atoms_table*(this_module: ptr Module; table_data: ptr uint8_t): ModuleLoadResult {.
     cdecl.} =
   var atoms_count: cint = READ_32_ALIGNED(table_data + 8)
-  var current_atom: cstring = cast[cstring](table_data) + 12
+  var current_atom: string = cast[string](table_data) + 12
   this_module.local_atoms_to_global_table = calloc(atoms_count + 1, sizeof((int)))
   if IS_NULL_PTR(this_module.local_atoms_to_global_table):
     fprintf(stderr, "Cannot allocate memory while loading module (line: %i).\n",
             __LINE__)
     return MODULE_ERROR_FAILED_ALLOCATION
-  var atom: cstring = nil
+  var atom: string = nil
   var i: cint = 1
   while i <= atoms_count:
     var atom_len: cint = current_atom[]

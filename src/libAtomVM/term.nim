@@ -40,7 +40,7 @@ proc term_display*(fd: ptr FILE; t: term; ctx: ptr Context) {.cdecl.} =
     var atom_string: AtomString = cast[AtomString](valueshashtable_get_value(
         ctx.global.atoms_ids_table, atom_index, cast[culong](nil)))
     fprintf(fd, "%.*s", cast[cint](atom_string_len(atom_string)),
-            cast[cstring](atom_string_data(atom_string)))
+            cast[string](atom_string_data(atom_string)))
   elif term_is_integer(t):
     var iv: avm_int_t = term_to_int(t)
     fprintf(fd, AVM_INT_FMT, iv)
@@ -59,7 +59,7 @@ proc term_display*(fd: ptr FILE; t: term; ctx: ptr Context) {.cdecl.} =
       is_printable = 0
     if is_printable:
       var ok: cint
-      var printable: cstring = interop_list_to_string(t, addr(ok))
+      var printable: string = interop_list_to_string(t, addr(ok))
       if LIKELY(ok):
         fprintf(fd, "\"%s\"", printable)
         free(printable)
@@ -86,7 +86,7 @@ proc term_display*(fd: ptr FILE; t: term; ctx: ptr Context) {.cdecl.} =
     var fun_module: ptr Module = cast[ptr Module](boxed_value[1])
     var fun_index: uint32_t = boxed_value[2]
     ##  TODO: FIXME
-    var format: cstring = FUN_FMT
+    var format: string = FUN_FMT
     fprintf(fd, format, fun_index, cast[culong](fun_module))
   elif term_is_tuple(t):
     fputc('{', fd)
@@ -100,7 +100,7 @@ proc term_display*(fd: ptr FILE; t: term; ctx: ptr Context) {.cdecl.} =
     fputc('}', fd)
   elif term_is_binary(t):
     var len: cint = term_binary_size(t)
-    var binary_data: cstring = term_binary_data(t)
+    var binary_data: string = term_binary_data(t)
     var is_printable: cint = 1
     var i: cint = 0
     while i < len:
@@ -125,7 +125,7 @@ proc term_display*(fd: ptr FILE; t: term; ctx: ptr Context) {.cdecl.} =
     fprintf(fd, ">>")
   elif term_is_reference(t):
     ##  TODO: FIXME
-    var format: cstring = REF_CONST_FMT
+    var format: string = REF_CONST_FMT
     fprintf(fd, format, term_to_ref_ticks(t))
   elif term_is_boxed_integer(t): ##  TODO: FIXME
                                ##  #ifdef AVM_NO_FP
@@ -225,8 +225,8 @@ proc term_compare*(t: term; other: term; ctx: ptr Context): cint {.cdecl.} =
     elif term_is_binary(t) and term_is_binary(other):
       var t_size: cint = term_binary_size(t)
       var other_size: cint = term_binary_size(other)
-      var t_data: cstring = term_binary_data(t)
-      var other_data: cstring = term_binary_data(other)
+      var t_data: string = term_binary_data(t)
+      var other_data: string = term_binary_data(other)
       var cmp_size: cint = if (t_size > other_size): other_size else: t_size
       var memcmp_result: cint = memcmp(t_data, other_data, cmp_size)
       if memcmp_result == 0:
@@ -266,12 +266,12 @@ proc term_compare*(t: term; other: term; ctx: ptr Context): cint {.cdecl.} =
       var t_atom_string: AtomString = cast[AtomString](valueshashtable_get_value(
           ctx.global.atoms_ids_table, t_atom_index, cast[culong](nil)))
       var t_atom_len: cint = atom_string_len(t_atom_string)
-      var t_atom_data: cstring = cast[cstring](atom_string_data(t_atom_string))
+      var t_atom_data: string = cast[string](atom_string_data(t_atom_string))
       var other_atom_index: cint = term_to_atom_index(other)
       var other_atom_string: AtomString = cast[AtomString](valueshashtable_get_value(
           ctx.global.atoms_ids_table, other_atom_index, cast[culong](nil)))
       var other_atom_len: cint = atom_string_len(other_atom_string)
-      var other_atom_data: cstring = cast[cstring](atom_string_data(
+      var other_atom_data: string = cast[string](atom_string_data(
           other_atom_string))
       var cmp_size: cint = if (t_atom_len > other_atom_len): other_atom_len else: t_atom_len
       var memcmp_result: cint = memcmp(t_atom_data, other_atom_data, cmp_size)

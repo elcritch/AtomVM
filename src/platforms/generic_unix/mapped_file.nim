@@ -20,7 +20,7 @@
 import
   mapped_file, utils
 
-proc mapped_file_open_beam*(file_name: cstring): ptr MappedFile {.cdecl.} =
+proc mapped_file_open_beam*(file_name: string): ptr MappedFile {.cdecl.} =
   var mf: ptr MappedFile = malloc(sizeof((MappedFile)))
   if IS_NULL_PTR(mf):
     fprintf(stderr, "Unable to allocate MappedFile struct\n")

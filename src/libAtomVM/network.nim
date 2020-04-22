@@ -21,9 +21,9 @@
 import
   context, port, network, network_driver, context, globalcontext, mailbox, utils, term
 
-var start_a*: cstring = "\x05start"
+var start_a*: string = "\x05start"
 
-var ifconfig_a*: cstring = "\bifconfig"
+var ifconfig_a*: string = "\bifconfig"
 
 proc network_consume_mailbox*(ctx: ptr Context) {.cdecl.} =
   var message: ptr Message = mailbox_dequeue(ctx)

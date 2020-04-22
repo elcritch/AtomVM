@@ -177,13 +177,13 @@ proc globalcontext_insert_module*(global: ptr GlobalContext; module: ptr Module;
   return module_index
 
 proc globalcontext_insert_module_with_filename*(glb: ptr GlobalContext;
-    module: ptr Module; filename: cstring) {.cdecl.} =
+    module: ptr Module; filename: string) {.cdecl.} =
   var len: cint = strnlen(filename, 260)
   var len_without_ext: cint = len - strlen(".beam")
   if strcmp(filename + len_without_ext, ".beam") != 0:
     printf("File isn\'t a .beam file\n")
     abort()
-  var atom_string: cstring = malloc(len_without_ext + 1)
+  var atom_string: string = malloc(len_without_ext + 1)
   if IS_NULL_PTR(atom_string):
     fprintf(stderr, "Failed to allocate memory: %s:%i.\n", __FILE__, __LINE__)
     abort()
@@ -197,7 +197,7 @@ proc globalcontext_get_module*(global: ptr GlobalContext;
   var found_module: ptr Module = cast[ptr Module](atomshashtable_get_value(
       global.modules_table, module_name_atom, cast[culong](nil)))
   if not found_module:
-    var module_name: cstring = malloc(256 + 5)
+    var module_name: string = malloc(256 + 5)
     if IS_NULL_PTR(module_name):
       return nil
     atom_string_to_c(module_name_atom, module_name, 256)

@@ -21,7 +21,7 @@ import
   uart_driver, atom, bif, context, debug, defaultatoms, platform_defaultatoms,
   globalcontext, interop, mailbox, module, utils, term, trace, sys, esp32_sys
 
-var ealready_atom*: cstring = "\bealready"
+var ealready_atom*: string = "\bealready"
 
 proc uart_driver_consume_mailbox*(ctx: ptr Context) {.cdecl.}
 const
@@ -111,7 +111,7 @@ proc uart_driver_init*(ctx: ptr Context; opts: term) {.cdecl.} =
   var parity_term: term = interop_proplist_get_value_default(opts, PARITY_ATOM,
       NONE_ATOM)
   var ok: cint
-  var uart_name: cstring = interop_term_to_string(uart_name_term, addr(ok))
+  var uart_name: string = interop_term_to_string(uart_name_term, addr(ok))
   if not uart_name or not ok:
     abort()
   var uart_num: uint8_t

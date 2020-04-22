@@ -55,12 +55,12 @@ proc network_driver_start*(ctx: ptr Context; pid: term_ref; `ref`: term_ref;
     var pass_value: term = interop_proplist_get_value(sta_config, PSK_ATOM)
     var sntp_value: term = interop_proplist_get_value(config, SNTP_ATOM)
     var ok: cint = 0
-    var ssid: cstring = interop_term_to_string(ssid_value, addr(ok))
+    var ssid: string = interop_term_to_string(ssid_value, addr(ok))
     if not ok or IS_NULL_PTR(ssid):
       var reply: term = port_create_error_tuple(ctx, BADARG_ATOM)
       port_send_reply(ctx, pid, `ref`, reply)
       return
-    var psk: cstring = interop_term_to_string(pass_value, addr(ok))
+    var psk: string = interop_term_to_string(pass_value, addr(ok))
     if not ok or IS_NULL_PTR(psk):
       free(ssid)
       var reply: term = port_create_error_tuple(ctx, BADARG_ATOM)
@@ -90,8 +90,8 @@ proc network_driver_start*(ctx: ptr Context; pid: term_ref; `ref`: term_ref;
       port_send_reply(ctx, pid, `ref`, reply)
       return
     memset(addr(wifi_config), 0, sizeof((wifi_config_t)))
-    strcpy(cast[cstring](wifi_config.sta.ssid), ssid)
-    strcpy(cast[cstring](wifi_config.sta.password), psk)
+    strcpy(cast[string](wifi_config.sta.ssid), ssid)
+    strcpy(cast[string](wifi_config.sta.password), psk)
     free(ssid)
     free(psk)
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA))
@@ -101,7 +101,7 @@ proc network_driver_start*(ctx: ptr Context; pid: term_ref; `ref`: term_ref;
     ESP_ERROR_CHECK(esp_wifi_start())
     if sntp_value != term_nil():
       var ok: cint
-      var sntp: cstring = interop_term_to_string(sntp_value, addr(ok))
+      var sntp: string = interop_term_to_string(sntp_value, addr(ok))
       if LIKELY(ok):
         ##  do not free(sntp)
         sntp_setoperatingmode(SNTP_OPMODE_POLL)

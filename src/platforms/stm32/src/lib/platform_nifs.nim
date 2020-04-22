@@ -39,7 +39,7 @@ proc nif_atomvm_platform*(ctx: ptr Context; argc: cint; argv: ptr term): term {.
 ##      .nif_ptr = nif_atomvm_platform
 ##  };
 
-proc platform_nifs_get_nif*(nifname: cstring): ptr Nif {.cdecl.} =
+proc platform_nifs_get_nif*(nifname: string): ptr Nif {.cdecl.} =
   if strcmp("atomvm:platform/0", nifname) == 0:
     TRACE("Resolved platform nif %s ...\n", nifname)
     return addr(atomvm_platform_nif)

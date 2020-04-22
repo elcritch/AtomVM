@@ -25,13 +25,13 @@ import
 const
   EVENT_QUEUE_LEN* = 16
 
-var esp_free_heap_size_atom*: cstring = "\x14esp32_free_heap_size"
+var esp_free_heap_size_atom*: string = "\x14esp32_free_heap_size"
 
-var esp_chip_info_atom*: cstring = "\x0Fesp32_chip_info"
+var esp_chip_info_atom*: string = "\x0Fesp32_chip_info"
 
-var esp_idf_version_atom*: cstring = "\x0Fesp_idf_version"
+var esp_idf_version_atom*: string = "\x0Fesp_idf_version"
 
-var esp32_atom*: cstring = "\x05esp32"
+var esp32_atom*: string = "\x05esp32"
 
 var event_queue*: xQueueHandle = nil
 
@@ -97,7 +97,7 @@ proc sys_millis*(): uint32_t {.cdecl.} =
   var ticks: TickType_t = xTaskGetTickCount()
   return ticks * portTICK_PERIOD_MS
 
-proc sys_load_module*(global: ptr GlobalContext; module_name: cstring): ptr Module {.
+proc sys_load_module*(global: ptr GlobalContext; module_name: string): ptr Module {.
     cdecl.} =
   var beam_module: pointer = nil
   var beam_module_size: uint32_t = 0
@@ -115,14 +115,14 @@ proc sys_load_module*(global: ptr GlobalContext; module_name: cstring): ptr Modu
 ##  This function allows to use AtomVM as a component on ESP32 and customize it
 ##  __attribute__ ((weak)) Context *sys_create_port_fallback(Context *new_ctx, const char *driver_name, term opts)
 
-proc sys_create_port_fallback*(new_ctx: ptr Context; driver_name: cstring; opts: term): ptr Context {.
+proc sys_create_port_fallback*(new_ctx: ptr Context; driver_name: string; opts: term): ptr Context {.
     cdecl.} =
   UNUSED(driver_name)
   UNUSED(opts)
   context_destroy(new_ctx)
   return nil
 
-proc sys_create_port*(glb: ptr GlobalContext; driver_name: cstring; opts: term): ptr Context {.
+proc sys_create_port*(glb: ptr GlobalContext; driver_name: string; opts: term): ptr Context {.
     cdecl.} =
   var new_ctx: ptr Context = context_new(glb)
   if not strcmp(driver_name, "socket"):
@@ -156,7 +156,7 @@ proc sys_get_info*(ctx: ptr Context; key: term): term {.cdecl.} =
     term_put_tuple_element(ret, 3, term_from_int32(info.revision))
     return ret
   if key == context_make_atom(ctx, esp_idf_version_atom):
-    var str: cstring = esp_get_idf_version()
+    var str: string = esp_get_idf_version()
     var n: csize = strlen(str)
     if memory_ensure_free(ctx, 2 * n) != MEMORY_GC_OK:
       return OUT_OF_MEMORY_ATOM

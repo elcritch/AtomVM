@@ -23,7 +23,7 @@ const
   AVM_FLASH_MAX_SIZE* = (0x00080000)
   CLOCK_FREQUENCY* = (168000000)
 
-proc _write*(file: cint; `ptr`: cstring; len: cint): cint {.cdecl.}
+proc _write*(file: cint; `ptr`: string; len: cint): cint {.cdecl.}
 proc clock_setup*() {.cdecl.} =
   ##  Use external clock, set divider for 168 MHz clock frequency
   rcc_clock_setup_hse_3v3(addr(rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_168MHZ]))
@@ -59,7 +59,7 @@ proc systick_setup*() {.cdecl.} =
 ##  Use USART_CONSOLE as a console.
 ##  This is a syscall for newlib
 
-proc _write*(file: cint; `ptr`: cstring; len: cint): cint {.cdecl.} =
+proc _write*(file: cint; `ptr`: string; len: cint): cint {.cdecl.} =
   var i: cint
   if file == STDOUT_FILENO or file == STDERR_FILENO:
     i = 0
@@ -80,7 +80,7 @@ proc main*(): cint {.cdecl.} =
   var size: uint32_t = AVM_FLASH_MAX_SIZE
   var startup_beam_size: uint32_t
   var startup_beam: pointer
-  var startup_module_name: cstring
+  var startup_module_name: string
   printf("Booting file mapped at: %p, size: %li\n", flashed_avm, size)
   var glb: ptr GlobalContext = globalcontext_new()
   if not avmpack_is_valid(flashed_avm, size) or

@@ -1,85 +1,85 @@
 import
   defaultatoms
 
-var false_atom*: cstring = "\x05false"
+var false_atom*: string = "\x05false"
 
-var true_atom*: cstring = "\x04true"
+var true_atom*: string = "\x04true"
 
-var ok_atom*: cstring = "\x02ok"
+var ok_atom*: string = "\x02ok"
 
-var error_atom*: cstring = "\x05error"
+var error_atom*: string = "\x05error"
 
-var undefined_atom*: cstring = "\tundefined"
+var undefined_atom*: string = "\tundefined"
 
-var badarg_atom*: cstring = "\x06badarg"
+var badarg_atom*: string = "\x06badarg"
 
-var badarith_atom*: cstring = "\bbadarith"
+var badarith_atom*: string = "\bbadarith"
 
-var badarity_atom*: cstring = "\bbadarity"
+var badarity_atom*: string = "\bbadarity"
 
-var badfun_atom*: cstring = "\x06badfun"
+var badfun_atom*: string = "\x06badfun"
 
-var system_limit_atom*: cstring = "\fsystem_limit"
+var system_limit_atom*: string = "\fsystem_limit"
 
-var function_clause_atom*: cstring = "\x0Ffunction_clause"
+var function_clause_atom*: string = "\x0Ffunction_clause"
 
-var try_clause_atom*: cstring = "\ntry_clause"
+var try_clause_atom*: string = "\ntry_clause"
 
-var out_of_memory_atom*: cstring = "\cout_of_memory"
+var out_of_memory_atom*: string = "\cout_of_memory"
 
-var overflow_atom*: cstring = "\boverflow"
+var overflow_atom*: string = "\boverflow"
 
-var flush_atom*: cstring = "\x05flush"
+var flush_atom*: string = "\x05flush"
 
-var heap_size_atom*: cstring = "\theap_size"
+var heap_size_atom*: string = "\theap_size"
 
-var latin1_atom*: cstring = "\x06latin1"
+var latin1_atom*: string = "\x06latin1"
 
-var max_heap_size_atom*: cstring = "\cmax_heap_size"
+var max_heap_size_atom*: string = "\cmax_heap_size"
 
-var memory_atom*: cstring = "\x06memory"
+var memory_atom*: string = "\x06memory"
 
-var message_queue_len_atom*: cstring = "\x11message_queue_len"
+var message_queue_len_atom*: string = "\x11message_queue_len"
 
-var puts_atom*: cstring = "\x04puts"
+var puts_atom*: string = "\x04puts"
 
-var stack_size_atom*: cstring = "\nstack_size"
+var stack_size_atom*: string = "\nstack_size"
 
-var min_heap_size_atom*: cstring = "\cmin_heap_size"
+var min_heap_size_atom*: string = "\cmin_heap_size"
 
-var process_count_atom*: cstring = "\cprocess_count"
+var process_count_atom*: string = "\cprocess_count"
 
-var port_count_atom*: cstring = "\nport_count"
+var port_count_atom*: string = "\nport_count"
 
-var atom_count_atom*: cstring = "\natom_count"
+var atom_count_atom*: string = "\natom_count"
 
-var system_architecture_atom*: cstring = "\x13system_architecture"
+var system_architecture_atom*: string = "\x13system_architecture"
 
-var wordsize_atom*: cstring = "\bwordsize"
+var wordsize_atom*: string = "\bwordsize"
 
-var decimals_atom*: cstring = "\bdecimals"
+var decimals_atom*: string = "\bdecimals"
 
-var scientific_atom*: cstring = "\nscientific"
+var scientific_atom*: string = "\nscientific"
 
-var compact_atom*: cstring = "\acompact"
+var compact_atom*: string = "\acompact"
 
-var badmatch_atom*: cstring = "\bbadmatch"
+var badmatch_atom*: string = "\bbadmatch"
 
-var case_clause_atom*: cstring = "\vcase_clause"
+var case_clause_atom*: string = "\vcase_clause"
 
-var if_clause_atom*: cstring = "\tif_clause"
+var if_clause_atom*: string = "\tif_clause"
 
-var throw_atom*: cstring = "\x05throw"
+var throw_atom*: string = "\x05throw"
 
-var low_entropy_atom*: cstring = "\vlow_entropy"
+var low_entropy_atom*: string = "\vlow_entropy"
 
-var unsupported_atom*: cstring = "\vunsupported"
+var unsupported_atom*: string = "\vunsupported"
 
-var used_atom*: cstring = "\x04used"
+var used_atom*: string = "\x04used"
 
-var all_atom*: cstring = "\x03all"
+var all_atom*: string = "\x03all"
 
-var start_atom*: cstring = "\x05start"
+var start_atom*: string = "\x05start"
 
 proc defaultatoms_init*(glb: ptr GlobalContext) {.cdecl.} =
   var ok: cint = 1

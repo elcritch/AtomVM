@@ -20,167 +20,167 @@
 import
   platform_defaultatoms
 
-var set_level_atom*: cstring = "\tset_level"
+var set_level_atom*: string = "\tset_level"
 
-var read_atom*: cstring = "\x04read"
+var read_atom*: string = "\x04read"
 
-var input_atom*: cstring = "\x05input"
+var input_atom*: string = "\x05input"
 
-var output_atom*: cstring = "\x06output"
+var output_atom*: string = "\x06output"
 
-var set_direction_atom*: cstring = "\cset_direction"
+var set_direction_atom*: string = "\cset_direction"
 
-var set_int_atom*: cstring = "\aset_int"
+var set_int_atom*: string = "\aset_int"
 
-var gpio_interrupt_atom*: cstring = "\x0Egpio_interrupt"
+var gpio_interrupt_atom*: string = "\x0Egpio_interrupt"
 
-var none_atom*: cstring = "\x04none"
+var none_atom*: string = "\x04none"
 
-var rising_atom*: cstring = "\x06rising"
+var rising_atom*: string = "\x06rising"
 
-var falling_atom*: cstring = "\afalling"
+var falling_atom*: string = "\afalling"
 
-var both_atom*: cstring = "\x04both"
+var both_atom*: string = "\x04both"
 
-var low_atom*: cstring = "\x03low"
+var low_atom*: string = "\x03low"
 
-var high_atom*: cstring = "\x04high"
+var high_atom*: string = "\x04high"
 
-var esp32_atom*: cstring = "\x05esp32"
+var esp32_atom*: string = "\x05esp32"
 
-var proto_atom*: cstring = "\x05proto"
+var proto_atom*: string = "\x05proto"
 
-var udp_atom*: cstring = "\x03udp"
+var udp_atom*: string = "\x03udp"
 
-var tcp_atom*: cstring = "\x03tcp"
+var tcp_atom*: string = "\x03tcp"
 
-var socket_atom*: cstring = "\x06socket"
+var socket_atom*: string = "\x06socket"
 
-var fcntl_atom*: cstring = "\x05fcntl"
+var fcntl_atom*: string = "\x05fcntl"
 
-var bind_atom*: cstring = "\x04bind"
+var bind_atom*: string = "\x04bind"
 
-var getsockname_atom*: cstring = "\vgetsockname"
+var getsockname_atom*: string = "\vgetsockname"
 
-var recvfrom_atom*: cstring = "\brecvfrom"
+var recvfrom_atom*: string = "\brecvfrom"
 
-var sendto_atom*: cstring = "\x06sendto"
+var sendto_atom*: string = "\x06sendto"
 
-var address_atom*: cstring = "\aaddress"
+var address_atom*: string = "\aaddress"
 
-var port_atom*: cstring = "\x04port"
+var port_atom*: string = "\x04port"
 
-var controlling_process_atom*: cstring = "\x13controlling_process"
+var controlling_process_atom*: string = "\x13controlling_process"
 
-var binary_atom*: cstring = "\x06binary"
+var binary_atom*: string = "\x06binary"
 
-var active_atom*: cstring = "\x06active"
+var active_atom*: string = "\x06active"
 
-var buffer_atom*: cstring = "\x06buffer"
+var buffer_atom*: string = "\x06buffer"
 
-var connect_atom*: cstring = "\aconnect"
+var connect_atom*: string = "\aconnect"
 
-var send_atom*: cstring = "\x04send"
+var send_atom*: string = "\x04send"
 
-var tcp_closed_atom*: cstring = "\ntcp_closed"
+var tcp_closed_atom*: string = "\ntcp_closed"
 
-var recv_atom*: cstring = "\x04recv"
+var recv_atom*: string = "\x04recv"
 
-var listen_atom*: cstring = "\x06listen"
+var listen_atom*: string = "\x06listen"
 
-var backlog_atom*: cstring = "\abacklog"
+var backlog_atom*: string = "\abacklog"
 
-var accept_atom*: cstring = "\x06accept"
+var accept_atom*: string = "\x06accept"
 
-var fd_atom*: cstring = "\x02fd"
+var fd_atom*: string = "\x02fd"
 
-var init_atom*: cstring = "\x04init"
+var init_atom*: string = "\x04init"
 
-var close_atom*: cstring = "\x05close"
+var close_atom*: string = "\x05close"
 
-var get_port_atom*: cstring = "\bget_port"
+var get_port_atom*: string = "\bget_port"
 
-var sockname_atom*: cstring = "\bsockname"
+var sockname_atom*: string = "\bsockname"
 
-var peername_atom*: cstring = "\bpeername"
+var peername_atom*: string = "\bpeername"
 
-var sta_atom*: cstring = "\x03sta"
+var sta_atom*: string = "\x03sta"
 
-var ssid_atom*: cstring = "\x04ssid"
+var ssid_atom*: string = "\x04ssid"
 
-var psk_atom*: cstring = "\x03psk"
+var psk_atom*: string = "\x03psk"
 
-var sntp_atom*: cstring = "\x04sntp"
+var sntp_atom*: string = "\x04sntp"
 
-var sta_got_ip_atom*: cstring = "\nsta_got_ip"
+var sta_got_ip_atom*: string = "\nsta_got_ip"
 
-var sta_connected_atom*: cstring = "\csta_connected"
+var sta_connected_atom*: string = "\csta_connected"
 
-var sta_disconnected_atom*: cstring = "\x10sta_disconnected"
+var sta_disconnected_atom*: string = "\x10sta_disconnected"
 
 ## spidriver
 
-var bus_config_atom*: cstring = "\nbus_config"
+var bus_config_atom*: string = "\nbus_config"
 
-var miso_io_num_atom*: cstring = "\vmiso_io_num"
+var miso_io_num_atom*: string = "\vmiso_io_num"
 
-var mosi_io_num_atom*: cstring = "\vmosi_io_num"
+var mosi_io_num_atom*: string = "\vmosi_io_num"
 
-var sclk_io_num_atom*: cstring = "\vsclk_io_num"
+var sclk_io_num_atom*: string = "\vsclk_io_num"
 
-var device_config_atom*: cstring = "\cdevice_config"
+var device_config_atom*: string = "\cdevice_config"
 
-var spi_clock_hz_atom*: cstring = "\fspi_clock_hz"
+var spi_clock_hz_atom*: string = "\fspi_clock_hz"
 
-var spi_mode_atom*: cstring = "\bspi_mode"
+var spi_mode_atom*: string = "\bspi_mode"
 
-var spi_cs_io_num_atom*: cstring = "\cspi_cs_io_num"
+var spi_cs_io_num_atom*: string = "\cspi_cs_io_num"
 
-var address_len_bits_atom*: cstring = "\x10address_len_bits"
+var address_len_bits_atom*: string = "\x10address_len_bits"
 
-var read_at_atom*: cstring = "\aread_at"
+var read_at_atom*: string = "\aread_at"
 
-var write_at_atom*: cstring = "\bwrite_at"
+var write_at_atom*: string = "\bwrite_at"
 
 ## i2cdriver
 
-var begin_transmission_atom*: cstring = "\x12begin_transmission"
+var begin_transmission_atom*: string = "\x12begin_transmission"
 
-var end_transmission_atom*: cstring = "\x10end_transmission"
+var end_transmission_atom*: string = "\x10end_transmission"
 
-var write_byte_atom*: cstring = "\nwrite_byte"
+var write_byte_atom*: string = "\nwrite_byte"
 
-var read_bytes_atom*: cstring = "\nread_bytes"
+var read_bytes_atom*: string = "\nread_bytes"
 
-var scl_io_num_atom*: cstring = "\nscl_io_num"
+var scl_io_num_atom*: string = "\nscl_io_num"
 
-var sda_io_num_atom*: cstring = "\nsda_io_num"
+var sda_io_num_atom*: string = "\nsda_io_num"
 
-var i2c_clock_hz_atom*: cstring = "\fi2c_clock_hz"
+var i2c_clock_hz_atom*: string = "\fi2c_clock_hz"
 
 ## uart
 
-var name_atom*: cstring = "\x04name"
+var name_atom*: string = "\x04name"
 
-var speed_atom*: cstring = "\x05speed"
+var speed_atom*: string = "\x05speed"
 
-var write_atom*: cstring = "\x05write"
+var write_atom*: string = "\x05write"
 
-var data_bits_atom*: cstring = "\tdata_bits"
+var data_bits_atom*: string = "\tdata_bits"
 
-var stop_bits_atom*: cstring = "\tstop_bits"
+var stop_bits_atom*: string = "\tstop_bits"
 
-var flow_control_atom*: cstring = "\fflow_control"
+var flow_control_atom*: string = "\fflow_control"
 
-var hardware_atom*: cstring = "\bhardware"
+var hardware_atom*: string = "\bhardware"
 
-var software_atom*: cstring = "\bsoftware"
+var software_atom*: string = "\bsoftware"
 
-var parity_atom*: cstring = "\x06parity"
+var parity_atom*: string = "\x06parity"
 
-var even_atom*: cstring = "\x04even"
+var even_atom*: string = "\x04even"
 
-var odd_atom*: cstring = "\x03odd"
+var odd_atom*: string = "\x03odd"
 
 proc platform_defaultatoms_init*(glb: ptr GlobalContext) {.cdecl.} =
   var ok: cint = 1

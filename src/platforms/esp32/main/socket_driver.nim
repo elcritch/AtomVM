@@ -31,7 +31,7 @@ proc tcp_server_handler*(ctx: ptr Context) {.cdecl.}
 proc tcp_client_handler*(ctx: ptr Context) {.cdecl.}
 proc udp_handler*(ctx: ptr Context) {.cdecl.}
 proc socket_consume_mailbox*(ctx: ptr Context) {.cdecl.}
-var ealready_atom*: cstring = "\bealready"
+var ealready_atom*: string = "\bealready"
 
 proc socket_tuple_to_addr*(addr_tuple: term): uint32_t {.cdecl.} =
   return ((term_to_int32(term_get_tuple_element(addr_tuple, 0)) and 0x000000FF) shl
@@ -331,7 +331,7 @@ proc tcp_client_handler*(ctx: ptr Context) {.cdecl.} =
     return
   dec(tcp_data.socket_data.avail_bytes, data_len)
   ## HANDLE fragments here?
-  TRACE("%*s\n", cast[cint](data_len), cast[cstring](data))
+  TRACE("%*s\n", cast[cint](data_len), cast[string](data))
   var recv_terms_size: cint
   if tcp_data.socket_data.binary:
     recv_terms_size = term_binary_data_size_in_terms(data_len) +
@@ -432,7 +432,7 @@ proc udp_handler*(ctx: ptr Context) {.cdecl.} =
     return
   dec(udp_data.socket_data.avail_bytes, data_len)
   ## HANDLE fragments here?
-  TRACE("%*s\n", cast[cint](data_len), cast[cstring](data))
+  TRACE("%*s\n", cast[cint](data_len), cast[string](data))
   var recv_terms_size: cint
   if udp_data.socket_data.binary:
     recv_terms_size = term_binary_data_size_in_terms(data_len) +
@@ -516,7 +516,7 @@ proc do_connect*(ctx: ptr Context; msg: term) {.cdecl.} =
   var controlling_process_term: term = interop_proplist_get_value(params,
       CONTROLLING_PROCESS_ATOM)
   var ok_int: cint
-  var address_string: cstring = interop_term_to_string(address_term, addr(ok_int))
+  var address_string: string = interop_term_to_string(address_term, addr(ok_int))
   if UNLIKELY(not ok_int):
     abort()
   var port: avm_int_t = term_to_int(port_term)
@@ -801,7 +801,7 @@ proc do_recvfrom*(ctx: ptr Context; msg: term) {.cdecl.} =
       return
     dec(socket_data.avail_bytes, data_len)
     ## HANDLE fragments here?
-    TRACE("%*s\n", cast[cint](data_len), cast[cstring](data))
+    TRACE("%*s\n", cast[cint](data_len), cast[string](data))
     var recv_terms_size: cint
     if socket_data.binary:
       recv_terms_size = term_binary_data_size_in_terms(data_len) +

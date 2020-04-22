@@ -37,7 +37,7 @@ proc app_main*() {.cdecl.} =
   var flashed_avm: pointer = avm_partition(addr(size))
   var startup_beam_size: uint32_t
   var startup_beam: pointer
-  var startup_module_name: cstring
+  var startup_module_name: string
   printf("Booting file mapped at: %p, size: %i\n", flashed_avm, size)
   var glb: ptr GlobalContext = globalcontext_new()
   socket_driver_init(glb)

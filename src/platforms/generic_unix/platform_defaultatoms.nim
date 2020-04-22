@@ -20,61 +20,61 @@
 import
   platform_defaultatoms
 
-var proto_atom*: cstring = "\x05proto"
+var proto_atom*: string = "\x05proto"
 
-var udp_atom*: cstring = "\x03udp"
+var udp_atom*: string = "\x03udp"
 
-var tcp_atom*: cstring = "\x03tcp"
+var tcp_atom*: string = "\x03tcp"
 
-var socket_atom*: cstring = "\x06socket"
+var socket_atom*: string = "\x06socket"
 
-var fcntl_atom*: cstring = "\x05fcntl"
+var fcntl_atom*: string = "\x05fcntl"
 
-var bind_atom*: cstring = "\x04bind"
+var bind_atom*: string = "\x04bind"
 
-var getsockname_atom*: cstring = "\vgetsockname"
+var getsockname_atom*: string = "\vgetsockname"
 
-var recvfrom_atom*: cstring = "\brecvfrom"
+var recvfrom_atom*: string = "\brecvfrom"
 
-var recv_atom*: cstring = "\x04recv"
+var recv_atom*: string = "\x04recv"
 
-var sendto_atom*: cstring = "\x06sendto"
+var sendto_atom*: string = "\x06sendto"
 
-var send_atom*: cstring = "\x04send"
+var send_atom*: string = "\x04send"
 
-var sta_got_ip_atom*: cstring = "\nsta_got_ip"
+var sta_got_ip_atom*: string = "\nsta_got_ip"
 
-var sta_connected_atom*: cstring = "\csta_connected"
+var sta_connected_atom*: string = "\csta_connected"
 
-var address_atom*: cstring = "\aaddress"
+var address_atom*: string = "\aaddress"
 
-var port_atom*: cstring = "\x04port"
+var port_atom*: string = "\x04port"
 
-var controlling_process_atom*: cstring = "\x13controlling_process"
+var controlling_process_atom*: string = "\x13controlling_process"
 
-var binary_atom*: cstring = "\x06binary"
+var binary_atom*: string = "\x06binary"
 
-var active_atom*: cstring = "\x06active"
+var active_atom*: string = "\x06active"
 
-var buffer_atom*: cstring = "\x06buffer"
+var buffer_atom*: string = "\x06buffer"
 
-var getaddrinfo_atom*: cstring = "\vgetaddrinfo"
+var getaddrinfo_atom*: string = "\vgetaddrinfo"
 
-var no_such_host_atom*: cstring = "\fno_such_host"
+var no_such_host_atom*: string = "\fno_such_host"
 
-var connect_atom*: cstring = "\aconnect"
+var connect_atom*: string = "\aconnect"
 
-var tcp_closed_atom*: cstring = "\ntcp_closed"
+var tcp_closed_atom*: string = "\ntcp_closed"
 
-var listen_atom*: cstring = "\x06listen"
+var listen_atom*: string = "\x06listen"
 
-var backlog_atom*: cstring = "\abacklog"
+var backlog_atom*: string = "\abacklog"
 
-var accept_atom*: cstring = "\x06accept"
+var accept_atom*: string = "\x06accept"
 
-var fd_atom*: cstring = "\x02fd"
+var fd_atom*: string = "\x02fd"
 
-var generic_unix_atom*: cstring = "\fgeneric_unix"
+var generic_unix_atom*: string = "\fgeneric_unix"
 
 proc platform_defaultatoms_init*(glb: ptr GlobalContext) {.cdecl.} =
   var ok: cint = 1
