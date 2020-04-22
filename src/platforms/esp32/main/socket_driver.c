@@ -412,6 +412,7 @@ static void do_accept(Context *ctx, term msg)
         struct ListHead *accepter_head;
         struct ListHead *tmp;
         struct TCPServerAccepter *accepter = NULL;
+        // TODO: FIXME
         // MUTABLE_LIST_FOR_EACH(accepter_head, tmp, &tcp_data->accepters_list_head) {
         for (accepter_head = (&tcp_data->accepters_list_head)->next, tmp = accepter_head->next;
              accepter_head != (&tcp_data->accepters_list_head);
@@ -544,6 +545,7 @@ static void tcp_server_handler(Context *ctx)
     struct ListHead *accepter_head;
     struct ListHead *tmp;
     struct TCPServerAccepter *accepter = NULL;
+// TODO: FIXME
     // MUTABLE_LIST_FOR_EACH(accepter_head, tmp, &tcp_data->accepters_list_head) {
     for (accepter_head = (&tcp_data->accepters_list_head)->next, tmp = accepter_head->next;
          accepter_head != (&tcp_data->accepters_list_head);

@@ -44,6 +44,7 @@
 #define MAX_NIF_NAME_LEN 260
 #define FLOAT_BUF_SIZE 64
 
+// TODO: FIXME
 #define VALIDATE_VALUE(value, verify_function)
 // #define VALIDATE_VALUE(value, verify_function) \
 //     if (UNLIKELY(!verify_function((value)))) { \
@@ -52,6 +53,7 @@
 //         return term_invalid_term(); \
 //     } \
 
+// TODO: FIXME
 #define RAISE_ERROR(error_type_atom)
 // #define RAISE_ERROR(error_type_atom) \
 //     ctx->x[0] = ERROR_ATOM; \
@@ -800,9 +802,11 @@ static term nif_erlang_spawn(Context *ctx, int argc, term argv[])
     VALIDATE_VALUE(args_term, term_is_list);
 
     if (argc == 4) {
+        // TODO: FIXME
         // spawn_opt has been called
         VALIDATE_VALUE(opts_term, term_is_list);
     } else {
+        // TODO: FIXME
         // regular spawn
         opts_term = term_nil();
     }

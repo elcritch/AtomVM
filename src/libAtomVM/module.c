@@ -211,6 +211,7 @@ Module *module_new_from_iff_binary(GlobalContext *global, const void *iff_binary
                 module_destroy(mod);
                 return NULL;
             }
+        // TODO: FIXME
         // #else 
             // fprintf(stderr, "zlib required to uncompress literals.\n");
             // module_destroy(mod);

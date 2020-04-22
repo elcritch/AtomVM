@@ -23,6 +23,7 @@
 #include "term.h"
 #include "nifs.h"
 
+// TODO: FIXME
 //#define ENABLE_TRACE
 #include "trace.h"
 
@@ -34,6 +35,7 @@ static term nif_atomvm_platform(Context *ctx, int argc, term argv[])
     return STM32_ATOM;
 }
 
+// TODO: FIXME
 // static const struct Nif atomvm_platform_nif =
 // {
 //     .base.type = NIFFunctionType,

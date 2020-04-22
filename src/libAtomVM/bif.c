@@ -251,6 +251,7 @@ static term add_overflow_helper(Context *ctx, term arg1, term arg2)
 
 static term add_boxed_helper(Context *ctx, term arg1, term arg2)
 {
+// TODO: FIXME
 #ifndef AVM_NO_FP
     int use_float = 0;
 #endif
@@ -326,6 +327,7 @@ static term add_boxed_helper(Context *ctx, term arg1, term arg2)
             return make_maybe_boxed_int(ctx, res);
         }
 
+    // TODO: FIXME
     // #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
     //     case 2:
     //     case 3: {

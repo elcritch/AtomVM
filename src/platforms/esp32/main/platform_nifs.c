@@ -32,9 +32,11 @@
 #include <nvs_flash.h>
 #include <rom/md5_hash.h>
 
+// TODO: FIXME
 //#define ENABLE_TRACE
 #include "trace.h"
 
+// TODO: FIXME
 #define VALIDATE_VALUE(value, verify_function)
 #define RAISE_ERROR(error_type_atom)
 
@@ -375,6 +377,7 @@ static term nif_atomvm_platform(Context *ctx, int argc, term argv[])
 // NIF structures and distpatch
 //
 
+// TODO: FIXME
 // static const struct Nif esp_random_nif =
 // {
 //     .base.type = NIFFunctionType,
