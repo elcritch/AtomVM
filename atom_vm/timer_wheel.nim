@@ -17,74 +17,61 @@
 ##    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA .        *
 ## *************************************************************************
 
+import
+  sequtils
 
 type
-  # TODO: Fixme
-  timer_wheel_callback* = proc (a1: ptr TimerWheelItem) {.cdecl.}
 
   TimerWheel* = ref object
     slots*: seq[seq[TimerWheelItem]]
-    timers*: int
     monotonic_time*: uint64
 
   TimerWheelItem* = ref object
     expiry_time*: uint64
-    head*: ListHead
-    callback*: ptr timer_wheel_callback
+    callback*: proc (a1: var TimerWheelItem)
 
-proc timer_wheel_insert*(tw: var TimerWheel; item: sink var TimerWheelItem)  =
-  var expiry_time: uint64 = item.expiry_time
-  var slot: int = expiry_time mod tw.slots_count
-  inc(tw.timers)
+proc slot(tw: var TimerWheel, item: var TimerWheelItem): uint64 =
+  var expiry_time = item.expiry_time
+  return expiry_time mod len(tw.slots).uint32
+
+proc insert*(tw: var TimerWheel; item: var TimerWheelItem)  =
+  var slot = tw.slot(item)
   tw.slots[slot].add item
 
-proc timer_wheel_remove*(tw: ptr TimerWheel; item: ptr TimerWheelItem)  =
-  dec(tw.timers)
-  list_remove(addr(item.head))
-  tw.slots[slot].remove item
+proc remove*(tw: var TimerWheel; item: var TimerWheelItem) =
+  var timer_slot = tw.slots[tw.slot(item)]
+  timer_slot.delete(timer_slot.find(item))
 
-proc timer_wheel_is_empty*(tw: ptr TimerWheel): bool  =
-  return tw.timers == 0
+proc len*(tw: var TimerWheel): int =
+  result = 0
+  for timer_slot in tw.slots:
+    result += len(timer_slot)
 
-proc timer_wheel_timers_count*(tw: ptr TimerWheel): cint  =
-  return tw.timers
-
-proc timer_wheel_item_init*(it: ptr TimerWheelItem; cb: timer_wheel_callback;
+proc timer_wheel_item_init*(it: ptr TimerWheelItem; cb: proc (a1: var TimerWheelItem);
                           expiry: uint64)  =
   it.expiry_time = expiry
   it.callback = cb
 
-proc timer_wheel_expiry_to_monotonic*(tw: ptr TimerWheel; expiry: uint32): uint64 {.
-    inline, cdecl.} =
+proc timer_wheel_expiry_to_monotonic*(tw: ptr TimerWheel; expiry: uint32): uint64 =
   return tw.monotonic_time + expiry
 
-proc timer_wheel_new*(slots_count: cint): ptr TimerWheel =
-  var tw: ptr TimerWheel = malloc(sizeof(TimerWheel))
-  tw.slots = malloc(sizeof(cast[ListHead](slots_count[])))
-  var i: cint = 0
-  while i < slots_count:
-    list_init(addr(tw.slots[i]))
-    inc(i)
-  tw.slots_count = slots_count
-  tw.timers = 0
-  tw.monotonic_time = 0
-  return tw
+proc timer_wheel_new*(slots_count: int): TimerWheel =
+  result = new(TimerWheel)
+  result.monotonic_time = 0
+  result.slots = newSeq[seq[TimerWheelItem]](slots_count)
 
-proc timer_wheel_tick*(tw: ptr TimerWheel) =
+  for i in 0..slots_count:
+    result.slots[i] = @[]
+
+proc timer_wheel_tick*(tw: var TimerWheel) =
   inc(tw.monotonic_time)
   var monotonic_time: uint64 = tw.monotonic_time
-  var pos: cint = tw.monotonic_time mod tw.slots_count
-  var item: ptr ListHead
-  var tmp: ptr ListHead
+  var pos = tw.monotonic_time mod len(tw.slots).uint32
   ##  TODO: FIXME
   ##  MUTABLE_LIST_FOR_EACH(item, tmp, &tw->slots[pos]) {
-  item = (addr(tw.slots[pos])).next
-  tmp = item.next
-  while item != (addr(tw.slots[pos])):
-    var ti: ptr TimerWheelItem = GET_LIST_ENTRY(item, struct, TimerWheelItem, head)
-    if ti.expiry_time <= monotonic_time:
-      dec(tw.timers)
-      list_remove(item)
-      ti.callback(ti)
-    item = tmp
-    tmp = item.next
+  var timer_slot = tw.slots[pos]
+
+  var is_expired = proc (ti: TimerWheelItem): bool =
+    ti.expiry_time <= monotonic_time
+
+  keepIf(timer_slot, proc (it: TimerWheelItem): bool = not is_expired(it) )
