@@ -20,6 +20,7 @@
 import
   platform_nifs, defaultatoms, platform_defaultatoms, term, nifs
 
+##  TODO: FIXME
 ## #define ENABLE_TRACE
 
 import
@@ -31,6 +32,7 @@ proc nif_atomvm_platform*(ctx: ptr Context; argc: cint; argv: ptr term): term {.
   UNUSED(argv)
   return STM32_ATOM
 
+##  TODO: FIXME
 ##  static const struct Nif atomvm_platform_nif =
 ##  {
 ##      .base.type = NIFFunctionType,

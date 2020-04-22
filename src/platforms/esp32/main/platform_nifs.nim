@@ -23,10 +23,13 @@ const
 import
   atom, defaultatoms, platform_defaultatoms, nifs, memory, term
 
+##  TODO: FIXME
 ## #define ENABLE_TRACE
 
 import
   trace
+
+##  TODO: FIXME
 
 template VALIDATE_VALUE*(value, verify_function: untyped): void =
   nil
@@ -329,6 +332,7 @@ proc nif_atomvm_platform*(ctx: ptr Context; argc: cint; argv: ptr term): term {.
 ##
 ##  NIF structures and distpatch
 ##
+##  TODO: FIXME
 ##  static const struct Nif esp_random_nif =
 ##  {
 ##      .base.type = NIFFunctionType,

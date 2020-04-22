@@ -164,6 +164,7 @@ proc add_overflow_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdec
   return make_boxed_int(ctx, val1 + val2)
 
 proc add_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.} =
+  ##  TODO: FIXME
   when not defined(AVM_NO_FP):
     var use_float: cint = 0
   var size: cint = 0
@@ -215,6 +216,7 @@ proc add_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term {.cdecl.}
         RAISE_ERROR(OVERFLOW_ATOM)
       else:
     return make_maybe_boxed_int(ctx, res)
+    ##  TODO: FIXME
     ##  #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
     ##      case 2:
     ##      case 3: {

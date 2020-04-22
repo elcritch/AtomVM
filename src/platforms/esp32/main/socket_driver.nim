@@ -291,6 +291,7 @@ proc do_accept*(ctx: ptr Context; msg: term) {.cdecl.} =
     var accepter_head: ptr ListHead
     var tmp: ptr ListHead
     var accepter: ptr TCPServerAccepter = nil
+    ##  TODO: FIXME
     ##  MUTABLE_LIST_FOR_EACH(accepter_head, tmp, &tcp_data->accepters_list_head) {
     accepter_head = (addr(tcp_data.accepters_list_head)).next
     tmp = accepter_head.next
@@ -388,6 +389,7 @@ proc tcp_server_handler*(ctx: ptr Context) {.cdecl.} =
   var accepter_head: ptr ListHead
   var tmp: ptr ListHead
   var accepter: ptr TCPServerAccepter = nil
+  ##  TODO: FIXME
   ##  MUTABLE_LIST_FOR_EACH(accepter_head, tmp, &tcp_data->accepters_list_head) {
   accepter_head = (addr(tcp_data.accepters_list_head)).next
   tmp = accepter_head.next

@@ -22,6 +22,7 @@ import
   socket_driver, port, atom, context, generic_unix_sys, globalcontext, interop,
   mailbox, utils, term, sys, platform_defaultatoms
 
+##  TODO: FIXME
 ##  #define ENABLE_TRACE
 
 import
