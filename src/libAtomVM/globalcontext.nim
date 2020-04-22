@@ -22,22 +22,47 @@ import
   context
 
 type
+  Context* {.bycopy.} = object
+
+  GlobalContext* {.bycopy.} = object
+
+  Module* {.bycopy.} = object
+
+  GlobalContext* {.bycopy.} = object
+    ready_processes*: seq[Context]
+    waiting_processes*: seq[Context]
+    processes_table*: ref seq[Context]
+    registered_processes*: ref seq[Context]
+    last_process_id*: int32
+    atoms_table*: ref Table[AtomString]
+    atoms_ids_table*: ref ValuesHashTable
+    modules_table*: ref AtomsHashTable
+    modules_by_index*: ref ref Module
+    loaded_modules_count*: int
+    avmpack_data*: ref seq[byte]
+    avmpack_platform_data*: ref seq[byte]
+    timer_wheel*: ref TimerWheel
+    last_seen_millis*: uint32
+    ref_ticks*: uint64
+    platform_data*: ref seq
+
   RegisteredProcess* {.bycopy.} = object
     registered_processes_list_head*: ListHead
     atom_index*: cint
     local_process_id*: cint
 
 
-proc globalcontext_new*(): ptr GlobalContext {.cdecl.} =
-  var glb: ptr GlobalContext = malloc(sizeof((GlobalContext)))
-  if IS_NULL_PTR(glb):
-    return nil
+proc globalcontext_new*(): GlobalContext =
+  var glb = GlobalContext()
+
   list_init(addr(glb.ready_processes))
   list_init(addr(glb.waiting_processes))
+
   glb.processes_table = nil
   glb.registered_processes = nil
   glb.last_process_id = 0
   glb.atoms_table = atomshashtable_new()
+
   if IS_NULL_PTR(glb.atoms_table):
     free(glb)
     return nil
