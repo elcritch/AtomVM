@@ -23,10 +23,10 @@ import
 type
   IFFRecord* = object
     name*: array[4, char]
-    size*: uint32_t
+    size*: uint32
 
 
-proc iff_align*(size: uint32_t): uint32_t =
+proc iff_align*(size: uint32): uint32 =
   return ((size + 4 - 1) shr 2) shl 2
 
 proc iff_is_valid_beam*(beam_data: pointer): cint =
@@ -34,11 +34,11 @@ proc iff_is_valid_beam*(beam_data: pointer): cint =
 
 proc scan_iff*(iff_binary: pointer; buf_size: cint; offsets: ptr culong;
               sizes: ptr culong) =
-  var data: ptr uint8_t = iff_binary
+  var data: ptr uint8 = iff_binary
   memset(offsets, 0, sizeof(cast[culong](MAX_OFFS[])))
   memset(sizes, 0, sizeof(cast[culong](MAX_SIZES[])))
   var current_pos: cint = 12
-  var iff_size: uint32_t = READ_32_ALIGNED(data + 4)
+  var iff_size: uint32 = READ_32_ALIGNED(data + 4)
   var file_size: cint = iff_size
   if UNLIKELY(buf_size < file_size):
     fprintf(stderr, "warning: buffer holding IFF is smaller than IFF size: %i",

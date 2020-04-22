@@ -26,7 +26,7 @@ const
 proc pad*(size: cint): cint  =
   return ((size + 4 - 1) shr 2) shl 2
 
-proc avmpack_is_valid*(avmpack_binary: pointer; size: uint32_t): cint =
+proc avmpack_is_valid*(avmpack_binary: pointer; size: uint32): cint =
   var pack_header: array[AVMPACK_SIZE, cuchar] = [0x00000023, 0x00000021, 0x0000002F,
       0x00000075, 0x00000073, 0x00000072, 0x0000002F, 0x00000062, 0x00000069,
       0x0000006E, 0x0000002F, 0x00000065, 0x0000006E, 0x00000076, 0x00000020,
@@ -36,20 +36,20 @@ proc avmpack_is_valid*(avmpack_binary: pointer; size: uint32_t): cint =
     return 0
   return memcmp(avmpack_binary, pack_header, AVMPACK_SIZE) == 0
 
-proc avmpack_find_section_by_flag*(avmpack_binary: pointer; flags_mask: uint32_t;
-                                  `ptr`: ptr pointer; size: ptr uint32_t;
+proc avmpack_find_section_by_flag*(avmpack_binary: pointer; flags_mask: uint32;
+                                  `ptr`: ptr pointer; size: ptr uint32;
                                   name: cstringArray): cint =
   var offset: cint = AVMPACK_SIZE
-  var flags: ptr uint32_t
+  var flags: ptr uint32
   while true:
-    var sizes: ptr uint32_t = (cast[ptr uint32_t]((avmpack_binary))) +
-        offset div sizeof((uint32_t))
-    flags = (cast[ptr uint32_t]((avmpack_binary))) + 1 +
-        offset div sizeof((uint32_t))
+    var sizes: ptr uint32 = (cast[ptr uint32]((avmpack_binary))) +
+        offset div sizeof((uint32))
+    flags = (cast[ptr uint32]((avmpack_binary))) + 1 +
+        offset div sizeof((uint32))
     if (ENDIAN_SWAP_32(flags[]) and flags_mask) == flags_mask:
       var found_section_name: cstring = cast[cstring]((sizes + 3))
       var section_name_len: cint = pad(strlen(found_section_name) + 1)
-      `ptr`[] = sizes + 3 + section_name_len div sizeof((uint32_t))
+      `ptr`[] = sizes + 3 + section_name_len div sizeof((uint32))
       size[] = ENDIAN_SWAP_32(sizes[])
       name[] = cast[cstring]((sizes + 3))
       return 1
@@ -59,18 +59,18 @@ proc avmpack_find_section_by_flag*(avmpack_binary: pointer; flags_mask: uint32_t
   return 0
 
 proc avmpack_find_section_by_name*(avmpack_binary: pointer; name: cstring;
-                                  `ptr`: ptr pointer; size: ptr uint32_t): cint =
+                                  `ptr`: ptr pointer; size: ptr uint32): cint =
   var offset: cint = AVMPACK_SIZE
-  var flags: ptr uint32_t
+  var flags: ptr uint32
   while true:
-    var sizes: ptr uint32_t = (cast[ptr uint32_t]((avmpack_binary))) +
-        offset div sizeof((uint32_t))
-    flags = (cast[ptr uint32_t]((avmpack_binary))) + 1 +
-        offset div sizeof((uint32_t))
+    var sizes: ptr uint32 = (cast[ptr uint32]((avmpack_binary))) +
+        offset div sizeof((uint32))
+    flags = (cast[ptr uint32]((avmpack_binary))) + 1 +
+        offset div sizeof((uint32))
     var found_section_name: cstring = cast[cstring]((sizes + 3))
     if not strcmp(name, found_section_name):
       var section_name_len: cint = pad(strlen(found_section_name) + 1)
-      `ptr`[] = sizes + 3 + section_name_len div sizeof((uint32_t))
+      `ptr`[] = sizes + 3 + section_name_len div sizeof((uint32))
       size[] = ENDIAN_SWAP_32(sizes[])
       return 1
     inc(offset, ENDIAN_SWAP_32(sizes[]))
@@ -81,18 +81,18 @@ proc avmpack_find_section_by_name*(avmpack_binary: pointer; name: cstring;
 proc avmpack_fold*(accum: pointer; avmpack_binary: pointer;
                   fold_fun: avmpack_fold_fun): pointer =
   var offset: cint = AVMPACK_SIZE
-  var size: uint32_t = 0
+  var size: uint32 = 0
   while true:
-    var size_ptr: ptr uint32_t = (cast[ptr uint32_t]((avmpack_binary))) +
-        offset div sizeof((uint32_t))
+    var size_ptr: ptr uint32 = (cast[ptr uint32]((avmpack_binary))) +
+        offset div sizeof((uint32))
     size = ENDIAN_SWAP_32(size_ptr[])
     if size > 0:
-      var flags_ptr: ptr uint32_t = size_ptr + 1
-      var flags: uint32_t = ENDIAN_SWAP_32(flags_ptr[])
+      var flags_ptr: ptr uint32 = size_ptr + 1
+      var flags: uint32 = ENDIAN_SWAP_32(flags_ptr[])
       var section_name: cstring = cast[cstring]((size_ptr + 3))
       var section_name_len: cint = pad(strlen(section_name) + 1)
       accum = fold_fun(accum, size_ptr, size,
-                     size_ptr + 3 + section_name_len div sizeof((uint32_t)), flags,
+                     size_ptr + 3 + section_name_len div sizeof((uint32)), flags,
                      section_name)
       inc(offset, size)
     if not (size > 0):

@@ -32,23 +32,23 @@ type
     rxqueue*: xQueueHandle
     listener*: EventListener
     reader_process_pid*: term
-    reader_ref_ticks*: uint64_t
+    reader_ref_ticks*: uint64
     ctx*: ptr Context
-    uart_num*: uint8_t
+    uart_num*: uint8
 
 
 ##  TODO: FIXME
 ##  static void IRAM_ATTR uart_isr_handler(void *arg)
 
 proc uart_isr_handler*(arg: pointer) =
-  var rxfifo_len: uint16_t
-  var interrupt_status: uint16_t
+  var rxfifo_len: uint16
+  var interrupt_status: uint16
   interrupt_status = UART0.int_st.val
   UNUSED(interrupt_status)
   rxfifo_len = UART0.status.rxfifo_cnt
   var uart_data: ptr UARTData = arg
   while rxfifo_len:
-    var c: uint8_t
+    var c: uint8
     c = UART0.fifo.rw_byte
     xQueueSendFromISR(uart_data.rxqueue, addr(c), nil)
     dec(rxfifo_len)
@@ -68,17 +68,17 @@ proc uart_interrupt_callback*(listener: ptr EventListener) =
     var count: cuint = uxQueueMessagesWaiting(uart_data.rxqueue)
     if count == 0:
       return
-    var ref_size: cint = (sizeof((uint64_t) div sizeof((term)))) + 1
+    var ref_size: cint = (sizeof((uint64) div sizeof((term)))) + 1
     var bin_size: cint = term_binary_data_size_in_terms(count) + BINARY_HEADER_SIZE +
         ref_size
     if UNLIKELY(memory_ensure_free(uart_data.ctx, bin_size + ref_size + 3 + 3) !=
         MEMORY_GC_OK):
       abort()
     var bin: term = term_create_uninitialized_binary(count, uart_data.ctx)
-    var bin_buf: ptr uint8_t = cast[ptr uint8_t](term_binary_data(bin))
+    var bin_buf: ptr uint8 = cast[ptr uint8](term_binary_data(bin))
     var i: cuint = 0
     while i < count:
-      var c: uint8_t
+      var c: uint8
       if xQueueReceive(uart_data.rxqueue, addr(c), 1) == pdTRUE:
         bin_buf[i] = c
       else:
@@ -114,7 +114,7 @@ proc uart_driver_init*(ctx: ptr Context; opts: term) =
   var uart_name: cstring = interop_term_to_string(uart_name_term, addr(ok))
   if not uart_name or not ok:
     abort()
-  var uart_num: uint8_t
+  var uart_num: uint8
   if not strcmp(uart_name, "UART0"):
     uart_num = UART_NUM_0
   elif not strcmp(uart_name, "UART1"):
@@ -124,7 +124,7 @@ proc uart_driver_init*(ctx: ptr Context; opts: term) =
   else:
     abort()
   free(uart_name)
-  var uart_speed: avm_int_t = term_to_int(uart_speed_term)
+  var uart_speed: avm_int = term_to_int(uart_speed_term)
   var data_bits: cint
   case term_to_int(data_bits_term)
   of 8:
@@ -165,7 +165,7 @@ proc uart_driver_init*(ctx: ptr Context; opts: term) =
     parity = UART_PARITY_ODD
   else:
     abort()
-  var uart_config: uart_config_t
+  var uart_config: uart_config
   uart_config.baud_rate = uart_speed
   uart_config.data_bits = data_bits
   uart_config.parity = parity
@@ -184,7 +184,7 @@ proc uart_driver_init*(ctx: ptr Context; opts: term) =
   uart_data.listener.handler = uart_interrupt_callback
   list_append(addr(platform.listeners),
               addr(uart_data.listener.listeners_list_head))
-  uart_data.rxqueue = xQueueCreate(UART_BUF_SIZE, sizeof((uint8_t)))
+  uart_data.rxqueue = xQueueCreate(UART_BUF_SIZE, sizeof((uint8)))
   uart_data.reader_process_pid = term_invalid_term()
   uart_data.reader_ref_ticks = 0
   uart_data.ctx = ctx
@@ -192,7 +192,7 @@ proc uart_driver_init*(ctx: ptr Context; opts: term) =
   ctx.native_handler = uart_driver_consume_mailbox
   ctx.platform_data = uart_data
   uart_isr_free(uart_num)
-  var isr_handle: uart_isr_handle_t
+  var isr_handle: uart_isr_handle
   uart_isr_register(uart_num, uart_isr_handler, uart_data, ESP_INTR_FLAG_IRAM,
                     addr(isr_handle))
   uart_enable_rx_intr(uart_num)
@@ -221,10 +221,10 @@ proc uart_driver_do_read*(ctx: ptr Context; msg: term) =
     if UNLIKELY(memory_ensure_free(uart_data.ctx, bin_size + 3 + 3) != MEMORY_GC_OK):
       abort()
     var bin: term = term_create_uninitialized_binary(count, uart_data.ctx)
-    var bin_buf: ptr uint8_t = cast[ptr uint8_t](term_binary_data(bin))
+    var bin_buf: ptr uint8 = cast[ptr uint8](term_binary_data(bin))
     var i: cuint = 0
     while i < count:
-      var c: uint8_t
+      var c: uint8
       if LIKELY(xQueueReceive(uart_data.rxqueue, addr(c), 1) == pdTRUE):
         bin_buf[i] = c
       else:

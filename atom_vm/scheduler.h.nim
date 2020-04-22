@@ -92,5 +92,5 @@ proc scheduler_next*(global: ptr GlobalContext; c: ptr Context): ptr Context {.c
 ##  @param timeout ammount of time to be waited in milliseconds.
 ##
 
-proc scheduler_set_timeout*(ctx: ptr Context; timeout: uint32_t) {.cdecl.}
+proc scheduler_set_timeout*(ctx: ptr Context; timeout: uint32) {.cdecl.}
 proc scheduler_cancel_timeout*(ctx: ptr Context) {.cdecl.}

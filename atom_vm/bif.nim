@@ -104,7 +104,7 @@ proc bif_erlang_length_1*(ctx: ptr Context; live: cint; arg1: term): term =
   UNUSED(live)
   VALIDATE_VALUE(arg1, term_is_list)
   var proper: cint
-  var len: avm_int_t = term_list_length(arg1, addr(proper))
+  var len: avm_int = term_list_length(arg1, addr(proper))
   if UNLIKELY(not proper):
     RAISE_ERROR(BADARG_ATOM)
   return term_from_int(len)
@@ -131,25 +131,25 @@ proc bif_erlang_tuple_size_1*(ctx: ptr Context; arg1: term): term =
   VALIDATE_VALUE(arg1, term_is_tuple)
   return term_from_int32(term_get_tuple_arity(arg1))
 
-proc make_boxed_int*(ctx: ptr Context; value: avm_int_t): term  =
+proc make_boxed_int*(ctx: ptr Context; value: avm_int): term  =
   if UNLIKELY(memory_ensure_free(ctx, BOXED_INT_SIZE) != MEMORY_GC_OK):
     RAISE_ERROR(OUT_OF_MEMORY_ATOM)
   return term_make_boxed_int(value, ctx)
 
 when BOXED_TERMS_REQUIRED_FOR_INT64 > 1:
-  proc make_boxed_int64*(ctx: ptr Context; value: avm_int64_t): term  =
+  proc make_boxed_int64*(ctx: ptr Context; value: avm_int64): term  =
     if UNLIKELY(memory_ensure_free(ctx, BOXED_INT64_SIZE) != MEMORY_GC_OK):
       RAISE_ERROR(OUT_OF_MEMORY_ATOM)
     return term_make_boxed_int64(value, ctx)
 
-proc make_maybe_boxed_int*(ctx: ptr Context; value: avm_int_t): term  =
+proc make_maybe_boxed_int*(ctx: ptr Context; value: avm_int): term  =
   if (value < MIN_NOT_BOXED_INT) or (value > MAX_NOT_BOXED_INT):
     return make_boxed_int(ctx, value)
   else:
     return term_from_int(value)
 
 when BOXED_TERMS_REQUIRED_FOR_INT64 > 1:
-  proc make_maybe_boxed_int64*(ctx: ptr Context; value: avm_int64_t): term {.inline,
+  proc make_maybe_boxed_int64*(ctx: ptr Context; value: avm_int64): term {.inline,
       cdecl.} =
     if (value < AVM_INT_MIN) or (value > AVM_INT_MAX):
       return make_boxed_int64(ctx, value)
@@ -159,8 +159,8 @@ when BOXED_TERMS_REQUIRED_FOR_INT64 > 1:
       return term_from_int(value)
 
 proc add_overflow_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
-  var val1: avm_int_t = term_to_int(arg1)
-  var val2: avm_int_t = term_to_int(arg2)
+  var val1: avm_int = term_to_int(arg1)
+  var val2: avm_int = term_to_int(arg2)
   return make_boxed_int(ctx, val1 + val2)
 
 proc add_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
@@ -190,9 +190,9 @@ proc add_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
 
   when not defined(AVM_NO_FP):
     if use_float:
-      var farg1: avm_float_t = term_conv_to_float(arg1)
-      var farg2: avm_float_t = term_conv_to_float(arg2)
-      var fresult: avm_float_t = farg1 + farg2
+      var farg1: avm_float = term_conv_to_float(arg1)
+      var farg2: avm_float = term_conv_to_float(arg2)
+      var fresult: avm_float = farg1 + farg2
       if UNLIKELY(not isfinite(fresult)):
         RAISE_ERROR(BADARITH_ATOM)
       if UNLIKELY(memory_ensure_free(ctx, FLOAT_SIZE) != MEMORY_GC_OK):
@@ -203,12 +203,12 @@ proc add_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
     ## BUG
     abort()
   of 1:
-    var val1: avm_int_t = term_maybe_unbox_int(arg1)
-    var val2: avm_int_t = term_maybe_unbox_int(arg2)
-    var res: avm_int_t
+    var val1: avm_int = term_maybe_unbox_int(arg1)
+    var val2: avm_int = term_maybe_unbox_int(arg2)
+    var res: avm_int
     if BUILTIN_ADD_OVERFLOW_INT(val1, val2, addr(res)):
       when BOXED_TERMS_REQUIRED_FOR_INT64 == 2:
-        var res64: avm_int64_t = cast[avm_int64_t](val1) + cast[avm_int64_t](val2)
+        var res64: avm_int64 = cast[avm_int64](val1) + cast[avm_int64](val2)
         return make_boxed_int64(ctx, res64)
       elif BOXED_TERMS_REQUIRED_FOR_INT64 == 1:
         TRACE("overflow: arg1: ", AVM_INT64_FMT, ", arg2: ", AVM_INT64_FMT, "\n",
@@ -220,9 +220,9 @@ proc add_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
     ##  #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
     ##      case 2:
     ##      case 3: {
-    ##          avm_int64_t val1 = term_maybe_unbox_int64(arg1);
-    ##          avm_int64_t val2 = term_maybe_unbox_int64(arg2);
-    ##          avm_int64_t res;
+    ##          avm_int64 val1 = term_maybe_unbox_int64(arg1);
+    ##          avm_int64 val2 = term_maybe_unbox_int64(arg2);
+    ##          avm_int64 res;
     ##          if (BUILTIN_ADD_OVERFLOW_INT64(val1, val2, &res)) {
     ##              TRACE("overflow: val1: " AVM_INT64_FMT ", val2: " AVM_INT64_FMT "\n", arg1, arg2);
     ##              RAISE_ERROR(OVERFLOW_ATOM);
@@ -237,9 +237,9 @@ proc bif_erlang_add_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): te
   UNUSED(live)
   if LIKELY(term_is_integer(arg1) and term_is_integer(arg2)):
     ## TODO: use long integer instead, and term_to_longint
-    var res: avm_int_t
-    if not BUILTIN_ADD_OVERFLOW((avm_int_t)(arg1 and not TERM_INTEGER_TAG),
-                              (avm_int_t)(arg2 and not TERM_INTEGER_TAG), addr(res)):
+    var res: avm_int
+    if not BUILTIN_ADD_OVERFLOW((avm_int)(arg1 and not TERM_INTEGER_TAG),
+                              (avm_int)(arg2 and not TERM_INTEGER_TAG), addr(res)):
       return res or TERM_INTEGER_TAG
     else:
       return add_overflow_helper(ctx, arg1, arg2)
@@ -247,8 +247,8 @@ proc bif_erlang_add_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): te
     return add_boxed_helper(ctx, arg1, arg2)
 
 proc sub_overflow_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
-  var val1: avm_int_t = term_to_int(arg1)
-  var val2: avm_int_t = term_to_int(arg2)
+  var val1: avm_int = term_to_int(arg1)
+  var val2: avm_int = term_to_int(arg2)
   return make_boxed_int(ctx, val1 - val2)
 
 proc sub_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
@@ -277,9 +277,9 @@ proc sub_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
 
   when not defined(AVM_NO_FP):
     if use_float:
-      var farg1: avm_float_t = term_conv_to_float(arg1)
-      var farg2: avm_float_t = term_conv_to_float(arg2)
-      var fresult: avm_float_t = farg1 - farg2
+      var farg1: avm_float = term_conv_to_float(arg1)
+      var farg2: avm_float = term_conv_to_float(arg2)
+      var fresult: avm_float = farg1 - farg2
       if UNLIKELY(not isfinite(fresult)):
         RAISE_ERROR(BADARITH_ATOM)
       if UNLIKELY(memory_ensure_free(ctx, FLOAT_SIZE) != MEMORY_GC_OK):
@@ -290,12 +290,12 @@ proc sub_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
     ## BUG
     abort()
   of 1:
-    var val1: avm_int_t = term_maybe_unbox_int(arg1)
-    var val2: avm_int_t = term_maybe_unbox_int(arg2)
-    var res: avm_int_t
+    var val1: avm_int = term_maybe_unbox_int(arg1)
+    var val2: avm_int = term_maybe_unbox_int(arg2)
+    var res: avm_int
     if BUILTIN_SUB_OVERFLOW_INT(val1, val2, addr(res)):
       when BOXED_TERMS_REQUIRED_FOR_INT64 == 2:
-        var res64: avm_int64_t = cast[avm_int64_t](val1) - cast[avm_int64_t](val2)
+        var res64: avm_int64 = cast[avm_int64](val1) - cast[avm_int64](val2)
         return make_boxed_int64(ctx, res64)
       elif BOXED_TERMS_REQUIRED_FOR_INT64 == 1:
         TRACE("overflow: arg1: ", AVM_INT64_FMT, ", arg2: ", AVM_INT64_FMT, "\n",
@@ -307,9 +307,9 @@ proc sub_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
     ##  #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
     ##      case 2:
     ##      case 3: {
-    ##          avm_int64_t val1 = term_maybe_unbox_int64(arg1);
-    ##          avm_int64_t val2 = term_maybe_unbox_int64(arg2);
-    ##          avm_int64_t res;
+    ##          avm_int64 val1 = term_maybe_unbox_int64(arg1);
+    ##          avm_int64 val2 = term_maybe_unbox_int64(arg2);
+    ##          avm_int64 res;
     ##          if (BUILTIN_SUB_OVERFLOW_INT64(val1, val2, &res)) {
     ##              TRACE("overflow: val1: " AVM_INT64_FMT ", val2: " AVM_INT64_FMT "\n", arg1, arg2);
     ##              RAISE_ERROR(OVERFLOW_ATOM);
@@ -323,9 +323,9 @@ proc bif_erlang_sub_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): te
   UNUSED(live)
   if LIKELY(term_is_integer(arg1) and term_is_integer(arg2)):
     ## TODO: use long integer instead, and term_to_longint
-    var res: avm_int_t
-    if not BUILTIN_SUB_OVERFLOW((avm_int_t)(arg1 and not TERM_INTEGER_TAG),
-                              (avm_int_t)(arg2 and not TERM_INTEGER_TAG), addr(res)):
+    var res: avm_int
+    if not BUILTIN_SUB_OVERFLOW((avm_int)(arg1 and not TERM_INTEGER_TAG),
+                              (avm_int)(arg2 and not TERM_INTEGER_TAG), addr(res)):
       return res or TERM_INTEGER_TAG
     else:
       return sub_overflow_helper(ctx, arg1, arg2)
@@ -333,11 +333,11 @@ proc bif_erlang_sub_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): te
     return sub_boxed_helper(ctx, arg1, arg2)
 
 proc mul_overflow_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
-  var val1: avm_int_t = term_to_int(arg1)
-  var val2: avm_int_t = term_to_int(arg2)
-  var res: avm_int_t
+  var val1: avm_int = term_to_int(arg1)
+  var val2: avm_int = term_to_int(arg2)
+  var res: avm_int
   when BOXED_TERMS_REQUIRED_FOR_INT64 == 2:
-    var res64: avm_int64_t
+    var res64: avm_int64
   if not BUILTIN_MUL_OVERFLOW_INT(val1, val2, addr(res)):
     return make_boxed_int(ctx, res)
   else:
@@ -369,9 +369,9 @@ proc mul_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
 
   when not defined(AVM_NO_FP):
     if use_float:
-      var farg1: avm_float_t = term_conv_to_float(arg1)
-      var farg2: avm_float_t = term_conv_to_float(arg2)
-      var fresult: avm_float_t = farg1 * farg2
+      var farg1: avm_float = term_conv_to_float(arg1)
+      var farg2: avm_float = term_conv_to_float(arg2)
+      var fresult: avm_float = farg1 * farg2
       if UNLIKELY(not isfinite(fresult)):
         RAISE_ERROR(BADARITH_ATOM)
       if UNLIKELY(memory_ensure_free(ctx, FLOAT_SIZE) != MEMORY_GC_OK):
@@ -382,12 +382,12 @@ proc mul_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
     ## BUG
     abort()
   of 1:
-    var val1: avm_int_t = term_maybe_unbox_int(arg1)
-    var val2: avm_int_t = term_maybe_unbox_int(arg2)
-    var res: avm_int_t
+    var val1: avm_int = term_maybe_unbox_int(arg1)
+    var val2: avm_int = term_maybe_unbox_int(arg2)
+    var res: avm_int
     if BUILTIN_MUL_OVERFLOW_INT(val1, val2, addr(res)):
       when BOXED_TERMS_REQUIRED_FOR_INT64 == 2:
-        var res64: avm_int64_t = cast[avm_int64_t](val1 * cast[avm_int64_t](val2))
+        var res64: avm_int64 = cast[avm_int64](val1 * cast[avm_int64](val2))
         return make_boxed_int64(ctx, res64)
       elif BOXED_TERMS_REQUIRED_FOR_INT64 == 1:
         TRACE("overflow: arg1: ", AVM_INT64_FMT, ", arg2: ", AVM_INT64_FMT, "\n",
@@ -399,9 +399,9 @@ proc mul_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
     ##  #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
     ##      case 2:
     ##      case 3: {
-    ##          avm_int64_t val1 = term_maybe_unbox_int64(arg1);
-    ##          avm_int64_t val2 = term_maybe_unbox_int64(arg2);
-    ##          avm_int64_t res;
+    ##          avm_int64 val1 = term_maybe_unbox_int64(arg1);
+    ##          avm_int64 val2 = term_maybe_unbox_int64(arg2);
+    ##          avm_int64 res;
     ##          if (BUILTIN_MUL_OVERFLOW_INT64(val1, val2, &res)) {
     ##              TRACE("overflow: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2);
     ##              RAISE_ERROR(OVERFLOW_ATOM);
@@ -415,9 +415,9 @@ proc mul_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
 proc bif_erlang_mul_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =
   UNUSED(live)
   if LIKELY(term_is_integer(arg1) and term_is_integer(arg2)):
-    var res: avm_int_t
-    var a: avm_int_t = ((avm_int_t)(arg1 and not TERM_INTEGER_TAG)) shr 2
-    var b: avm_int_t = ((avm_int_t)(arg2 and not TERM_INTEGER_TAG)) shr 2
+    var res: avm_int
+    var a: avm_int = ((avm_int)(arg1 and not TERM_INTEGER_TAG)) shr 2
+    var b: avm_int = ((avm_int)(arg2 and not TERM_INTEGER_TAG)) shr 2
     if not BUILTIN_MUL_OVERFLOW(a, b, addr(res)):
       return res or TERM_INTEGER_TAG
     else:
@@ -442,13 +442,13 @@ proc div_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
     ## BUG
     abort()
   of 1:
-    var val1: avm_int_t = term_maybe_unbox_int(arg1)
-    var val2: avm_int_t = term_maybe_unbox_int(arg2)
+    var val1: avm_int = term_maybe_unbox_int(arg1)
+    var val2: avm_int = term_maybe_unbox_int(arg2)
     if UNLIKELY(val2 == 0):
       RAISE_ERROR(BADARITH_ATOM)
     elif UNLIKELY((val2 == -1) and (val1 == AVM_INT_MIN)):
       when BOXED_TERMS_REQUIRED_FOR_INT64 == 2:
-        return make_boxed_int64(ctx, -(cast[avm_int64_t](AVM_INT_MIN)))
+        return make_boxed_int64(ctx, -(cast[avm_int64](AVM_INT_MIN)))
       elif BOXED_TERMS_REQUIRED_FOR_INT64 == 1:
         TRACE("overflow: arg1: 0x%lx, arg2: 0x%lx\n", arg1, arg2)
         RAISE_ERROR(OVERFLOW_ATOM)
@@ -458,8 +458,8 @@ proc div_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
     ##  #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
     ##  case 2:
     ##  case 3: {
-    ##      avm_int64_t val1 = term_maybe_unbox_int64(arg1);
-    ##      avm_int64_t val2 = term_maybe_unbox_int64(arg2);
+    ##      avm_int64 val1 = term_maybe_unbox_int64(arg1);
+    ##      avm_int64 val2 = term_maybe_unbox_int64(arg2);
     ##      if (UNLIKELY(val2 == 0)) {
     ##          RAISE_ERROR(BADARITH_ATOM);
     ##      } else if (UNLIKELY((val2 == -1) && (val1 == INT64_MIN))) {
@@ -476,9 +476,9 @@ proc div_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
 proc bif_erlang_div_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =
   UNUSED(live)
   if LIKELY(term_is_integer(arg1) and term_is_integer(arg2)):
-    var operand_b: avm_int_t = term_to_int(arg2)
+    var operand_b: avm_int = term_to_int(arg2)
     if operand_b != 0:
-      var res: avm_int_t = term_to_int(arg1) div operand_b
+      var res: avm_int = term_to_int(arg1) div operand_b
       if UNLIKELY(res == -MIN_NOT_BOXED_INT):
         return make_boxed_int(ctx, -MIN_NOT_BOXED_INT)
       else:
@@ -491,8 +491,8 @@ proc bif_erlang_div_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): te
 proc neg_boxed_helper*(ctx: ptr Context; arg1: term): term =
   when not defined(AVM_NO_FP):
     if term_is_float(arg1):
-      var farg1: avm_float_t = term_conv_to_float(arg1)
-      var fresult: avm_float_t = -farg1
+      var farg1: avm_float = term_conv_to_float(arg1)
+      var fresult: avm_float = -farg1
       if UNLIKELY(not isfinite(fresult)):
         RAISE_ERROR(BADARITH_ATOM)
       if UNLIKELY(memory_ensure_free(ctx, FLOAT_SIZE) != MEMORY_GC_OK):
@@ -503,13 +503,13 @@ proc neg_boxed_helper*(ctx: ptr Context; arg1: term): term =
     of 0:                      ## BUG
       abort()
     of 1:
-      var val: avm_int_t = term_unbox_int(arg1)
+      var val: avm_int = term_unbox_int(arg1)
       case val
       of (MAX_NOT_BOXED_INT + 1):
         return term_from_int(MIN_NOT_BOXED_INT)
       of AVM_INT_MIN:
         when BOXED_TERMS_REQUIRED_FOR_INT64 == 2:
-          return make_boxed_int64(ctx, -(cast[avm_int64_t](val)))
+          return make_boxed_int64(ctx, -(cast[avm_int64](val)))
         elif BOXED_TERMS_REQUIRED_FOR_INT64 == 1:
           TRACE("overflow: val: ", AVM_INT_FMT, "\n", val)
           RAISE_ERROR(OVERFLOW_ATOM)
@@ -519,7 +519,7 @@ proc neg_boxed_helper*(ctx: ptr Context; arg1: term): term =
       ##  TODO: FIXME
       ##  #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
       ##  case 2: {
-      ##      avm_int64_t val = term_unbox_int64(arg1);
+      ##      avm_int64 val = term_unbox_int64(arg1);
       ##      if (val == INT64_MIN) {
       ##          TRACE("overflow: arg1: " AVM_INT64_FMT "\n", arg1);
       ##          RAISE_ERROR(OVERFLOW_ATOM);
@@ -537,7 +537,7 @@ proc neg_boxed_helper*(ctx: ptr Context; arg1: term): term =
 proc bif_erlang_neg_1*(ctx: ptr Context; live: cint; arg1: term): term =
   UNUSED(live)
   if LIKELY(term_is_integer(arg1)):
-    var int_val: avm_int_t = term_to_int(arg1)
+    var int_val: avm_int = term_to_int(arg1)
     if UNLIKELY(int_val == MIN_NOT_BOXED_INT):
       return make_boxed_int(ctx, -MIN_NOT_BOXED_INT)
     else:
@@ -548,8 +548,8 @@ proc bif_erlang_neg_1*(ctx: ptr Context; live: cint; arg1: term): term =
 proc abs_boxed_helper*(ctx: ptr Context; arg1: term): term =
   when not defined(AVM_NO_FP):
     if term_is_float(arg1):
-      var farg1: avm_float_t = term_conv_to_float(arg1)
-      var fresult: avm_float_t
+      var farg1: avm_float = term_conv_to_float(arg1)
+      var fresult: avm_float
       when AVM_USE_SINGLE_PRECISION:
         fresult = fabsf(farg1)
       else:
@@ -564,12 +564,12 @@ proc abs_boxed_helper*(ctx: ptr Context; arg1: term): term =
     of 0:                      ## BUG
       abort()
     of 1:
-      var val: avm_int_t = term_unbox_int(arg1)
+      var val: avm_int = term_unbox_int(arg1)
       if val >= 0:
         return arg1
       if val == AVM_INT_MIN:
         when BOXED_TERMS_REQUIRED_FOR_INT64 == 2:
-          return make_boxed_int64(ctx, -(cast[avm_int64_t](val)))
+          return make_boxed_int64(ctx, -(cast[avm_int64](val)))
         elif BOXED_TERMS_REQUIRED_FOR_INT64 == 1:
           TRACE("overflow: val: ", AVM_INT_FMT, "\n", val)
           RAISE_ERROR(OVERFLOW_ATOM)
@@ -579,7 +579,7 @@ proc abs_boxed_helper*(ctx: ptr Context; arg1: term): term =
       ##  TODO: FIXME
       ##  #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
       ##  case 2: {
-      ##      avm_int64_t val = term_unbox_int64(arg1);
+      ##      avm_int64 val = term_unbox_int64(arg1);
       ##      if (val >= 0) {
       ##          return arg1;
       ##      }
@@ -600,7 +600,7 @@ proc abs_boxed_helper*(ctx: ptr Context; arg1: term): term =
 proc bif_erlang_abs_1*(ctx: ptr Context; live: cint; arg1: term): term =
   UNUSED(live)
   if LIKELY(term_is_integer(arg1)):
-    var int_val: avm_int_t = term_to_int(arg1)
+    var int_val: avm_int = term_to_int(arg1)
     if int_val < 0:
       if UNLIKELY(int_val == MIN_NOT_BOXED_INT):
         return make_boxed_int(ctx, -MIN_NOT_BOXED_INT)
@@ -628,8 +628,8 @@ proc rem_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
     ## BUG
     abort()
   of 1:
-    var val1: avm_int_t = term_maybe_unbox_int(arg1)
-    var val2: avm_int_t = term_maybe_unbox_int(arg2)
+    var val1: avm_int = term_maybe_unbox_int(arg1)
+    var val2: avm_int = term_maybe_unbox_int(arg2)
     if UNLIKELY(val2 == 0):
       RAISE_ERROR(BADARITH_ATOM)
     return make_maybe_boxed_int(ctx, val1 mod val2)
@@ -637,8 +637,8 @@ proc rem_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
     ##  #if BOXED_TERMS_REQUIRED_FOR_INT64 == 2
     ##  case 2:
     ##  case 3: {
-    ##      avm_int64_t val1 = term_maybe_unbox_int64(arg1);
-    ##      avm_int64_t val2 = term_maybe_unbox_int64(arg2);
+    ##      avm_int64 val1 = term_maybe_unbox_int64(arg1);
+    ##      avm_int64 val2 = term_maybe_unbox_int64(arg2);
     ##      if (UNLIKELY(val2 == 0)) {
     ##          RAISE_ERROR(BADARITH_ATOM);
     ##      }
@@ -651,7 +651,7 @@ proc rem_boxed_helper*(ctx: ptr Context; arg1: term; arg2: term): term =
 proc bif_erlang_rem_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =
   UNUSED(live)
   if LIKELY(term_is_integer(arg1) and term_is_integer(arg2)):
-    var operand_b: avm_int_t = term_to_int(arg2)
+    var operand_b: avm_int = term_to_int(arg2)
     if LIKELY(operand_b != 0):
       return term_from_int(term_to_int(arg1) mod operand_b)
     else:
@@ -663,10 +663,10 @@ proc bif_erlang_ceil_1*(ctx: ptr Context; live: cint; arg1: term): term =
   UNUSED(live)
   when not defined(AVM_NO_FP):
     if term_is_float(arg1):
-      var fvalue: avm_float_t = term_to_float(arg1)
+      var fvalue: avm_float = term_to_float(arg1)
       if (fvalue < INT64_MIN) or (fvalue > INT64_MAX):
         RAISE_ERROR(OVERFLOW_ATOM)
-      var result: avm_int64_t
+      var result: avm_int64
       when AVM_USE_SINGLE_PRECISION:
         result = ceilf(fvalue)
       else:
@@ -684,10 +684,10 @@ proc bif_erlang_floor_1*(ctx: ptr Context; live: cint; arg1: term): term =
   UNUSED(live)
   when not defined(AVM_NO_FP):
     if term_is_float(arg1):
-      var fvalue: avm_float_t = term_to_float(arg1)
+      var fvalue: avm_float = term_to_float(arg1)
       if (fvalue < INT64_MIN) or (fvalue > INT64_MAX):
         RAISE_ERROR(OVERFLOW_ATOM)
-      var result: avm_int64_t
+      var result: avm_int64
       when AVM_USE_SINGLE_PRECISION:
         result = floorf(fvalue)
       else:
@@ -705,10 +705,10 @@ proc bif_erlang_round_1*(ctx: ptr Context; live: cint; arg1: term): term =
   UNUSED(live)
   when not defined(AVM_NO_FP):
     if term_is_float(arg1):
-      var fvalue: avm_float_t = term_to_float(arg1)
+      var fvalue: avm_float = term_to_float(arg1)
       if (fvalue < INT64_MIN) or (fvalue > INT64_MAX):
         RAISE_ERROR(OVERFLOW_ATOM)
-      var result: avm_int64_t
+      var result: avm_int64
       when AVM_USE_SINGLE_PRECISION:
         result = llroundf(fvalue)
       else:
@@ -726,10 +726,10 @@ proc bif_erlang_trunc_1*(ctx: ptr Context; live: cint; arg1: term): term =
   UNUSED(live)
   when not defined(AVM_NO_FP):
     if term_is_float(arg1):
-      var fvalue: avm_float_t = term_to_float(arg1)
+      var fvalue: avm_float = term_to_float(arg1)
       if (fvalue < INT64_MIN) or (fvalue > INT64_MAX):
         RAISE_ERROR(OVERFLOW_ATOM)
-      var result: avm_int64_t
+      var result: avm_int64
       when AVM_USE_SINGLE_PRECISION:
         result = truncf(fvalue)
       else:
@@ -744,22 +744,22 @@ proc bif_erlang_trunc_1*(ctx: ptr Context; live: cint; arg1: term): term =
     RAISE_ERROR(BADARG_ATOM)
 
 type
-  bitwise_op* = proc (a: int64_t; b: int64_t): int64_t {.cdecl.}
+  bitwise_op* = proc (a: int64; b: int64): int64 {.cdecl.}
 
 proc bitwise_helper*(ctx: ptr Context; live: cint; arg1: term; arg2: term; op: bitwise_op): term {.
     inline, cdecl.} =
   UNUSED(live)
   if UNLIKELY(not term_is_any_integer(arg1) or not term_is_any_integer(arg2)):
     RAISE_ERROR(BADARITH_ATOM)
-  var a: int64_t = term_maybe_unbox_int64(arg1)
-  var b: int64_t = term_maybe_unbox_int64(arg2)
-  var result: int64_t = op(a, b)
+  var a: int64 = term_maybe_unbox_int64(arg1)
+  var b: int64 = term_maybe_unbox_int64(arg2)
+  var result: int64 = op(a, b)
   when BOXED_TERMS_REQUIRED_FOR_INT64 > 1:
     return make_maybe_boxed_int64(ctx, result)
   else:
     return make_maybe_boxed_int(ctx, result)
 
-proc bor*(a: int64_t; b: int64_t): int64_t  =
+proc bor*(a: int64; b: int64): int64  =
   return a or b
 
 proc bif_erlang_bor_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =
@@ -768,7 +768,7 @@ proc bif_erlang_bor_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): te
   else:
     return bitwise_helper(ctx, live, arg1, arg2, bor)
 
-proc band*(a: int64_t; b: int64_t): int64_t  =
+proc band*(a: int64; b: int64): int64  =
   return a and b
 
 proc bif_erlang_band_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =
@@ -777,7 +777,7 @@ proc bif_erlang_band_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): t
   else:
     return bitwise_helper(ctx, live, arg1, arg2, band)
 
-proc bxor*(a: int64_t; b: int64_t): int64_t  =
+proc bxor*(a: int64; b: int64): int64  =
   return a xor b
 
 proc bif_erlang_bxor_2*(ctx: ptr Context; live: cint; arg1: term; arg2: term): term =

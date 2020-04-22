@@ -62,7 +62,7 @@ proc interop_list_to_string*(list: term; ok: ptr cint): cstring =
       ok[] = 0
       free(str)
       return nil
-    var byte_value: uint8_t = term_to_uint8(byte_value_term)
+    var byte_value: uint8 = term_to_uint8(byte_value_term)
     str[i] = cast[char](byte_value)
     t = term_get_list_tail(t)
     inc(i)

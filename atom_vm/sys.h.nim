@@ -78,5 +78,5 @@ proc sys_get_info*(ctx: ptr Context; key: term): term {.cdecl.}
 proc sys_init_platform*(global: ptr GlobalContext) {.cdecl.}
 proc sys_start_millis_timer*() {.cdecl.}
 proc sys_stop_millis_timer*() {.cdecl.}
-proc sys_millis*(): uint32_t {.cdecl.}
+proc sys_millis*(): uint32 {.cdecl.}
 proc sys_sleep*(glb: ptr GlobalContext) {.cdecl.}

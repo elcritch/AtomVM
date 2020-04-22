@@ -27,7 +27,7 @@ proc i2cdriver_write_byte*(ctx: ptr Context; pid: term; req: term): term {.cdecl
 proc i2cdriver_consume_mailbox*(ctx: ptr Context) {.cdecl.}
 type
   I2CData* = object
-    cmd*: i2c_cmd_handle_t
+    cmd*: i2c_cmd_handle
     transmitting_pid*: term
 
 
@@ -39,15 +39,15 @@ proc i2cdriver_init*(ctx: ptr Context; opts: term) =
   var scl_io_num_term: term = interop_proplist_get_value(opts, SCL_IO_NUM_ATOM)
   var sda_io_num_term: term = interop_proplist_get_value(opts, SDA_IO_NUM_ATOM)
   var clock_hz_term: term = interop_proplist_get_value(opts, I2C_CLOCK_HZ_ATOM)
-  var conf: i2c_config_t
-  memset(addr(conf), 0, sizeof((i2c_config_t)))
+  var conf: i2c_config
+  memset(addr(conf), 0, sizeof((i2c_config)))
   conf.mode = I2C_MODE_MASTER
   conf.scl_io_num = term_to_int32(scl_io_num_term)
   conf.sda_io_num = term_to_int32(sda_io_num_term)
   conf.sda_pullup_en = GPIO_PULLUP_ENABLE
   conf.scl_pullup_en = GPIO_PULLUP_ENABLE
   conf.master.clk_speed = term_to_int32(clock_hz_term)
-  var ret: esp_err_t = i2c_param_config(I2C_NUM_0, addr(conf))
+  var ret: esp_err = i2c_param_config(I2C_NUM_0, addr(conf))
   if UNLIKELY(ret != ESP_OK):
     TRACE("i2cdriver: failed config, return value: %i\n", ret)
     ## TODO: return error
@@ -63,7 +63,7 @@ proc i2cdriver_begin_transmission*(ctx: ptr Context; pid: term; req: term): term
     ##  another process is already transmitting
     return ERROR_ATOM
   var address_term: term = term_get_tuple_element(req, 1)
-  var address: uint8_t = term_to_int32(address_term)
+  var address: uint8 = term_to_int32(address_term)
   i2c_data.cmd = i2c_cmd_link_create()
   i2c_master_start(i2c_data.cmd)
   i2c_master_write_byte(i2c_data.cmd, (address shl 1) or I2C_MASTER_WRITE, true)
@@ -76,7 +76,7 @@ proc i2cdriver_end_transmission*(ctx: ptr Context; pid: term): term =
     ##  transaction owned from a different pid
     return ERROR_ATOM
   i2c_master_stop(i2c_data.cmd)
-  var result: esp_err_t = i2c_master_cmd_begin(I2C_NUM_0, i2c_data.cmd, portMAX_DELAY)
+  var result: esp_err = i2c_master_cmd_begin(I2C_NUM_0, i2c_data.cmd, portMAX_DELAY)
   i2c_cmd_link_delete(i2c_data.cmd)
   i2c_data.transmitting_pid = term_invalid_term()
   if UNLIKELY(result != ESP_OK):
@@ -90,8 +90,8 @@ proc i2cdriver_write_byte*(ctx: ptr Context; pid: term; req: term): term =
     ##  transaction owned from a different pid
     return ERROR_ATOM
   var data_term: term = term_get_tuple_element(req, 1)
-  var data: uint8_t = term_to_int32(data_term)
-  var result: esp_err_t = i2c_master_write_byte(i2c_data.cmd, cast[uint8_t](data),
+  var data: uint8 = term_to_int32(data_term)
+  var result: esp_err = i2c_master_write_byte(i2c_data.cmd, cast[uint8](data),
       true)
   if UNLIKELY(result != ESP_OK):
     TRACE("i2cdriver write_byte error: result was: %i.\n", result)
@@ -104,16 +104,16 @@ proc i2cdriver_read_bytes*(ctx: ptr Context; pid: term; req: term): term =
     ##  another process is already transmitting
     return ERROR_ATOM
   var address_term: term = term_get_tuple_element(req, 1)
-  var address: uint8_t = term_to_int32(address_term)
+  var address: uint8 = term_to_int32(address_term)
   var read_bytes_term: term = term_get_tuple_element(req, 2)
-  var read_count: avm_int_t = term_to_int32(read_bytes_term)
+  var read_count: avm_int = term_to_int32(read_bytes_term)
   if UNLIKELY(memory_ensure_free(ctx, BOXED_INT_SIZE) != MEMORY_GC_OK):
     return ERROR_ATOM
   var data_term: term = term_create_uninitialized_binary(read_count, ctx)
-  var data: ptr uint8_t = cast[ptr uint8_t](term_binary_data(data_term))
+  var data: ptr uint8 = cast[ptr uint8](term_binary_data(data_term))
   i2c_data.cmd = i2c_cmd_link_create()
   i2c_master_start(i2c_data.cmd)
-  var result: esp_err_t = i2c_master_write_byte(i2c_data.cmd,
+  var result: esp_err = i2c_master_write_byte(i2c_data.cmd,
       (address shl 1) or I2C_MASTER_READ, true)
   if UNLIKELY(result != ESP_OK):
     TRACE("i2cdriver read_bytes error: result was: %i.\n", result)

@@ -24,7 +24,7 @@ import
 ##  Overflows every 49 days
 ##  TODO: use 64 bit (remember to take into account atomicity)
 
-var system_millis*: uint32_t
+var system_millis*: uint32
 
 ##  Called when systick fires
 
@@ -33,9 +33,9 @@ proc sys_tick_handler*() =
 
 ##  Sleep for delay milliseconds
 
-proc msleep*(delay: uint32_t) =
+proc msleep*(delay: uint32) =
   ##  TODO: use a smarter sleep instead of busy waiting
-  var wake: uint32_t = system_millis + delay
+  var wake: uint32 = system_millis + delay
   while wake > system_millis:
     nil
 
@@ -43,7 +43,7 @@ proc sys_clock_gettime*(t: ptr timespec)  =
   t.tv_sec = system_millis div 1000
   t.tv_nsec = (system_millis mod 1000) * 1000000
 
-proc timespec_diff_to_ms*(timespec1: ptr timespec; timespec2: ptr timespec): int32_t {.
+proc timespec_diff_to_ms*(timespec1: ptr timespec; timespec2: ptr timespec): int32 {.
     cdecl.} =
   return (timespec1.tv_sec - timespec2.tv_sec) * 1000 +
       (timespec1.tv_nsec - timespec2.tv_nsec) div 1000000
@@ -54,7 +54,7 @@ proc sys_init_platform*(glb: ptr GlobalContext) =
 proc sys_consume_pending_events*(glb: ptr GlobalContext) =
   UNUSED(glb)
 
-proc sys_set_timestamp_from_relative_to_abs*(t: ptr timespec; millis: int32_t) =
+proc sys_set_timestamp_from_relative_to_abs*(t: ptr timespec; millis: int32) =
   sys_clock_gettime(t)
   inc(t.tv_sec, millis div 1000)
   inc(t.tv_nsec, (millis mod 1000) * 1000000)
@@ -62,7 +62,7 @@ proc sys_set_timestamp_from_relative_to_abs*(t: ptr timespec; millis: int32_t) =
 proc sys_time*(t: ptr timespec) =
   sys_clock_gettime(t)
 
-proc sys_millis*(): uint32_t =
+proc sys_millis*(): uint32 =
   return system_millis
 
 proc sys_start_millis_timer*() =
@@ -74,7 +74,7 @@ proc sys_stop_millis_timer*() =
 proc sys_load_module*(global: ptr GlobalContext; module_name: cstring): ptr Module {.
     cdecl.} =
   var beam_module: pointer = nil
-  var beam_module_size: uint32_t = 0
+  var beam_module_size: uint32 = 0
   if not (global.avmpack_data and
       avmpack_find_section_by_name(global.avmpack_data, module_name,
                                    addr(beam_module), addr(beam_module_size))):

@@ -85,7 +85,7 @@ proc write_atom_c_string*(ctx: ptr Context; buf: cstring; bufsize: csize; t: ter
 proc nif_esp_random*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   UNUSED(argv)
-  var r: uint32_t = esp_random()
+  var r: uint32 = esp_random()
   if UNLIKELY(memory_ensure_free(ctx, BOXED_INT_SIZE) != MEMORY_GC_OK):
     RAISE_ERROR(OUT_OF_MEMORY_ATOM)
   return term_make_boxed_int(r, ctx)
@@ -93,7 +93,7 @@ proc nif_esp_random*(ctx: ptr Context; argc: cint; argv: ptr term): term =
 proc nif_esp_random_bytes*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   VALIDATE_VALUE(argv[0], term_is_integer)
-  var len: avm_int_t = term_to_int(argv[0])
+  var len: avm_int = term_to_int(argv[0])
   if len < 0:
     RAISE_ERROR(BADARG_ATOM)
   if len == 0:
@@ -103,7 +103,7 @@ proc nif_esp_random_bytes*(ctx: ptr Context; argc: cint; argv: ptr term): term =
     var binary: term = term_from_literal_binary(nil, len, ctx)
     return binary
   else:
-    var buf: ptr uint8_t = malloc(len)
+    var buf: ptr uint8 = malloc(len)
     if UNLIKELY(IS_NULL_PTR(buf)):
       RAISE_ERROR(OUT_OF_MEMORY_ATOM)
     esp_fill_random(buf, len)
@@ -124,7 +124,7 @@ proc nif_esp_restart*(ctx: ptr Context; argc: cint; argv: ptr term): term =
 proc nif_esp_reset_reason*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   UNUSED(argv)
-  var reason: esp_reset_reason_t = esp_reset_reason()
+  var reason: esp_reset_reason = esp_reset_reason()
   case reason
   of ESP_RST_UNKNOWN:
     return context_make_atom(ctx, esp_rst_unknown_atom)
@@ -162,7 +162,7 @@ proc nif_esp_nvs_get_binary*(ctx: ptr Context; argc: cint; argv: ptr term): term
   if write_atom_c_string(ctx, key, MAX_NVS_KEY_SIZE + 1, argv[1]) != 0:
     RAISE_ERROR(BADARG_ATOM)
   var nvs: nvs_handle
-  var err: esp_err_t = nvs_open(namespace, NVS_READONLY, addr(nvs))
+  var err: esp_err = nvs_open(namespace, NVS_READONLY, addr(nvs))
   case err
   of ESP_OK:
     nil
@@ -216,7 +216,7 @@ proc nif_esp_nvs_set_binary*(ctx: ptr Context; argc: cint; argv: ptr term): term
   var binary: term = argv[2]
   var size: csize = term_binary_size(binary)
   var nvs: nvs_handle
-  var err: esp_err_t = nvs_open(namespace, NVS_READWRITE, addr(nvs))
+  var err: esp_err = nvs_open(namespace, NVS_READWRITE, addr(nvs))
   case err
   of ESP_OK:
     nil
@@ -246,7 +246,7 @@ proc nif_esp_nvs_erase_key*(ctx: ptr Context; argc: cint; argv: ptr term): term 
   if write_atom_c_string(ctx, key, MAX_NVS_KEY_SIZE + 1, argv[1]) != 0:
     RAISE_ERROR(BADARG_ATOM)
   var nvs: nvs_handle
-  var err: esp_err_t = nvs_open(namespace, NVS_READWRITE, addr(nvs))
+  var err: esp_err = nvs_open(namespace, NVS_READWRITE, addr(nvs))
   case err
   of ESP_OK:
     nil
@@ -274,7 +274,7 @@ proc nif_esp_nvs_erase_all*(ctx: ptr Context; argc: cint; argv: ptr term): term 
   if write_atom_c_string(ctx, namespace, MAX_NVS_KEY_SIZE + 1, argv[0]) != 0:
     RAISE_ERROR(BADARG_ATOM)
   var nvs: nvs_handle
-  var err: esp_err_t = nvs_open(namespace, NVS_READWRITE, addr(nvs))
+  var err: esp_err = nvs_open(namespace, NVS_READWRITE, addr(nvs))
   case err
   of ESP_OK:
     nil
@@ -295,7 +295,7 @@ proc nif_esp_nvs_erase_all*(ctx: ptr Context; argc: cint; argv: ptr term): term 
 proc nif_esp_nvs_reformat*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   UNUSED(argv)
-  var err: esp_err_t = nvs_flash_erase()
+  var err: esp_err = nvs_flash_erase()
   case err
   of ESP_OK:
     nil

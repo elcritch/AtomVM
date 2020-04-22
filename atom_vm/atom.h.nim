@@ -55,7 +55,7 @@ proc atom_are_equals*(a: AtomString; b: AtomString): cint {.cdecl.}
 ##
 
 proc atom_string_len*(atom_str: AtomString): cint  =
-  return (cast[ptr uint8_t](atom_str))[]
+  return (cast[ptr uint8](atom_str))[]
 
 ## *
 ##  @brief Gets actual atom string data.
@@ -66,7 +66,7 @@ proc atom_string_len*(atom_str: AtomString): cint  =
 ##
 
 proc atom_string_data*(atom_str: AtomString): pointer  =
-  return (cast[ptr uint8_t](atom_str)) + 1
+  return (cast[ptr uint8](atom_str)) + 1
 
 ## *
 ##  @brief Write module:function/arity to the supplied buffer.

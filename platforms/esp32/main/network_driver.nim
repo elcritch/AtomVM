@@ -36,14 +36,14 @@ import
 const
   CONNECTED_BIT* = BIT0
 
-proc wifi_event_handler*(ctx: pointer; event: ptr system_event_t): esp_err_t {.cdecl.}
-var wifi_event_group*: EventGroupHandle_t
+proc wifi_event_handler*(ctx: pointer; event: ptr system_event): esp_err {.cdecl.}
+var wifi_event_group*: EventGroupHandle
 
 type
   ClientData* = object
     ctx*: ptr Context
     pid*: term
-    ref_ticks*: uint64_t
+    ref_ticks*: uint64
 
 
 proc network_driver_start*(ctx: ptr Context; pid: term_ref; `ref`: term_ref;
@@ -77,10 +77,10 @@ proc network_driver_start*(ctx: ptr Context; pid: term_ref; `ref`: term_ref;
     wifi_event_group = xEventGroupCreate()
     ESP_ERROR_CHECK(esp_event_loop_init(wifi_event_handler, data))
     TRACE("Initialized event loop.\n")
-    var cfg: wifi_init_config_t = WIFI_INIT_CONFIG_DEFAULT()
+    var cfg: wifi_init_config = WIFI_INIT_CONFIG_DEFAULT()
     ESP_ERROR_CHECK(esp_wifi_init(addr(cfg)))
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM))
-    var wifi_config: wifi_config_t
+    var wifi_config: wifi_config
     if UNLIKELY((strlen(ssid) > sizeof((wifi_config.sta.ssid))) or
         (strlen(psk) > sizeof((wifi_config.sta.password)))):
       TRACE("ssid or psk is too long\n")
@@ -89,7 +89,7 @@ proc network_driver_start*(ctx: ptr Context; pid: term_ref; `ref`: term_ref;
       var reply: term = port_create_error_tuple(ctx, BADARG_ATOM)
       port_send_reply(ctx, pid, `ref`, reply)
       return
-    memset(addr(wifi_config), 0, sizeof((wifi_config_t)))
+    memset(addr(wifi_config), 0, sizeof((wifi_config)))
     strcpy(cast[cstring](wifi_config.sta.ssid), ssid)
     strcpy(cast[cstring](wifi_config.sta.password), psk)
     free(ssid)
@@ -115,10 +115,10 @@ proc network_driver_start*(ctx: ptr Context; pid: term_ref; `ref`: term_ref;
 proc network_driver_ifconfig*(ctx: ptr Context): term =
   return port_create_error_tuple(ctx, UNDEFINED_ATOM)
 
-proc get_ipv4_addr*(`addr`: ptr ip4_addr_t): u32_t =
+proc get_ipv4_addr*(`addr`: ptr ip4_addr): u32 =
   return `addr`.`addr`
 
-proc send_got_ip*(data: ptr ClientData; info: ptr tcpip_adapter_ip_info_t) =
+proc send_got_ip*(data: ptr ClientData; info: ptr tcpip_adapter_ip_info) =
   TRACE("Sending got_ip back to AtomVM\n")
   var ctx: ptr Context = data.ctx
   port_ensure_available(ctx, ((4 + 1) * 3 + (2 + 1) + (2 + 1)) * 2)
@@ -148,7 +148,7 @@ proc send_sta_disconnected*(data: ptr ClientData) =
   TRACE("Sending sta_disconnected back to AtomVM\n")
   send_atom(data, STA_DISCONNECTED_ATOM)
 
-proc wifi_event_handler*(ctx: pointer; event: ptr system_event_t): esp_err_t =
+proc wifi_event_handler*(ctx: pointer; event: ptr system_event): esp_err =
   var data: ptr ClientData = cast[ptr ClientData](ctx)
   case event.event_id
   of SYSTEM_EVENT_STA_START:

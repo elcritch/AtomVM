@@ -33,14 +33,14 @@ const
   BINARY_EXT* = 109
   EXPORT_EXT* = 113
 
-proc parse_external_terms*(external_term_buf: ptr uint8_t; eterm_size: ptr cint;
+proc parse_external_terms*(external_term_buf: ptr uint8; eterm_size: ptr cint;
                           ctx: ptr Context; copy: cint): term {.cdecl.}
-proc calculate_heap_usage*(external_term_buf: ptr uint8_t; eterm_size: ptr cint;
+proc calculate_heap_usage*(external_term_buf: ptr uint8; eterm_size: ptr cint;
                           copy: bool; ctx: ptr Context): cint {.cdecl.}
 proc compute_external_size*(ctx: ptr Context; t: term): csize {.cdecl.}
-proc externalterm_from_term*(ctx: ptr Context; buf: ptr ptr uint8_t; len: ptr csize;
+proc externalterm_from_term*(ctx: ptr Context; buf: ptr ptr uint8; len: ptr csize;
                             t: term): cint {.cdecl.}
-proc serialize_term*(ctx: ptr Context; buf: ptr uint8_t; t: term): cint {.cdecl.}
+proc serialize_term*(ctx: ptr Context; buf: ptr uint8; t: term): cint {.cdecl.}
 ## *
 ##  @brief
 ##  @param   external_term   buffer containing external term
@@ -54,7 +54,7 @@ proc serialize_term*(ctx: ptr Context; buf: ptr uint8_t; t: term): cint {.cdecl.
 proc externalterm_to_term_internal*(external_term: pointer; ctx: ptr Context;
                                    use_heap_fragment: cint; bytes_read: ptr csize): term {.
     cdecl.} =
-  var external_term_buf: ptr uint8_t = cast[ptr uint8_t](external_term)
+  var external_term_buf: ptr uint8 = cast[ptr uint8](external_term)
   if UNLIKELY(external_term_buf[0] != EXTERNAL_TERM_TAG):
     fprintf(stderr, "External term format not supported\n")
     abort()
@@ -99,8 +99,8 @@ proc externalterm_from_binary*(ctx: ptr Context; dst: ptr term; binary: term;
   if not term_is_binary(binary):
     return EXTERNAL_TERM_BAD_ARG
   var len: csize = term_binary_size(binary)
-  var data: ptr uint8_t = cast[ptr uint8_t](term_binary_data(binary))
-  var buf: ptr uint8_t = malloc(len)
+  var data: ptr uint8 = cast[ptr uint8](term_binary_data(binary))
+  var buf: ptr uint8 = malloc(len)
   if UNLIKELY(IS_NULL_PTR(buf)):
     fprintf(stderr, "Unable to allocate %zu bytes for binary buffer.\n", len)
     return EXTERNAL_TERM_MALLOC
@@ -112,7 +112,7 @@ proc externalterm_from_binary*(ctx: ptr Context; dst: ptr term; binary: term;
   free(buf)
   return EXTERNAL_TERM_OK
 
-proc externalterm_from_term*(ctx: ptr Context; buf: ptr ptr uint8_t; len: ptr csize;
+proc externalterm_from_term*(ctx: ptr Context; buf: ptr ptr uint8; len: ptr csize;
                             t: term): cint =
   len[] = compute_external_size(ctx, t) + 1
   buf[] = malloc(len[])
@@ -127,7 +127,7 @@ proc externalterm_to_binary*(ctx: ptr Context; t: term): term =
   ##
   ##  convert
   ##
-  var buf: ptr uint8_t
+  var buf: ptr uint8
   var len: csize
   externalterm_from_term(ctx, addr(buf), addr(len), t)
   ##
@@ -144,7 +144,7 @@ proc externalterm_to_binary*(ctx: ptr Context; t: term): term =
 proc compute_external_size*(ctx: ptr Context; t: term): csize =
   return serialize_term(ctx, nil, t)
 
-proc serialize_term*(ctx: ptr Context; buf: ptr uint8_t; t: term): cint =
+proc serialize_term*(ctx: ptr Context; buf: ptr uint8; t: term): cint =
   if term_is_uint8(t):
     if not IS_NULL_PTR(buf):
       buf[0] = SMALL_INTEGER_EXT
@@ -152,7 +152,7 @@ proc serialize_term*(ctx: ptr Context; buf: ptr uint8_t; t: term): cint =
     return 2
   elif term_is_integer(t):
     if not IS_NULL_PTR(buf):
-      var val: int32_t = term_to_int32(t)
+      var val: int32 = term_to_int32(t)
       buf[0] = INTEGER_EXT
       WRITE_32_UNALIGNED(buf + 1, val)
     return 5
@@ -162,10 +162,10 @@ proc serialize_term*(ctx: ptr Context; buf: ptr uint8_t; t: term): cint =
     if not IS_NULL_PTR(buf):
       buf[0] = ATOM_EXT
       WRITE_16_UNALIGNED(buf + 1, atom_len)
-      var atom_data: ptr int8_t = cast[ptr int8_t](atom_string_data(atom_string))
+      var atom_data: ptr int8 = cast[ptr int8](atom_string_data(atom_string))
       var i: csize = 3
       while i < atom_len + 3:
-        buf[i] = cast[int8_t](atom_data[i - 3])
+        buf[i] = cast[int8](atom_data[i - 3])
         inc(i)
     return 3 + atom_len
   elif term_is_tuple(t):
@@ -175,7 +175,7 @@ proc serialize_term*(ctx: ptr Context; buf: ptr uint8_t; t: term): cint =
       abort()
     if not IS_NULL_PTR(buf):
       buf[0] = SMALL_TUPLE_EXT
-      buf[1] = cast[int8_t](arity)
+      buf[1] = cast[int8](arity)
     var k: csize = 2
     var i: csize = 0
     while i < arity:
@@ -223,7 +223,7 @@ proc serialize_term*(ctx: ptr Context; buf: ptr uint8_t; t: term): cint =
       buf[0] = BINARY_EXT
     var len: csize = term_binary_size(t)
     if not IS_NULL_PTR(buf):
-      var data: ptr uint8_t = cast[ptr uint8_t](term_binary_data(t))
+      var data: ptr uint8 = cast[ptr uint8](term_binary_data(t))
       WRITE_32_UNALIGNED(buf + 1, len)
       memcpy(buf + 5, data, len)
     return 5 + len
@@ -231,12 +231,12 @@ proc serialize_term*(ctx: ptr Context; buf: ptr uint8_t; t: term): cint =
     fprintf(stderr, "Unknown term type: %li\n", t)
     abort()
 
-proc parse_external_terms*(external_term_buf: ptr uint8_t; eterm_size: ptr cint;
+proc parse_external_terms*(external_term_buf: ptr uint8; eterm_size: ptr cint;
                           ctx: ptr Context; copy: cint): term =
   case external_term_buf[0]
   of NEW_FLOAT_EXT:
     when not defined(AVM_NO_FP):
-      var v: tuple[intvalue: uint64_t, doublevalue: cdouble]
+      var v: tuple[intvalue: uint64, doublevalue: cdouble]
       v.intvalue = READ_64_UNALIGNED(external_term_buf + 1)
       eterm_size[] = 9
       return term_from_float(v.doublevalue, ctx)
@@ -247,17 +247,17 @@ proc parse_external_terms*(external_term_buf: ptr uint8_t; eterm_size: ptr cint;
     eterm_size[] = 2
     return term_from_int11(external_term_buf[1])
   of INTEGER_EXT:
-    var value: int32_t = READ_32_UNALIGNED(external_term_buf + 1)
+    var value: int32 = READ_32_UNALIGNED(external_term_buf + 1)
     eterm_size[] = 5
     return term_from_int32(value)
   of ATOM_EXT:
-    var atom_len: uint16_t = READ_16_UNALIGNED(external_term_buf + 1)
+    var atom_len: uint16 = READ_16_UNALIGNED(external_term_buf + 1)
     var global_atom_id: cint = globalcontext_insert_atom_maybe_copy(ctx.global,
         (AtomString)(external_term_buf + 2), copy)
     eterm_size[] = 3 + atom_len
     return term_from_atom_index(global_atom_id)
   of SMALL_TUPLE_EXT:
-    var arity: uint8_t = external_term_buf[1]
+    var arity: uint8 = external_term_buf[1]
     var `tuple`: term = term_alloc_tuple(arity, ctx)
     var buf_pos: cint = 2
     var i: cint = 0
@@ -274,11 +274,11 @@ proc parse_external_terms*(external_term_buf: ptr uint8_t; eterm_size: ptr cint;
     eterm_size[] = 1
     return term_nil()
   of STRING_EXT:
-    var string_size: uint16_t = READ_16_UNALIGNED(external_term_buf + 1)
+    var string_size: uint16 = READ_16_UNALIGNED(external_term_buf + 1)
     eterm_size[] = 3 + string_size
-    return term_from_string(cast[ptr uint8_t](external_term_buf) + 3, string_size, ctx)
+    return term_from_string(cast[ptr uint8](external_term_buf) + 3, string_size, ctx)
   of LIST_EXT:
-    var list_len: uint32_t = READ_32_UNALIGNED(external_term_buf + 1)
+    var list_len: uint32 = READ_32_UNALIGNED(external_term_buf + 1)
     var list_begin: term = term_nil()
     var prev_term: ptr term = nil
     var buf_pos: cint = 5
@@ -305,13 +305,13 @@ proc parse_external_terms*(external_term_buf: ptr uint8_t; eterm_size: ptr cint;
     eterm_size[] = buf_pos
     return list_begin
   of BINARY_EXT:
-    var binary_size: uint32_t = READ_32_UNALIGNED(external_term_buf + 1)
+    var binary_size: uint32 = READ_32_UNALIGNED(external_term_buf + 1)
     eterm_size[] = 5 + binary_size
     if copy:
-      return term_from_literal_binary(cast[ptr uint8_t](external_term_buf) + 5,
+      return term_from_literal_binary(cast[ptr uint8](external_term_buf) + 5,
                                      binary_size, ctx)
     else:
-      return term_from_const_binary(cast[ptr uint8_t](external_term_buf) + 5,
+      return term_from_const_binary(cast[ptr uint8](external_term_buf) + 5,
                                    binary_size, ctx)
   of EXPORT_EXT:
     var heap_usage: cint = 1
@@ -332,7 +332,7 @@ proc parse_external_terms*(external_term_buf: ptr uint8_t; eterm_size: ptr cint;
     fprintf(stderr, "Unknown term type: %i\n", cast[cint](external_term_buf[0]))
     abort()
 
-proc calculate_heap_usage*(external_term_buf: ptr uint8_t; eterm_size: ptr cint;
+proc calculate_heap_usage*(external_term_buf: ptr uint8; eterm_size: ptr cint;
                           copy: bool; ctx: ptr Context): cint =
   case external_term_buf[0]
   of NEW_FLOAT_EXT:
@@ -349,11 +349,11 @@ proc calculate_heap_usage*(external_term_buf: ptr uint8_t; eterm_size: ptr cint;
     eterm_size[] = 5
     return 0
   of ATOM_EXT:
-    var atom_len: uint16_t = READ_16_UNALIGNED(external_term_buf + 1)
+    var atom_len: uint16 = READ_16_UNALIGNED(external_term_buf + 1)
     eterm_size[] = 3 + atom_len
     return 0
   of SMALL_TUPLE_EXT:
-    var arity: uint8_t = external_term_buf[1]
+    var arity: uint8 = external_term_buf[1]
     var heap_usage: cint = 1
     var buf_pos: cint = 2
     var i: cint = 0
@@ -369,11 +369,11 @@ proc calculate_heap_usage*(external_term_buf: ptr uint8_t; eterm_size: ptr cint;
     eterm_size[] = 1
     return 0
   of STRING_EXT:
-    var string_size: uint16_t = READ_16_UNALIGNED(external_term_buf + 1)
+    var string_size: uint16 = READ_16_UNALIGNED(external_term_buf + 1)
     eterm_size[] = 3 + string_size
     return string_size * 2
   of LIST_EXT:
-    var list_len: uint32_t = READ_32_UNALIGNED(external_term_buf + 1)
+    var list_len: uint32 = READ_32_UNALIGNED(external_term_buf + 1)
     var buf_pos: cint = 5
     var heap_usage: cint = 0
     var i: cuint = 0
@@ -390,7 +390,7 @@ proc calculate_heap_usage*(external_term_buf: ptr uint8_t; eterm_size: ptr cint;
     eterm_size[] = buf_pos
     return heap_usage
   of BINARY_EXT:
-    var binary_size: uint32_t = READ_32_UNALIGNED(external_term_buf + 1)
+    var binary_size: uint32 = READ_32_UNALIGNED(external_term_buf + 1)
     eterm_size[] = 5 + binary_size
     when TERM_BYTES == 4:
       var size_in_terms: cint = ((binary_size + 4 - 1) shr 2)

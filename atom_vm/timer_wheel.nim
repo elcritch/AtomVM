@@ -21,7 +21,7 @@
 type
   TimerWheelItem* = object
 
-  timer_wheel_callback_t* = proc (a1: ptr TimerWheelItem) {.cdecl.}
+  timer_wheel_callback* = proc (a1: ptr TimerWheelItem) {.cdecl.}
   TimerWheel* = ref object
     slots*: seq[TimerWheelItem]
     timers*: int
@@ -30,12 +30,12 @@ type
   TimerWheelItem* = ref object
     expiry_time*: uint64
     head*: ListHead
-    callback*: ptr timer_wheel_callback_t
+    callback*: ptr timer_wheel_callback
 
 proc timer_wheel_new*(slots_count: cint): TimerWheel
 proc timer_wheel_tick*(tw: ptr TimerWheel) 
 proc timer_wheel_insert*(tw: ptr TimerWheel; item: ptr TimerWheelItem)  =
-  var expiry_time: uint64_t = item.expiry_time
+  var expiry_time: uint64 = item.expiry_time
   var slot: cint = expiry_time mod tw.slots_count
   inc(tw.timers)
   list_append(addr(tw.slots[slot]), addr(item.head))
@@ -50,12 +50,12 @@ proc timer_wheel_is_empty*(tw: ptr TimerWheel): bool  =
 proc timer_wheel_timers_count*(tw: ptr TimerWheel): cint  =
   return tw.timers
 
-proc timer_wheel_item_init*(it: ptr TimerWheelItem; cb: timer_wheel_callback_t;
-                          expiry: uint64_t)  =
+proc timer_wheel_item_init*(it: ptr TimerWheelItem; cb: timer_wheel_callback;
+                          expiry: uint64)  =
   it.expiry_time = expiry
   it.callback = cb
 
-proc timer_wheel_expiry_to_monotonic*(tw: ptr TimerWheel; expiry: uint32_t): uint64_t {.
+proc timer_wheel_expiry_to_monotonic*(tw: ptr TimerWheel; expiry: uint32): uint64 {.
     inline, cdecl.} =
   return tw.monotonic_time + expiry
 
@@ -73,7 +73,7 @@ proc timer_wheel_new*(slots_count: cint): ptr TimerWheel =
 
 proc timer_wheel_tick*(tw: ptr TimerWheel) =
   inc(tw.monotonic_time)
-  var monotonic_time: uint64_t = tw.monotonic_time
+  var monotonic_time: uint64 = tw.monotonic_time
   var pos: cint = tw.monotonic_time mod tw.slots_count
   var item: ptr ListHead
   var tmp: ptr ListHead

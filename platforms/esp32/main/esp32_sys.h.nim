@@ -24,10 +24,10 @@ const
   EVENT_DESCRIPTORS_COUNT* = 16
 
 type
-  event_handler_t* = proc (listener: ptr EventListener) {.cdecl.}
+  event_handler* = proc (listener: ptr EventListener) {.cdecl.}
   EventListener* = object
     listeners_list_head*: ListHead
-    handler*: event_handler_t
+    handler*: event_handler
     data*: pointer
     sender*: pointer
 
@@ -40,5 +40,5 @@ var event_queue*: xQueueHandle
 
 proc esp32_sys_queue_init*() {.cdecl.}
 proc sys_event_listener_init*(listener: ptr EventListener; sender: pointer;
-                             handler: event_handler_t; data: pointer) {.cdecl.}
+                             handler: event_handler; data: pointer) {.cdecl.}
 proc socket_init*(ctx: ptr Context; opts: term) {.cdecl.}

@@ -21,4 +21,4 @@ import
   context, term
 
 proc socket_driver_init*(global: ptr GlobalContext) {.cdecl.}
-proc socket_tuple_from_addr*(ctx: ptr Context; `addr`: uint32_t): term {.cdecl.}
+proc socket_tuple_from_addr*(ctx: ptr Context; `addr`: uint32): term {.cdecl.}

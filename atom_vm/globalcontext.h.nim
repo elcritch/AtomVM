@@ -38,7 +38,7 @@ type
     waiting_processes*: ListHead
     processes_table*: ptr ListHead
     registered_processes*: ptr ListHead
-    last_process_id*: int32_t
+    last_process_id*: int32
     atoms_table*: ptr AtomsHashTable
     atoms_ids_table*: ptr ValuesHashTable
     modules_table*: ptr AtomsHashTable
@@ -47,8 +47,8 @@ type
     avmpack_data*: pointer
     avmpack_platform_data*: pointer
     timer_wheel*: ptr TimerWheel
-    last_seen_millis*: uint32_t
-    ref_ticks*: uint64_t
+    last_seen_millis*: uint32
+    ref_ticks*: uint64
     platform_data*: pointer
 
 
@@ -77,7 +77,7 @@ proc globalcontext_destroy*(glb: ptr GlobalContext) {.cdecl.}
 ##  @returns a Context * with the requested local process id.
 ##
 
-proc globalcontext_get_process*(glb: ptr GlobalContext; process_id: int32_t): ptr Context {.
+proc globalcontext_get_process*(glb: ptr GlobalContext; process_id: int32): ptr Context {.
     cdecl.}
 ## *
 ##  @brief Gets a new process id
@@ -87,7 +87,7 @@ proc globalcontext_get_process*(glb: ptr GlobalContext; process_id: int32_t): pt
 ##  @returns A new local process id integer.
 ##
 
-proc globalcontext_get_new_process_id*(glb: ptr GlobalContext): int32_t {.cdecl.}
+proc globalcontext_get_new_process_id*(glb: ptr GlobalContext): int32 {.cdecl.}
 ## *
 ##  @brief Register a process
 ##
@@ -179,5 +179,5 @@ proc globalcontext_insert_module*(global: ptr GlobalContext; module: ptr Module;
 
 proc globalcontext_get_module*(global: ptr GlobalContext;
                               module_name_atom: AtomString): ptr Module {.cdecl.}
-proc globalcontext_get_ref_ticks*(global: ptr GlobalContext): uint64_t  =
+proc globalcontext_get_ref_ticks*(global: ptr GlobalContext): uint64  =
   return inc(global.ref_ticks)

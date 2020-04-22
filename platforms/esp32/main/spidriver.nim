@@ -22,12 +22,12 @@ import
   globalcontext, interop, mailbox, module, utils, term, trace, sys, esp32_sys
 
 proc spidriver_consume_mailbox*(ctx: ptr Context) {.cdecl.}
-proc spidriver_transfer_at*(ctx: ptr Context; address: uint64_t; data_len: cint;
-                           data: uint32_t; ok: ptr bool): uint32_t {.cdecl.}
+proc spidriver_transfer_at*(ctx: ptr Context; address: uint64; data_len: cint;
+                           data: uint32; ok: ptr bool): uint32 {.cdecl.}
 type
   SPIData* = object
-    handle*: spi_device_handle_t
-    transaction*: spi_transaction_t
+    handle*: spi_device_handle
+    transaction*: spi_transaction
 
 
 proc spidriver_init*(ctx: ptr Context; opts: term) =
@@ -41,8 +41,8 @@ proc spidriver_init*(ctx: ptr Context; opts: term) =
       MOSI_IO_NUM_ATOM)
   var sclk_io_num_term: term = interop_proplist_get_value(bus_config,
       SCLK_IO_NUM_ATOM)
-  var buscfg: spi_bus_config_t
-  memset(addr(buscfg), 0, sizeof((spi_bus_config_t)))
+  var buscfg: spi_bus_config
+  memset(addr(buscfg), 0, sizeof((spi_bus_config)))
   buscfg.miso_io_num = term_to_int32(miso_io_num_term)
   buscfg.mosi_io_num = term_to_int32(mosi_io_num_term)
   buscfg.sclk_io_num = term_to_int32(sclk_io_num_term)
@@ -56,8 +56,8 @@ proc spidriver_init*(ctx: ptr Context; opts: term) =
       SPI_CS_IO_NUM_ATOM)
   var address_bits_term: term = interop_proplist_get_value(device_config,
       ADDRESS_LEN_BITS_ATOM)
-  var devcfg: spi_device_interface_config_t
-  memset(addr(devcfg), 0, sizeof((spi_device_interface_config_t)))
+  var devcfg: spi_device_interface_config
+  memset(addr(devcfg), 0, sizeof((spi_device_interface_config)))
   devcfg.clock_speed_hz = term_to_int32(clock_speed_hz_term)
   devcfg.mode = term_to_int32(mode_term)
   devcfg.spics_io_num = term_to_int32(spics_io_num_term)
@@ -74,13 +74,13 @@ proc spidriver_init*(ctx: ptr Context; opts: term) =
   else:
     TRACE("spi_bus_add_device return code: %i\n", ret)
 
-proc spidriver_transfer_at*(ctx: ptr Context; address: uint64_t; data_len: cint;
-                           data: uint32_t; ok: ptr bool): uint32_t =
+proc spidriver_transfer_at*(ctx: ptr Context; address: uint64; data_len: cint;
+                           data: uint32; ok: ptr bool): uint32 =
   TRACE("--- SPI transfer ---\n")
   TRACE("spi: address: %x, tx: %x\n", cast[cint](address), cast[cint](data))
   var spi_data: ptr SPIData = ctx.platform_data
-  memset(addr(spi_data.transaction), 0, sizeof((spi_transaction_t)))
-  var tx_data: uint32_t = SPI_SWAP_DATA_TX(data, data_len)
+  memset(addr(spi_data.transaction), 0, sizeof((spi_transaction)))
+  var tx_data: uint32 = SPI_SWAP_DATA_TX(data, data_len)
   spi_data.transaction.flags = SPI_TRANS_USE_TXDATA or SPI_TRANS_USE_RXDATA
   spi_data.transaction.length = data_len
   spi_data.transaction.`addr` = address
@@ -94,17 +94,17 @@ proc spidriver_transfer_at*(ctx: ptr Context; address: uint64_t; data_len: cint;
   if UNLIKELY(ret != ESP_OK):
     ok[] = false
     return 0
-  var rx_data: uint32_t = (cast[uint32_t](spi_data.transaction.rx_data[0])) or
-      (cast[uint32_t](spi_data.transaction.rx_data[1]) shl 8) or
-      (cast[uint32_t](spi_data.transaction.rx_data[2]) shl 16) or
-      (cast[uint32_t](spi_data.transaction.rx_data[3]) shl 24)
+  var rx_data: uint32 = (cast[uint32](spi_data.transaction.rx_data[0])) or
+      (cast[uint32](spi_data.transaction.rx_data[1]) shl 8) or
+      (cast[uint32](spi_data.transaction.rx_data[2]) shl 16) or
+      (cast[uint32](spi_data.transaction.rx_data[3]) shl 24)
   TRACE("spi: ret: %x\n", cast[cint](ret))
   TRACE("spi: rx: %x\n", cast[cint](rx_data))
   TRACE("--- end of transfer ---\n")
   ok[] = true
   return SPI_SWAP_DATA_RX(rx_data, data_len)
 
-proc make_read_result_tuple*(read_value: uint32_t; ctx: ptr Context): term {.inline,
+proc make_read_result_tuple*(read_value: uint32; ctx: ptr Context): term {.inline,
     cdecl.} =
   var boxed: bool
   var required: cint
@@ -127,10 +127,10 @@ proc spidriver_read_at*(ctx: ptr Context; req: term): term =
   ## cmd is at index 0
   var address_term: term = term_get_tuple_element(req, 1)
   var len_term: term = term_get_tuple_element(req, 2)
-  var address: avm_int64_t = term_maybe_unbox_int64(address_term)
-  var data_len: avm_int_t = term_to_int(len_term)
+  var address: avm_int64 = term_maybe_unbox_int64(address_term)
+  var data_len: avm_int = term_to_int(len_term)
   var ok: bool
-  var read_value: uint32_t = spidriver_transfer_at(ctx, address, data_len, 0, addr(ok))
+  var read_value: uint32 = spidriver_transfer_at(ctx, address, data_len, 0, addr(ok))
   if UNLIKELY(not ok):
     return ERROR_ATOM
   return make_read_result_tuple(read_value, ctx)
@@ -140,11 +140,11 @@ proc spidriver_write_at*(ctx: ptr Context; req: term): term =
   var address_term: term = term_get_tuple_element(req, 1)
   var len_term: term = term_get_tuple_element(req, 2)
   var data_term: term = term_get_tuple_element(req, 3)
-  var address: uint64_t = term_maybe_unbox_int64(address_term)
-  var data_len: avm_int_t = term_to_int(len_term)
-  var data: avm_int_t = term_maybe_unbox_int(data_term)
+  var address: uint64 = term_maybe_unbox_int64(address_term)
+  var data_len: avm_int = term_to_int(len_term)
+  var data: avm_int = term_maybe_unbox_int(data_term)
   var ok: bool
-  var read_value: uint32_t = spidriver_transfer_at(ctx, address, data_len, data,
+  var read_value: uint32 = spidriver_transfer_at(ctx, address, data_len, data,
       addr(ok))
   if UNLIKELY(not ok):
     return ERROR_ATOM

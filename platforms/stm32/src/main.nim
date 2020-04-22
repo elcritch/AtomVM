@@ -77,8 +77,8 @@ proc main*(): cint =
   systick_setup()
   usart_setup()
   var flashed_avm: pointer = cast[pointer](AVM_ADDRESS)
-  var size: uint32_t = AVM_FLASH_MAX_SIZE
-  var startup_beam_size: uint32_t
+  var size: uint32 = AVM_FLASH_MAX_SIZE
+  var startup_beam_size: uint32
   var startup_beam: pointer
   var startup_module_name: cstring
   printf("Booting file mapped at: %p, size: %li\n", flashed_avm, size)

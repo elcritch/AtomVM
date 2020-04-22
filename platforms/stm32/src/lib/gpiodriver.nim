@@ -21,9 +21,9 @@ import
   gpiodriver, platform_defaultatoms
 
 proc consume_gpio_mailbox*(ctx: ptr Context) {.cdecl.}
-proc port_atom_to_gpio_port*(ctx: ptr Context; port_atom: term): uint32_t {.cdecl.}
-proc gpio_port_to_rcc_port*(gpio_port: uint32_t): uint16_t {.cdecl.}
-proc gpio_port_to_name*(gpio_port: uint32_t): char {.cdecl.}
+proc port_atom_to_gpio_port*(ctx: ptr Context; port_atom: term): uint32 {.cdecl.}
+proc gpio_port_to_rcc_port*(gpio_port: uint32): uint16 {.cdecl.}
+proc gpio_port_to_name*(gpio_port: uint32): char {.cdecl.}
 proc gpiodriver_init*(ctx: ptr Context) =
   ctx.native_handler = consume_gpio_mailbox
   ctx.platform_data = nil
@@ -39,9 +39,9 @@ proc consume_gpio_mailbox*(ctx: ptr Context) =
   if cmd == SET_LEVEL_ATOM:
     var gpio_tuple: term = term_get_tuple_element(msg, 2)
     var gpio_port_atom: term = term_get_tuple_element(gpio_tuple, 0)
-    var gpio_port: uint32_t = port_atom_to_gpio_port(ctx, gpio_port_atom)
-    var gpio_pin_num: int32_t = term_to_int32(term_get_tuple_element(gpio_tuple, 1))
-    var level: int32_t = term_to_int32(term_get_tuple_element(msg, 3))
+    var gpio_port: uint32 = port_atom_to_gpio_port(ctx, gpio_port_atom)
+    var gpio_pin_num: int32 = term_to_int32(term_get_tuple_element(gpio_tuple, 1))
+    var level: int32 = term_to_int32(term_get_tuple_element(msg, 3))
     if level != 0:
       gpio_set(gpio_port, 1 shl gpio_pin_num)
     else:
@@ -52,10 +52,10 @@ proc consume_gpio_mailbox*(ctx: ptr Context) =
   elif cmd == SET_DIRECTION_ATOM:
     var gpio_tuple: term = term_get_tuple_element(msg, 2)
     var gpio_port_atom: term = term_get_tuple_element(gpio_tuple, 0)
-    var gpio_port: uint32_t = port_atom_to_gpio_port(ctx, gpio_port_atom)
-    var gpio_pin_num: int32_t = term_to_int32(term_get_tuple_element(gpio_tuple, 1))
+    var gpio_port: uint32 = port_atom_to_gpio_port(ctx, gpio_port_atom)
+    var gpio_pin_num: int32 = term_to_int32(term_get_tuple_element(gpio_tuple, 1))
     var direction: term = term_get_tuple_element(msg, 3)
-    var rcc_port: uint16_t = gpio_port_to_rcc_port(gpio_port)
+    var rcc_port: uint16 = gpio_port_to_rcc_port(gpio_port)
     ##  Set direction implicitly enables the port of the GPIO
     rcc_periph_clock_enable(rcc_port)
     if direction == INPUT_ATOM:
@@ -79,7 +79,7 @@ proc consume_gpio_mailbox*(ctx: ptr Context) =
   free(message)
   mailbox_send(target, ret)
 
-proc port_atom_to_gpio_port*(ctx: ptr Context; port_atom: term): uint32_t =
+proc port_atom_to_gpio_port*(ctx: ptr Context; port_atom: term): uint32 =
   if port_atom == A_ATOM:
     return GPIOA
   elif port_atom == B_ATOM:
@@ -95,7 +95,7 @@ proc port_atom_to_gpio_port*(ctx: ptr Context; port_atom: term): uint32_t =
   else:
     return 0
 
-proc gpio_port_to_rcc_port*(gpio_port: uint32_t): uint16_t =
+proc gpio_port_to_rcc_port*(gpio_port: uint32): uint16 =
   case gpio_port
   of GPIOA:
     return RCC_GPIOA
@@ -112,7 +112,7 @@ proc gpio_port_to_rcc_port*(gpio_port: uint32_t): uint16_t =
   else:
     return 0
 
-proc gpio_port_to_name*(gpio_port: uint32_t): char =
+proc gpio_port_to_name*(gpio_port: uint32): char =
   case gpio_port
   of GPIOA:
     return 'A'

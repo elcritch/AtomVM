@@ -18,10 +18,10 @@
 ## *************************************************************************
 
 type
-  event_handler_t* = proc (listener: ptr EventListener) {.cdecl.}
+  event_handler* = proc (listener: ptr EventListener) {.cdecl.}
   EventListener* = object
     listeners_list_head*: ListHead
-    handler*: event_handler_t
+    handler*: event_handler
     data*: pointer
     fd*: cint
 

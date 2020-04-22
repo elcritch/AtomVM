@@ -26,11 +26,11 @@ const
   LITT_HEADER_SIZE* = 12
 
 when defined(WITH_ZLIB):
-  proc module_uncompress_literals*(litT: ptr uint8_t; size: cint): pointer {.cdecl.}
+  proc module_uncompress_literals*(litT: ptr uint8; size: cint): pointer {.cdecl.}
 proc module_build_literals_table*(literalsBuf: pointer): ptr pointer {.cdecl.}
 proc module_add_label*(`mod`: ptr Module; index: cint; `ptr`: pointer) {.cdecl.}
 proc module_build_imported_functions_table*(this_module: ptr Module;
-    table_data: ptr uint8_t): ModuleLoadResult {.cdecl.}
+    table_data: ptr uint8): ModuleLoadResult {.cdecl.}
 proc module_add_label*(`mod`: ptr Module; index: cint; `ptr`: pointer) {.cdecl.}
 const
   IMPL_CODE_LOADER* = 1
@@ -38,7 +38,7 @@ const
 import
   opcodesswitch
 
-proc module_populate_atoms_table*(this_module: ptr Module; table_data: ptr uint8_t): ModuleLoadResult {.
+proc module_populate_atoms_table*(this_module: ptr Module; table_data: ptr uint8): ModuleLoadResult {.
     cdecl.} =
   var atoms_count: cint = READ_32_ALIGNED(table_data + 8)
   var current_atom: cstring = cast[cstring](table_data) + 12
@@ -65,7 +65,7 @@ proc module_populate_atoms_table*(this_module: ptr Module; table_data: ptr uint8
   return MODULE_LOAD_OK
 
 proc module_build_imported_functions_table*(this_module: ptr Module;
-    table_data: ptr uint8_t): ModuleLoadResult =
+    table_data: ptr uint8): ModuleLoadResult =
   var functions_count: cint = READ_32_ALIGNED(table_data + 8)
   this_module.imported_funcs = calloc(functions_count, sizeof(pointer))
   if IS_NULL_PTR(this_module.imported_funcs):
@@ -81,7 +81,7 @@ proc module_build_imported_functions_table*(this_module: ptr Module;
         local_module_atom_index)
     var function_atom: AtomString = module_get_atom_string_by_id(this_module,
         local_function_atom_index)
-    var arity: uint32_t = READ_32_ALIGNED(table_data + i * 12 + 8 + 12)
+    var arity: uint32 = READ_32_ALIGNED(table_data + i * 12 + 8 + 12)
     var bif_handler: BifImpl = bif_registry_get_handler(module_atom, function_atom,
         arity)
     if bif_handler:
@@ -110,7 +110,7 @@ proc module_build_imported_functions_table*(this_module: ptr Module;
 when defined(ENABLE_ADVANCED_TRACE):
   proc module_get_imported_function_module_and_name*(this_module: ptr Module;
       index: cint; module_atom: ptr AtomString; function_atom: ptr AtomString) =
-    var table_data: ptr uint8_t = cast[ptr uint8_t](this_module.import_table)
+    var table_data: ptr uint8 = cast[ptr uint8](this_module.import_table)
     var functions_count: cint = READ_32_ALIGNED(table_data + 8)
     if UNLIKELY(index > functions_count):
       abort()
@@ -123,17 +123,17 @@ when defined(ENABLE_ADVANCED_TRACE):
         local_function_atom_index)
 
 proc module_search_exported_function*(this_module: ptr Module;
-                                     func_name: AtomString; func_arity: cint): uint32_t {.
+                                     func_name: AtomString; func_arity: cint): uint32 {.
     cdecl.} =
-  var table_data: ptr uint8_t = cast[ptr uint8_t](this_module.export_table)
+  var table_data: ptr uint8 = cast[ptr uint8](this_module.export_table)
   var functions_count: cint = READ_32_ALIGNED(table_data + 8)
   var i: cint = 0
   while i < functions_count:
     var function_atom: AtomString = module_get_atom_string_by_id(this_module,
         READ_32_ALIGNED(table_data + i * 12 + 12))
-    var arity: int32_t = READ_32_ALIGNED(table_data + i * 12 + 4 + 12)
+    var arity: int32 = READ_32_ALIGNED(table_data + i * 12 + 4 + 12)
     if (func_arity == arity) and atom_are_equals(func_name, function_atom):
-      var label: uint32_t = READ_32_ALIGNED(table_data + i * 12 + 8 + 12)
+      var label: uint32 = READ_32_ALIGNED(table_data + i * 12 + 8 + 12)
       return label
     inc(i)
   return 0
@@ -143,7 +143,7 @@ proc module_add_label*(`mod`: ptr Module; index: cint; `ptr`: pointer) =
 
 proc module_new_from_iff_binary*(global: ptr GlobalContext; iff_binary: pointer;
                                 size: culong): ptr Module =
-  var beam_file: ptr uint8_t = cast[pointer](iff_binary)
+  var beam_file: ptr uint8 = cast[pointer](iff_binary)
   var offsets: array[MAX_OFFS, culong]
   var sizes: array[MAX_SIZES, culong]
   scan_iff(beam_file, size, offsets, sizes)
@@ -206,10 +206,10 @@ proc module_destroy*(module: ptr Module) =
   free(module)
 
 when defined(WITH_ZLIB):
-  proc module_uncompress_literals*(litT: ptr uint8_t; size: cint): pointer =
+  proc module_uncompress_literals*(litT: ptr uint8; size: cint): pointer =
     var required_buf_size: cuint = READ_32_ALIGNED(
         litT + LITT_UNCOMPRESSED_SIZE_OFFSET)
-    var outBuf: ptr uint8_t = malloc(required_buf_size)
+    var outBuf: ptr uint8 = malloc(required_buf_size)
     if IS_NULL_PTR(outBuf):
       fprintf(stderr, "Failed to allocate memory: %s:%i.\n", __FILE__, __LINE__)
       return nil
@@ -233,17 +233,17 @@ when defined(WITH_ZLIB):
     return outBuf
 
 proc module_build_literals_table*(literalsBuf: pointer): ptr pointer =
-  var terms_count: uint32_t = READ_32_ALIGNED(literalsBuf)
-  var pos: ptr uint8_t = cast[ptr uint8_t](literalsBuf) + sizeof((uint32_t))
+  var terms_count: uint32 = READ_32_ALIGNED(literalsBuf)
+  var pos: ptr uint8 = cast[ptr uint8](literalsBuf) + sizeof((uint32))
   var literals_table: ptr pointer = calloc(terms_count, sizeof((void * `const`)))
   if IS_NULL_PTR(literals_table):
     fprintf(stderr, "Failed to allocate memory: %s:%i.\n", __FILE__, __LINE__)
     return nil
-  var i: uint32_t = 0
+  var i: uint32 = 0
   while i < terms_count:
-    var term_size: uint32_t = READ_32_UNALIGNED(pos)
-    literals_table[i] = pos + sizeof((uint32_t))
-    inc(pos, term_size + sizeof((uint32_t)))
+    var term_size: uint32 = READ_32_UNALIGNED(pos)
+    literals_table[i] = pos + sizeof((uint32))
+    inc(pos, term_size + sizeof((uint32)))
     inc(i)
   return literals_table
 

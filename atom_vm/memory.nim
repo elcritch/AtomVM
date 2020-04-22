@@ -35,14 +35,14 @@ proc memory_scan_and_copy*(mem_start: ptr term; mem_end: ptr term;
                           new_heap_pos: ptr ptr term; move: cint) {.cdecl.}
 proc memory_shallow_copy_term*(t: term; new_heap: ptr ptr term; move: cint): term {.cdecl.}
 ##  TODO: FIXME
-##  HOT_FUNC term *memory_heap_alloc(Context *c, uint32_t size)
+##  HOT_FUNC term *memory_heap_alloc(Context *c, uint32 size)
 
-proc memory_heap_alloc*(c: ptr Context; size: uint32_t): ptr term =
+proc memory_heap_alloc*(c: ptr Context; size: uint32): ptr term =
   var allocated: ptr term = c.heap_ptr
   inc(c.heap_ptr, size)
   return allocated
 
-proc memory_ensure_free*(c: ptr Context; size: uint32_t): MemoryGCResult =
+proc memory_ensure_free*(c: ptr Context; size: uint32): MemoryGCResult =
   var free_space: csize = context_avail_free_memory(c)
   if free_space < size + MIN_FREE_SPACE_SIZE:
     var memory_size: csize = context_memory_size(c)

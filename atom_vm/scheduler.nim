@@ -23,17 +23,17 @@ import
 proc scheduler_execute_native_handlers*(global: ptr GlobalContext) {.cdecl.}
 proc update_timer_wheel*(global: ptr GlobalContext) =
   var tw: ptr TimerWheel = global.timer_wheel
-  var last_seen_millis: uint32_t = global.last_seen_millis
+  var last_seen_millis: uint32 = global.last_seen_millis
   if timer_wheel_is_empty(tw):
     sys_stop_millis_timer()
     return
-  var millis_now: uint32_t = sys_millis()
+  var millis_now: uint32 = sys_millis()
   if millis_now < last_seen_millis:
-    var i: uint32_t = last_seen_millis
+    var i: uint32 = last_seen_millis
     while i < UINT32_MAX:
       timer_wheel_tick(tw)
       inc(i)
-  var i: uint32_t = last_seen_millis
+  var i: uint32 = last_seen_millis
   while i < millis_now:
     timer_wheel_tick(tw)
     inc(i)
@@ -104,7 +104,7 @@ proc scheduler_timeout_callback*(it: ptr TimerWheelItem) =
   ctx.flags = (ctx.flags or WaitingTimeoutExpired) and not WaitingTimeout
   scheduler_make_ready(ctx.global, ctx)
 
-proc scheduler_set_timeout*(ctx: ptr Context; timeout: uint32_t) =
+proc scheduler_set_timeout*(ctx: ptr Context; timeout: uint32) =
   var glb: ptr GlobalContext = ctx.global
   ctx.flags = ctx.flags or WaitingTimeout
   var tw: ptr TimerWheel = glb.timer_wheel
@@ -113,7 +113,7 @@ proc scheduler_set_timeout*(ctx: ptr Context; timeout: uint32_t) =
   var twi: ptr TimerWheelItem = addr(ctx.timer_wheel_head)
   if UNLIKELY(twi.callback):
     abort()
-  var expiry: uint64_t = timer_wheel_expiry_to_monotonic(tw, timeout)
+  var expiry: uint64 = timer_wheel_expiry_to_monotonic(tw, timeout)
   timer_wheel_item_init(twi, scheduler_timeout_callback, expiry)
   timer_wheel_insert(tw, twi)
 

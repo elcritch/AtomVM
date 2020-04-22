@@ -47,7 +47,7 @@ proc active_recv_callback*(listener: ptr EventListener) {.cdecl.}
 proc passive_recv_callback*(listener: ptr EventListener) {.cdecl.}
 proc active_recvfrom_callback*(listener: ptr EventListener) {.cdecl.}
 proc passive_recvfrom_callback*(listener: ptr EventListener) {.cdecl.}
-proc socket_tuple_to_addr*(addr_tuple: term): uint32_t =
+proc socket_tuple_to_addr*(addr_tuple: term): uint32 =
   return ((term_to_int32(term_get_tuple_element(addr_tuple, 0)) and 0x000000FF) shl
       24) or
       ((term_to_int32(term_get_tuple_element(addr_tuple, 1)) and 0x000000FF) shl
@@ -56,7 +56,7 @@ proc socket_tuple_to_addr*(addr_tuple: term): uint32_t =
       8) or
       (term_to_int32(term_get_tuple_element(addr_tuple, 3)) and 0x000000FF)
 
-proc socket_tuple_from_addr*(ctx: ptr Context; `addr`: uint32_t): term =
+proc socket_tuple_from_addr*(ctx: ptr Context; `addr`: uint32): term =
   var terms: array[4, term]
   terms[0] = term_from_int32((`addr` shr 24) and 0x000000FF)
   terms[1] = term_from_int32((`addr` shr 16) and 0x000000FF)
@@ -64,12 +64,12 @@ proc socket_tuple_from_addr*(ctx: ptr Context; `addr`: uint32_t): term =
   terms[3] = term_from_int32(`addr` and 0x000000FF)
   return port_create_tuple_n(ctx, 4, terms)
 
-proc socket_create_packet_term*(ctx: ptr Context; buf: cstring; len: ssize_t;
+proc socket_create_packet_term*(ctx: ptr Context; buf: cstring; len: ssize;
                                is_binary: cint): term =
   if is_binary:
     return term_from_literal_binary(cast[pointer](buf), len, ctx)
   else:
-    return term_from_string(cast[ptr uint8_t](buf), len, ctx)
+    return term_from_string(cast[ptr uint8](buf), len, ctx)
 
 proc socket_driver_create_data*(): pointer =
   var data: ptr SocketDriverData = calloc(1, sizeof(SocketDriverData))
@@ -99,9 +99,9 @@ proc do_bind*(ctx: ptr Context; address: term; port: term): term =
   else:
     term_display(stderr, address, ctx)
     return port_create_error_tuple(ctx, BADARG_ATOM)
-  var p: avm_int_t = term_to_int(port)
+  var p: avm_int = term_to_int(port)
   serveraddr.sin_port = htons(p)
-  var address_len: socklen_t = sizeof((serveraddr))
+  var address_len: socklen = sizeof((serveraddr))
   if `bind`(socket_data.sockfd, cast[ptr sockaddr](addr(serveraddr)), address_len) ==
       -1:
     return port_create_sys_error_tuple(ctx, BIND_ATOM, errno)
@@ -361,7 +361,7 @@ proc socket_driver_get_port*(ctx: ptr Context): term =
 proc socket_driver_sockname*(ctx: ptr Context): term =
   var socket_data: ptr SocketDriverData = cast[ptr SocketDriverData](ctx.platform_data)
   var `addr`: sockaddr_in
-  var addrlen: socklen_t = sizeof((`addr`))
+  var addrlen: socklen = sizeof((`addr`))
   var result: cint = getsockname(socket_data.sockfd,
                              cast[ptr sockaddr](addr(`addr`)), addr(addrlen))
   if result != 0:
@@ -376,7 +376,7 @@ proc socket_driver_sockname*(ctx: ptr Context): term =
 proc socket_driver_peername*(ctx: ptr Context): term =
   var socket_data: ptr SocketDriverData = cast[ptr SocketDriverData](ctx.platform_data)
   var `addr`: sockaddr_in
-  var addrlen: socklen_t = sizeof((`addr`))
+  var addrlen: socklen = sizeof((`addr`))
   var result: cint = getpeername(socket_data.sockfd,
                              cast[ptr sockaddr](addr(`addr`)), addr(addrlen))
   if result != 0:
@@ -465,7 +465,7 @@ type
     ctx*: ptr Context
     pid*: term
     length*: term
-    ref_ticks*: uint64_t
+    ref_ticks*: uint64
 
 
 proc active_recv_callback*(listener: ptr EventListener) =
@@ -474,12 +474,12 @@ proc active_recv_callback*(listener: ptr EventListener) =
   ##
   ##  allocate the receive buffer
   ##
-  var buf_size: avm_int_t = term_to_int(socket_data.buffer)
+  var buf_size: avm_int = term_to_int(socket_data.buffer)
   var buf: cstring = malloc(buf_size)
   if IS_NULL_PTR(buf):
     fprintf(stderr, "Failed to allocate memory: %s:%i.\n", __FILE__, __LINE__)
     abort()
-  var len: ssize_t = recvfrom(socket_data.sockfd, buf, buf_size, 0, nil, nil)
+  var len: ssize = recvfrom(socket_data.sockfd, buf, buf_size, 0, nil, nil)
   if len <= 0:
     ##  {tcp, Socket, {error, {SysCall, Errno}}}
     port_ensure_available(ctx, 12)
@@ -519,12 +519,12 @@ proc passive_recv_callback*(listener: ptr EventListener) =
   ##
   ##  allocate the receive buffer
   ##
-  var buf_size: avm_int_t = term_to_int(recvfrom_data.length)
+  var buf_size: avm_int = term_to_int(recvfrom_data.length)
   var buf: cstring = malloc(buf_size)
   if IS_NULL_PTR(buf):
     fprintf(stderr, "Failed to allocate memory: %s:%i.\n", __FILE__, __LINE__)
     abort()
-  var len: ssize_t = recvfrom(socket_data.sockfd, buf, buf_size, 0, nil, nil)
+  var len: ssize = recvfrom(socket_data.sockfd, buf, buf_size, 0, nil, nil)
   if len <= 0:
     ##  {Ref, {error, {SysCall, Errno}}}
     port_ensure_available(ctx, 12)
@@ -561,14 +561,14 @@ proc active_recvfrom_callback*(listener: ptr EventListener) =
   ##
   ##  allocate the receive buffer
   ##
-  var buf_size: avm_int_t = term_to_int(socket_data.buffer)
+  var buf_size: avm_int = term_to_int(socket_data.buffer)
   var buf: cstring = malloc(buf_size)
   if IS_NULL_PTR(buf):
     fprintf(stderr, "Failed to allocate memory: %s:%i.\n", __FILE__, __LINE__)
     abort()
   var clientaddr: sockaddr_in
-  var clientlen: socklen_t = sizeof((clientaddr))
-  var len: ssize_t = recvfrom(socket_data.sockfd, buf, buf_size, 0,
+  var clientlen: socklen = sizeof((clientaddr))
+  var len: ssize = recvfrom(socket_data.sockfd, buf, buf_size, 0,
                           cast[ptr sockaddr](addr(clientaddr)), addr(clientlen))
   if len == -1:
     ##  {udp, Socket, {error, {SysCall, Errno}}}
@@ -607,14 +607,14 @@ proc passive_recvfrom_callback*(listener: ptr EventListener) =
   ##
   ##  allocate the receive buffer
   ##
-  var buf_size: avm_int_t = term_to_int(recvfrom_data.length)
+  var buf_size: avm_int = term_to_int(recvfrom_data.length)
   var buf: cstring = malloc(buf_size)
   if IS_NULL_PTR(buf):
     fprintf(stderr, "Failed to allocate memory: %s:%i.\n", __FILE__, __LINE__)
     abort()
   var clientaddr: sockaddr_in
-  var clientlen: socklen_t = sizeof((clientaddr))
-  var len: ssize_t = recvfrom(socket_data.sockfd, buf, buf_size, 0,
+  var clientlen: socklen = sizeof((clientaddr))
+  var len: ssize = recvfrom(socket_data.sockfd, buf, buf_size, 0,
                           cast[ptr sockaddr](addr(clientaddr)), addr(clientlen))
   if len == -1:
     ##  {Ref, {error, {SysCall, Errno}}}
@@ -650,7 +650,7 @@ proc passive_recvfrom_callback*(listener: ptr EventListener) =
   free(buf)
 
 proc do_recv*(ctx: ptr Context; pid: term; `ref`: term; length: term; timeout: term;
-             handler: event_handler_t) =
+             handler: event_handler) =
   UNUSED(timeout)
   var glb: ptr GlobalContext = ctx.global
   var platform: ptr GenericUnixPlatformData = glb.platform_data
@@ -705,7 +705,7 @@ proc accept_callback*(listener: ptr EventListener) =
   ##  accept the connection
   ##
   var clientaddr: sockaddr_in
-  var clientlen: socklen_t = sizeof((clientaddr))
+  var clientlen: socklen = sizeof((clientaddr))
   var fd: cint = accept(socket_data.sockfd, cast[ptr sockaddr](addr(clientaddr)),
                     addr(clientlen))
   if fd == -1:

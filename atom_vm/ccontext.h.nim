@@ -31,7 +31,7 @@ import
 ##
 
 type
-  term_ref* = uintptr_t
+  term_ref* = uintptr
 
 ## *
 ##  Holds information required to handle term references.

@@ -32,7 +32,7 @@ proc main*(argc: cint; argv: cstringArray): cint =
     return EXIT_FAILURE
   var glb: ptr GlobalContext = globalcontext_new()
   var startup_beam: pointer
-  var startup_beam_size: uint32_t
+  var startup_beam_size: uint32
   var startup_module_name: cstring = argv[1]
   if avmpack_is_valid(mapped_file.mapped, mapped_file.size):
     glb.avmpack_data = mapped_file.mapped

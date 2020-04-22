@@ -39,11 +39,11 @@ proc esp32_sys_queue_init*() =
   event_queue = xQueueCreate(EVENT_QUEUE_LEN, sizeof(pointer))
 
 proc sys_clock_gettime*(t: ptr timespec)  =
-  var ticks: TickType_t = xTaskGetTickCount()
+  var ticks: TickType = xTaskGetTickCount()
   t.tv_sec = (ticks * portTICK_PERIOD_MS) div 1000
   t.tv_nsec = ((ticks * portTICK_PERIOD_MS) mod 1000) * 1000000
 
-proc receive_events*(glb: ptr GlobalContext; wait_ticks: TickType_t) =
+proc receive_events*(glb: ptr GlobalContext; wait_ticks: TickType) =
   var platform: ptr ESP32PlatformData = glb.platform_data
   var sender: pointer = nil
   while xQueueReceive(event_queue, addr(sender), wait_ticks) == pdTRUE:
@@ -68,7 +68,7 @@ proc sys_consume_pending_events*(glb: ptr GlobalContext) =
   receive_events(glb, 0)
 
 proc sys_event_listener_init*(listener: ptr EventListener; sender: pointer;
-                             handler: event_handler_t; data: pointer) =
+                             handler: event_handler; data: pointer) =
   list_init(addr(listener.listeners_list_head))
   listener.sender = sender
   listener.handler = handler
@@ -93,14 +93,14 @@ proc sys_start_millis_timer*() =
 proc sys_stop_millis_timer*() =
   discard
 
-proc sys_millis*(): uint32_t =
-  var ticks: TickType_t = xTaskGetTickCount()
+proc sys_millis*(): uint32 =
+  var ticks: TickType = xTaskGetTickCount()
   return ticks * portTICK_PERIOD_MS
 
 proc sys_load_module*(global: ptr GlobalContext; module_name: cstring): ptr Module {.
     cdecl.} =
   var beam_module: pointer = nil
-  var beam_module_size: uint32_t = 0
+  var beam_module_size: uint32 = 0
   if not (global.avmpack_data and
       avmpack_find_section_by_name(global.avmpack_data, module_name,
                                    addr(beam_module), addr(beam_module_size))):
@@ -145,7 +145,7 @@ proc sys_get_info*(ctx: ptr Context; key: term): term =
   if key == context_make_atom(ctx, esp_free_heap_size_atom):
     return term_from_int32(esp_get_free_heap_size())
   if key == context_make_atom(ctx, esp_chip_info_atom):
-    var info: esp_chip_info_t
+    var info: esp_chip_info
     esp_chip_info(addr(info))
     if memory_ensure_free(ctx, 5) != MEMORY_GC_OK:
       return OUT_OF_MEMORY_ATOM
@@ -160,7 +160,7 @@ proc sys_get_info*(ctx: ptr Context; key: term): term =
     var n: csize = strlen(str)
     if memory_ensure_free(ctx, 2 * n) != MEMORY_GC_OK:
       return OUT_OF_MEMORY_ATOM
-    return term_from_string(cast[ptr uint8_t](str), n, ctx)
+    return term_from_string(cast[ptr uint8](str), n, ctx)
   return UNDEFINED_ATOM
 
 proc sys_sleep*(glb: ptr GlobalContext) =

@@ -52,20 +52,20 @@ const
 import
   term
 
-proc atomvm_add_overflow*(a: avm_int_t; b: avm_int_t; res: ptr avm_int_t): cint {.inline,
+proc atomvm_add_overflow*(a: avm_int; b: avm_int; res: ptr avm_int): cint {.inline,
     cdecl.} =
   ##  a and b are shifted integers
-  var sum: avm_int_t = (a shr 4) + (b shr 4)
+  var sum: avm_int = (a shr 4) + (b shr 4)
   res[] = sum shl 4
   return (sum > MAX_NOT_BOXED_INT) or (sum < MIN_NOT_BOXED_INT)
 
-proc atomvm_add_overflow_int*(a: avm_int_t; b: avm_int_t; res: ptr avm_int_t): cint {.
+proc atomvm_add_overflow_int*(a: avm_int; b: avm_int; res: ptr avm_int): cint {.
     inline, cdecl.} =
-  var sum: avm_int64_t = cast[avm_int64_t](a) + cast[avm_int64_t](b)
+  var sum: avm_int64 = cast[avm_int64](a) + cast[avm_int64](b)
   res[] = sum
   return (sum < AVM_INT_MIN) or (sum > AVM_INT_MAX)
 
-proc atomvm_add_overflow_int64*(a: avm_int64_t; b: avm_int64_t; res: ptr avm_int64_t): cint {.
+proc atomvm_add_overflow_int64*(a: avm_int64; b: avm_int64; res: ptr avm_int64): cint {.
     inline, cdecl.} =
   res[] = a + b
   return 0
@@ -74,22 +74,22 @@ const
   BUILTIN_SUB_OVERFLOW_INT* = atomvm_sub_overflow_int
   BUILTIN_SUB_OVERFLOW_INT64* = atomvm_sub_overflow_int64
 
-proc atomvm_sub_overflow*(a: avm_int_t; b: avm_int_t; res: ptr avm_int_t): cint {.inline,
+proc atomvm_sub_overflow*(a: avm_int; b: avm_int; res: ptr avm_int): cint {.inline,
     cdecl.} =
   ##  a and b are shifted integers
-  var diff: avm_int_t = (a shr 4) - (b shr 4)
+  var diff: avm_int = (a shr 4) - (b shr 4)
   res[] = diff shl 4
   return (diff > MAX_NOT_BOXED_INT) or (diff < MIN_NOT_BOXED_INT)
 
-proc atomvm_sub_overflow_int*(a: avm_int_t; b: avm_int_t; res: ptr avm_int_t): cint {.
+proc atomvm_sub_overflow_int*(a: avm_int; b: avm_int; res: ptr avm_int): cint {.
     inline, cdecl.} =
-  var diff: avm_int64_t = cast[avm_int64_t](a) - cast[avm_int64_t](b)
+  var diff: avm_int64 = cast[avm_int64](a) - cast[avm_int64](b)
   res[] = diff
   return (diff > AVM_INT_MAX) or (diff < AVM_INT_MIN)
 
-proc atomvm_sub_overflow_int64*(a: avm_int64_t; b: avm_int64_t; res: ptr avm_int64_t): cint {.
+proc atomvm_sub_overflow_int64*(a: avm_int64; b: avm_int64; res: ptr avm_int64): cint {.
     inline, cdecl.} =
-  var diff: avm_int64_t = a - b
+  var diff: avm_int64 = a - b
   res[] = diff
   return 0
 
@@ -100,30 +100,30 @@ const
 import
   term
 
-proc atomvm_mul_overflow_int*(a: avm_int_t; b: avm_int_t; res: ptr avm_int_t): cint {.
+proc atomvm_mul_overflow_int*(a: avm_int; b: avm_int; res: ptr avm_int): cint {.
     inline, cdecl.} =
-  var mul: avm_int64_t = cast[avm_int64_t](a * cast[avm_int64_t](b))
+  var mul: avm_int64 = cast[avm_int64](a * cast[avm_int64](b))
   res[] = mul
   return (mul < AVM_INT_MIN) or (mul > AVM_INT_MAX)
 
-proc atomvm_mul_overflow_int64*(a: avm_int64_t; b: avm_int64_t; res: ptr avm_int64_t): cint {.
+proc atomvm_mul_overflow_int64*(a: avm_int64; b: avm_int64; res: ptr avm_int64): cint {.
     inline, cdecl.} =
   if (a == 0) or (b == 0):
     res[] = 0
     return 0
   else:
-    var mul_res: avm_int64_t = a * b
+    var mul_res: avm_int64 = a * b
     res[] = mul_res
     return a != mul_res div b
 
-proc atomvm_mul_overflow*(a: avm_int_t; b: avm_int_t; res: ptr avm_int_t): cint {.inline,
+proc atomvm_mul_overflow*(a: avm_int; b: avm_int; res: ptr avm_int): cint {.inline,
     cdecl.} =
   when AVM_INT_MAX < INT64_MAX:
-    var mul: avm_int64_t = (avm_int64_t)(a shr 2) * (avm_int64_t)(b shr 2)
+    var mul: avm_int64 = (avm_int64)(a shr 2) * (avm_int64)(b shr 2)
     res[] = mul shl 4
     return (mul > MAX_NOT_BOXED_INT) or (mul < MIN_NOT_BOXED_INT)
   elif AVM_INT_MAX == INT64_MAX:
-    var mul: int64_t
+    var mul: int64
     var ovf: cint = atomvm_mul_overflow_int64(a shr 2, b shr 2, addr(mul))
     res[] = mul shl 4
     return ovf or ((mul > MAX_NOT_BOXED_INT) or (mul < MIN_NOT_BOXED_INT))

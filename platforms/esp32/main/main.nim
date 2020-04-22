@@ -27,7 +27,7 @@ proc app_main*() =
   nvs_flash_init()
   tcpip_adapter_init()
   esp32_sys_queue_init()
-  var err: esp_err_t = nvs_flash_init()
+  var err: esp_err = nvs_flash_init()
   if err == ESP_ERR_NVS_NO_FREE_PAGES or err == ESP_ERR_NVS_NEW_VERSION_FOUND:
     fprintf(stderr, "Warning: Erasing flash...\n")
     ESP_ERROR_CHECK(nvs_flash_erase())
@@ -35,7 +35,7 @@ proc app_main*() =
   ESP_ERROR_CHECK(err)
   var size: cint
   var flashed_avm: pointer = avm_partition(addr(size))
-  var startup_beam_size: uint32_t
+  var startup_beam_size: uint32
   var startup_beam: pointer
   var startup_module_name: cstring
   printf("Booting file mapped at: %p, size: %i\n", flashed_avm, size)
@@ -69,7 +69,7 @@ proc app_main*() =
     vTaskDelay(5000 div portTICK_PERIOD_MS)
 
 proc avm_partition*(size: ptr cint): pointer =
-  var partition: ptr esp_partition_t = esp_partition_find_first(
+  var partition: ptr esp_partition = esp_partition_find_first(
       ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "main.avm")
   if not partition:
     printf("AVM partition not found.\n")
@@ -80,7 +80,7 @@ proc avm_partition*(size: ptr cint): pointer =
            partition.address)
     size[] = partition.size
   var mapped_memory: pointer
-  var unmap_handle: spi_flash_mmap_handle_t
+  var unmap_handle: spi_flash_mmap_handle
   if esp_partition_mmap(partition, 0, partition.size, SPI_FLASH_MMAP_DATA,
                        addr(mapped_memory), addr(unmap_handle)) != ESP_OK:
     printf("Failed to map BEAM partition\n")

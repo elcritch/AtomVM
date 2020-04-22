@@ -33,7 +33,7 @@ proc udp_handler*(ctx: ptr Context) {.cdecl.}
 proc socket_consume_mailbox*(ctx: ptr Context) {.cdecl.}
 var ealready_atom*: cstring = "\bealready"
 
-proc socket_tuple_to_addr*(addr_tuple: term): uint32_t =
+proc socket_tuple_to_addr*(addr_tuple: term): uint32 =
   return ((term_to_int32(term_get_tuple_element(addr_tuple, 0)) and 0x000000FF) shl
       24) or
       ((term_to_int32(term_get_tuple_element(addr_tuple, 1)) and 0x000000FF) shl
@@ -42,7 +42,7 @@ proc socket_tuple_to_addr*(addr_tuple: term): uint32_t =
       8) or
       (term_to_int32(term_get_tuple_element(addr_tuple, 3)) and 0x000000FF)
 
-proc socket_tuple_from_addr*(ctx: ptr Context; `addr`: uint32_t): term =
+proc socket_tuple_from_addr*(ctx: ptr Context; `addr`: uint32): term =
   var terms: array[4, term]
   terms[0] = term_from_int32((`addr` shr 24) and 0x000000FF)
   terms[1] = term_from_int32((`addr` shr 16) and 0x000000FF)
@@ -50,18 +50,18 @@ proc socket_tuple_from_addr*(ctx: ptr Context; `addr`: uint32_t): term =
   terms[3] = term_from_int32(`addr` and 0x000000FF)
   return port_create_tuple_n(ctx, 4, terms)
 
-proc tuple_to_ip_addr*(address_tuple: term; out_addr: ptr ip_addr_t) =
+proc tuple_to_ip_addr*(address_tuple: term; out_addr: ptr ip_addr) =
   out_addr.`type` = IPADDR_TYPE_V4
   out_addr.u_addr.ip4.`addr` = htonl(socket_tuple_to_addr(address_tuple))
 
-proc socket_addr_to_tuple*(ctx: ptr Context; `addr`: ptr ip_addr_t): term =
+proc socket_addr_to_tuple*(ctx: ptr Context; `addr`: ptr ip_addr): term =
   var addr_tuple: term
   case IP_GET_TYPE(`addr`)
   of IPADDR_TYPE_V4:
-    var ad1: uint8_t = ip4_addr1(addr((`addr`.u_addr.ip4)))
-    var ad2: uint8_t = ip4_addr2(addr((`addr`.u_addr.ip4)))
-    var ad3: uint8_t = ip4_addr3(addr((`addr`.u_addr.ip4)))
-    var ad4: uint8_t = ip4_addr4(addr((`addr`.u_addr.ip4)))
+    var ad1: uint8 = ip4_addr1(addr((`addr`.u_addr.ip4)))
+    var ad2: uint8 = ip4_addr2(addr((`addr`.u_addr.ip4)))
+    var ad3: uint8 = ip4_addr3(addr((`addr`.u_addr.ip4)))
+    var ad4: uint8 = ip4_addr4(addr((`addr`.u_addr.ip4)))
     addr_tuple = term_alloc_tuple(4, ctx)
     term_put_tuple_element(addr_tuple, 0, term_from_int11(ad1))
     term_put_tuple_element(addr_tuple, 1, term_from_int11(ad2))
@@ -87,9 +87,9 @@ type
     `type`*: socket_type
     controlling_process_pid*: term
     passive_receiver_process_pid*: term
-    passive_ref_ticks*: uint64_t
+    passive_ref_ticks*: uint64
     avail_bytes*: cint
-    port*: uint16_t
+    port*: uint16
     active* {.bitsize: 1.}: bool
     binary* {.bitsize: 1.}: bool
 
@@ -104,7 +104,7 @@ type
   TCPServerAccepter* = object
     accepter_head*: ListHead
     accepting_process_pid*: term
-    ref_ticks*: uint64_t
+    ref_ticks*: uint64
 
   UDPSocketData* = object
     socket_data*: SocketData
@@ -112,7 +112,7 @@ type
   NetconnEvent* = object
     netconn*: ptr netconn
     evt*: netconn_evt
-    len*: u16_t
+    len*: u16
 
 
 var netconn_events*: xQueueHandle = nil
@@ -126,7 +126,7 @@ proc socket_events_handler*(listener: ptr EventListener) =
     TRACE("Got netconn event: %p %i %i\n", event.netconn, event.evt, event.len)
     var netconn: ptr netconn = event.netconn
     var evt: netconn_evt = event.evt
-    var len: u16_t = event.len
+    var len: u16 = event.len
     var socket: ptr SocketData = nil
     var socket_head: ptr ListHead
     ##  TODO: FIXME
@@ -226,14 +226,14 @@ proc send_message*(pid: term; message: term; global: ptr GlobalContext) =
   mailbox_send(target, message)
 
 ##  TODO: FIXME
-##  void ESP_IRAM_ATTR socket_callback(struct netconn *netconn, enum netconn_evt evt, u16_t len)
+##  void ESP_IRAM_ATTR socket_callback(struct netconn *netconn, enum netconn_evt evt, u16 len)
 
-proc socket_callback*(netconn: ptr netconn; evt: netconn_evt; len: u16_t) =
+proc socket_callback*(netconn: ptr netconn; evt: netconn_evt; len: u16) =
   var event: NetconnEvent
   event.netconn = netconn
   event.evt = evt
   event.len = len
-  var xHigherPriorityTaskWoken: BaseType_t
+  var xHigherPriorityTaskWoken: BaseType
   var result: cint = xQueueSendFromISR(netconn_events, addr(event),
                                    addr(xHigherPriorityTaskWoken))
   if result != pdTRUE:
@@ -250,7 +250,7 @@ proc accept_conn*(accepter: ptr TCPServerAccepter; ctx: ptr Context) =
   var glb: ptr GlobalContext = ctx.global
   var platform: ptr ESP32PlatformData = glb.platform_data
   var accepted_conn: ptr netconn
-  var status: err_t = netconn_accept(tcp_data.socket_data.conn, addr(accepted_conn))
+  var status: err = netconn_accept(tcp_data.socket_data.conn, addr(accepted_conn))
   if UNLIKELY(status != ERR_OK):
     ## TODO
     fprintf(stderr, "accept error: %i on %p\n", status,
@@ -317,13 +317,13 @@ proc tcp_client_handler*(ctx: ptr Context) =
     TRACE("No bytes to receive.\n")
     return
   var buf: ptr netbuf = nil
-  var status: err_t = netconn_recv(tcp_data.socket_data.conn, addr(buf))
+  var status: err = netconn_recv(tcp_data.socket_data.conn, addr(buf))
   if UNLIKELY(status != ERR_OK):
     ## TODO
     fprintf(stderr, "tcp_client_handler error: %i\n", status)
     return
   var data: pointer
-  var data_len: u16_t
+  var data_len: u16
   status = netbuf_data(buf, addr(data), addr(data_len))
   if UNLIKELY(status != ERR_OK):
     ## TODO
@@ -353,7 +353,7 @@ proc tcp_client_handler*(ctx: ptr Context) =
     recv_data = term_create_uninitialized_binary(data_len, ctx)
     memcpy(cast[pointer](term_binary_data(recv_data)), data, data_len)
   else:
-    recv_data = term_from_string(cast[ptr uint8_t](data), data_len, ctx)
+    recv_data = term_from_string(cast[ptr uint8](data), data_len, ctx)
   netbuf_delete(buf)
   var pid: term = tcp_data.socket_data.controlling_process_pid
   var result_tuple: term
@@ -418,13 +418,13 @@ proc udp_handler*(ctx: ptr Context) =
     TRACE("No bytes to receive.\n")
     return
   var buf: ptr netbuf = nil
-  var status: err_t = netconn_recv(udp_data.socket_data.conn, addr(buf))
+  var status: err = netconn_recv(udp_data.socket_data.conn, addr(buf))
   if UNLIKELY(status != ERR_OK):
     ## TODO
     fprintf(stderr, "tcp_client_handler error: %i\n", status)
     return
   var data: pointer
-  var data_len: u16_t
+  var data_len: u16
   status = netbuf_data(buf, addr(data), addr(data_len))
   if UNLIKELY(status != ERR_OK):
     ## TODO
@@ -454,7 +454,7 @@ proc udp_handler*(ctx: ptr Context) =
     recv_data = term_create_uninitialized_binary(data_len, ctx)
     memcpy(cast[pointer](term_binary_data(recv_data)), data, data_len)
   else:
-    recv_data = term_from_string(cast[ptr uint8_t](data), data_len, ctx)
+    recv_data = term_from_string(cast[ptr uint8](data), data_len, ctx)
   var `addr`: term = socket_addr_to_tuple(ctx, netbuf_fromaddr(buf))
   var port: term = term_from_int32(netbuf_fromport(buf))
   netbuf_delete(buf)
@@ -519,7 +519,7 @@ proc do_connect*(ctx: ptr Context; msg: term) =
   var address_string: cstring = interop_term_to_string(address_term, addr(ok_int))
   if UNLIKELY(not ok_int):
     abort()
-  var port: avm_int_t = term_to_int(port_term)
+  var port: avm_int = term_to_int(port_term)
   var ok: bool
   var active: bool = bool_term_to_bool(active_term, addr(ok))
   if UNLIKELY(not ok):
@@ -530,7 +530,7 @@ proc do_connect*(ctx: ptr Context; msg: term) =
   TRACE("tcp: connecting to: %s\n", address_string)
   var remote_ip: ip_addr
   ## TODO: use dns_gethostbyname instead
-  var status: err_t = netconn_gethostbyname(address_string, addr(remote_ip))
+  var status: err = netconn_gethostbyname(address_string, addr(remote_ip))
   if UNLIKELY(status != ERR_OK):
     free(address_string)
     TRACE("tcp: host resolution failed.\n")
@@ -570,8 +570,8 @@ proc do_listen*(ctx: ptr Context; msg: term) =
   var backlog_term: term = interop_proplist_get_value(params, BACKLOG_ATOM)
   var binary_term: term = interop_proplist_get_value(params, BINARY_ATOM)
   var active_term: term = interop_proplist_get_value(params, ACTIVE_ATOM)
-  var port: avm_int_t = term_to_int(port_term)
-  var backlog: avm_int_t = term_to_int(backlog_term)
+  var port: avm_int = term_to_int(port_term)
+  var backlog: avm_int = term_to_int(backlog_term)
   var ok: bool
   var active: bool = bool_term_to_bool(active_term, addr(ok))
   if UNLIKELY(not ok):
@@ -581,13 +581,13 @@ proc do_listen*(ctx: ptr Context; msg: term) =
     abort()
   var conn: ptr netconn = netconn_new_with_proto_and_callback(NETCONN_TCP, 0,
       socket_callback)
-  var status: err_t = netconn_bind(conn, IP_ADDR_ANY, port)
+  var status: err = netconn_bind(conn, IP_ADDR_ANY, port)
   if UNLIKELY(status != ERR_OK):
     ## TODO
     fprintf(stderr, "bind error: %i\n", status)
     return
-  var naddr: ip_addr_t
-  var nport: u16_t
+  var naddr: ip_addr
+  var nport: u16
   status = netconn_getaddr(conn, addr(naddr), addr(nport), 1)
   if UNLIKELY(status != ERR_OK):
     ## TODO
@@ -624,7 +624,7 @@ proc do_udp_open*(ctx: ptr Context; msg: term) =
   var active_term: term = interop_proplist_get_value(params, ACTIVE_ATOM)
   var controlling_process: term = interop_proplist_get_value(params,
       CONTROLLING_PROCESS_ATOM)
-  var port: avm_int_t = term_to_int(port_term)
+  var port: avm_int = term_to_int(port_term)
   var ok: bool
   var active: bool = bool_term_to_bool(active_term, addr(ok))
   if UNLIKELY(not ok):
@@ -644,13 +644,13 @@ proc do_udp_open*(ctx: ptr Context; msg: term) =
   udp_data.socket_data.active = active
   udp_data.socket_data.binary = binary
   if port != 0:
-    var status: err_t = netconn_bind(conn, IP_ADDR_ANY, port)
+    var status: err = netconn_bind(conn, IP_ADDR_ANY, port)
     if UNLIKELY(status != ERR_OK):
       fprintf(stderr, "bind error: %i\n", status)
       return
-  var naddr: ip_addr_t
-  var nport: u16_t
-  var status: err_t = netconn_getaddr(conn, addr(naddr), addr(nport), 1)
+  var naddr: ip_addr
+  var nport: u16
+  var status: err = netconn_getaddr(conn, addr(naddr), addr(nport), 1)
   if UNLIKELY(status != ERR_OK):
     ## TODO
     fprintf(stderr, "getaddr error: %i\n", status)
@@ -698,7 +698,7 @@ proc do_send*(ctx: ptr Context; msg: term) =
     return
   var buffer: pointer = malloc(buffer_size)
   interop_write_iolist(data, buffer)
-  var status: err_t = netconn_write(tcp_data.socket_data.conn, buffer, buffer_size,
+  var status: err = netconn_write(tcp_data.socket_data.conn, buffer, buffer_size,
                                 NETCONN_NOCOPY)
   if UNLIKELY(status != ERR_OK):
     fprintf(stderr, "write error: %i\n", status)
@@ -724,11 +724,11 @@ proc do_sendto*(ctx: ptr Context; msg: term) =
   var buffer_size: cint = interop_iolist_size(data, addr(ok))
   var buffer: pointer = malloc(buffer_size)
   interop_write_iolist(data, buffer)
-  var ip4addr: ip_addr_t
+  var ip4addr: ip_addr
   tuple_to_ip_addr(dest_addr_term, addr(ip4addr))
-  var destport: uint16_t = term_to_int32(dest_port_term)
+  var destport: uint16 = term_to_int32(dest_port_term)
   var sendbuf: ptr netbuf = netbuf_new()
-  var status: err_t = netbuf_ref(sendbuf, buffer, buffer_size)
+  var status: err = netbuf_ref(sendbuf, buffer, buffer_size)
   if UNLIKELY(status != ERR_OK):
     fprintf(stderr, "netbuf_ref error: %i\n", status)
     netbuf_delete(sendbuf)
@@ -752,7 +752,7 @@ proc do_close*(ctx: ptr Context; msg: term) =
   var tcp_data: ptr TCPServerSocketData = ctx.platform_data
   var pid: term = term_get_tuple_element(msg, 0)
   var `ref`: term = term_get_tuple_element(msg, 1)
-  var res: err_t = netconn_delete(tcp_data.socket_data.conn)
+  var res: err = netconn_delete(tcp_data.socket_data.conn)
   if res != ERR_OK:
     TRACE("socket: close failed")
     return
@@ -787,13 +787,13 @@ proc do_recvfrom*(ctx: ptr Context; msg: term) =
   if socket_data.avail_bytes:
     TRACE(stderr, "do_recvfrom: have already ready bytes.\n")
     var buf: ptr netbuf = nil
-    var status: err_t = netconn_recv(socket_data.conn, addr(buf))
+    var status: err = netconn_recv(socket_data.conn, addr(buf))
     if UNLIKELY(status != ERR_OK):
       ## TODO
       fprintf(stderr, "tcp_client_handler error: %i\n", status)
       return
     var data: pointer
-    var data_len: u16_t
+    var data_len: u16
     status = netbuf_data(buf, addr(data), addr(data_len))
     if UNLIKELY(status != ERR_OK):
       ## TODO
@@ -816,7 +816,7 @@ proc do_recvfrom*(ctx: ptr Context; msg: term) =
       recv_data = term_create_uninitialized_binary(data_len, ctx)
       memcpy(cast[pointer](term_binary_data(recv_data)), data, data_len)
     else:
-      recv_data = term_from_string(cast[ptr uint8_t](data), data_len, ctx)
+      recv_data = term_from_string(cast[ptr uint8](data), data_len, ctx)
     var `addr`: term = socket_addr_to_tuple(ctx, netbuf_fromaddr(buf))
     var port: term = term_from_int32(netbuf_fromport(buf))
     netbuf_delete(buf)
@@ -860,9 +860,9 @@ proc do_sockname*(ctx: ptr Context; msg: term) =
   var socket_data: ptr SocketData = ctx.platform_data
   var pid: term = term_get_tuple_element(msg, 0)
   var `ref`: term = term_get_tuple_element(msg, 1)
-  var `addr`: ip_addr_t
-  var port: u16_t
-  var result: err_t = netconn_addr(socket_data.conn, addr(`addr`), addr(port))
+  var `addr`: ip_addr
+  var port: u16
+  var result: err = netconn_addr(socket_data.conn, addr(`addr`), addr(port))
   var return_msg: term
   if result != ERR_OK:
     if UNLIKELY(memory_ensure_free(ctx, 3 + 3) != MEMORY_GC_OK):
@@ -888,9 +888,9 @@ proc do_peername*(ctx: ptr Context; msg: term) =
   var socket_data: ptr SocketData = ctx.platform_data
   var pid: term = term_get_tuple_element(msg, 0)
   var `ref`: term = term_get_tuple_element(msg, 1)
-  var `addr`: ip_addr_t
-  var port: u16_t
-  var result: err_t = netconn_peer(socket_data.conn, addr(`addr`), addr(port))
+  var `addr`: ip_addr
+  var port: u16
+  var result: err = netconn_peer(socket_data.conn, addr(`addr`), addr(port))
   var return_msg: term
   if result != ERR_OK:
     if UNLIKELY(memory_ensure_free(ctx, 3 + 3) != MEMORY_GC_OK):

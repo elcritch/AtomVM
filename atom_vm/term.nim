@@ -42,7 +42,7 @@ proc term_display*(fd: ptr FILE; t: term; ctx: ptr Context) =
     fprintf(fd, "%.*s", cast[cint](atom_string_len(atom_string)),
             cast[cstring](atom_string_data(atom_string)))
   elif term_is_integer(t):
-    var iv: avm_int_t = term_to_int(t)
+    var iv: avm_int = term_to_int(t)
     fprintf(fd, AVM_INT_FMT, iv)
   elif term_is_nil(t):
     fprintf(fd, "[]")
@@ -84,7 +84,7 @@ proc term_display*(fd: ptr FILE; t: term; ctx: ptr Context) =
   elif term_is_function(t):
     var boxed_value: ptr term = term_to_const_term_ptr(t)
     var fun_module: ptr Module = cast[ptr Module](boxed_value[1])
-    var fun_index: uint32_t = boxed_value[2]
+    var fun_index: uint32 = boxed_value[2]
     ##  TODO: FIXME
     var format: cstring = FUN_FMT
     fprintf(fd, format, fun_index, cast[culong](fun_module))
@@ -119,7 +119,7 @@ proc term_display*(fd: ptr FILE; t: term; ctx: ptr Context) =
           fputc(',', fd)
         else:
           display_separator = 1
-        var c: uint8_t = cast[uint8_t](binary_data[i])
+        var c: uint8 = cast[uint8](binary_data[i])
         fprintf(fd, "%i", cast[cint](c))
         inc(i)
     fprintf(fd, ">>")
@@ -130,7 +130,7 @@ proc term_display*(fd: ptr FILE; t: term; ctx: ptr Context) =
   elif term_is_boxed_integer(t): ##  TODO: FIXME
                                ##  #ifdef AVM_NO_FP
                                ##      else if (term_is_float(t)) {
-                               ##          avm_float_t f = term_to_float(t);
+                               ##          avm_float f = term_to_float(t);
                                ##          fprintf(fd, AVM_FLOAT_FMT, f);
                                ##      }
                                ##  #endif
@@ -178,14 +178,14 @@ proc term_compare*(t: term; other: term; ctx: ptr Context): cint =
       other = temp_stack_pop(addr(temp_stack))
       t = temp_stack_pop(addr(temp_stack))
     elif term_is_integer(t) and term_is_integer(other):
-      var t_int: avm_int_t = term_to_int(t)
-      var other_int: avm_int_t = term_to_int(other)
+      var t_int: avm_int = term_to_int(t)
+      var other_int: avm_int = term_to_int(other)
       ## They cannot be equal
       result = if (t_int > other_int): 1 else: -1
       break
     elif term_is_reference(t) and term_is_reference(other):
-      var t_ticks: int64_t = term_to_ref_ticks(t)
-      var other_ticks: int64_t = term_to_ref_ticks(other)
+      var t_ticks: int64 = term_to_ref_ticks(t)
+      var other_ticks: int64 = term_to_ref_ticks(other)
       if t_ticks == other_ticks:
         other = temp_stack_pop(addr(temp_stack))
         t = temp_stack_pop(addr(temp_stack))
@@ -240,8 +240,8 @@ proc term_compare*(t: term; other: term; ctx: ptr Context): cint =
         result = if (memcmp_result > 0): 1 else: -1
         break
     elif term_is_any_integer(t) and term_is_any_integer(other):
-      var t_int: avm_int64_t = term_maybe_unbox_int64(t)
-      var other_int: avm_int64_t = term_maybe_unbox_int64(other)
+      var t_int: avm_int64 = term_maybe_unbox_int64(t)
+      var other_int: avm_int64 = term_maybe_unbox_int64(other)
       if t_int == other_int:
         other = temp_stack_pop(addr(temp_stack))
         t = temp_stack_pop(addr(temp_stack))
@@ -251,8 +251,8 @@ proc term_compare*(t: term; other: term; ctx: ptr Context): cint =
       ##  TODO: FIXME
       ##  #ifndef AVM_NO_FP
       ##          } else if (term_is_number(t) && term_is_number(other)) {
-      ##              avm_float_t t_float = term_conv_to_float(t);
-      ##              avm_float_t other_float = term_conv_to_float(other);
+      ##              avm_float t_float = term_conv_to_float(t);
+      ##              avm_float other_float = term_conv_to_float(other);
       ##              if (t_float == other_float) {
       ##                  other = temp_stack_pop(&temp_stack);
       ##                  t = temp_stack_pop(&temp_stack);

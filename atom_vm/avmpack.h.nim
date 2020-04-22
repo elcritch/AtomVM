@@ -42,7 +42,7 @@ const
 
 type
   avmpack_fold_fun* = proc (accum: pointer; section_ptr: pointer;
-                         section_size: uint32_t; beam_ptr: pointer; flags: uint32_t;
+                         section_size: uint32; beam_ptr: pointer; flags: uint32;
                          section_name: cstring): pointer {.cdecl.}
 
 ## *
@@ -56,8 +56,8 @@ type
 ##  @returns 1 if the file section has been found, 0 otherwise.
 ##
 
-proc avmpack_find_section_by_flag*(avmpack_binary: pointer; flags_mask: uint32_t;
-                                  `ptr`: ptr pointer; size: ptr uint32_t;
+proc avmpack_find_section_by_flag*(avmpack_binary: pointer; flags_mask: uint32;
+                                  `ptr`: ptr pointer; size: ptr uint32;
                                   name: cstringArray): cint {.cdecl.}
 ## *
 ##  @brief Finds an AVM Pack section that has certain name.
@@ -71,7 +71,7 @@ proc avmpack_find_section_by_flag*(avmpack_binary: pointer; flags_mask: uint32_t
 ##
 
 proc avmpack_find_section_by_name*(avmpack_binary: pointer; name: cstring;
-                                  `ptr`: ptr pointer; size: ptr uint32_t): cint {.cdecl.}
+                                  `ptr`: ptr pointer; size: ptr uint32): cint {.cdecl.}
 ## *
 ##  @brief Returns 1 if the pointed binary is a valid AVM Pack.
 ##
@@ -81,7 +81,7 @@ proc avmpack_find_section_by_name*(avmpack_binary: pointer; name: cstring;
 ##  @returns 1 if it is a valid AVM Pack binary, 0 otherwise.
 ##
 
-proc avmpack_is_valid*(avmpack_binary: pointer; size: uint32_t): cint {.cdecl.}
+proc avmpack_is_valid*(avmpack_binary: pointer; size: uint32): cint {.cdecl.}
 ## *
 ##  @brief Fold over all the sections in an AVM Pack.
 ##

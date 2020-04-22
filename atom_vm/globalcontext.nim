@@ -81,7 +81,7 @@ proc globalcontext_new*(): GlobalContext =
 proc globalcontext_destroy*(glb: ptr GlobalContext) =
   free(glb)
 
-proc globalcontext_get_process*(glb: ptr GlobalContext; process_id: int32_t): ptr Context {.
+proc globalcontext_get_process*(glb: ptr GlobalContext; process_id: int32): ptr Context {.
     cdecl.} =
   var processes: ptr Context = GET_LIST_ENTRY(glb.processes_table, Context,
       processes_table_head)
@@ -94,7 +94,7 @@ proc globalcontext_get_process*(glb: ptr GlobalContext; process_id: int32_t): pt
       break
   return nil
 
-proc globalcontext_get_new_process_id*(glb: ptr GlobalContext): int32_t =
+proc globalcontext_get_new_process_id*(glb: ptr GlobalContext): int32 =
   inc(glb.last_process_id)
   return glb.last_process_id
 
@@ -136,8 +136,8 @@ proc globalcontext_insert_atom_maybe_copy*(glb: ptr GlobalContext;
   var atom_index: culong = atomshashtable_get_value(htable, atom_string, ULONG_MAX)
   if atom_index == ULONG_MAX:
     if copy:
-      var len: uint8_t = (cast[ptr uint8_t](atom_string))[]
-      var buf: ptr uint8_t = malloc(1 + len)
+      var len: uint8 = (cast[ptr uint8](atom_string))[]
+      var buf: ptr uint8 = malloc(1 + len)
       if UNLIKELY(IS_NULL_PTR(buf)):
         fprintf(stderr, "Unable to allocate memory for atom string\n")
         abort()

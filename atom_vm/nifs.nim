@@ -510,7 +510,7 @@ proc nifs_get*(module: AtomString; function: AtomString; arity: cint): ptr Nif =
     return platform_nifs_get_nif(nifname)
   return nameAndPtr.nif
 
-proc make_maybe_boxed_int64*(ctx: ptr Context; value: avm_int64_t): term  =
+proc make_maybe_boxed_int64*(ctx: ptr Context; value: avm_int64): term  =
   when BOXED_TERMS_REQUIRED_FOR_INT64 == 2:
     if (value < AVM_INT_MIN) or (value > AVM_INT_MAX):
       if UNLIKELY(memory_ensure_free(ctx, BOXED_INT64_SIZE) != MEMORY_GC_OK):
@@ -526,7 +526,7 @@ proc make_maybe_boxed_int64*(ctx: ptr Context; value: avm_int64_t): term  =
 proc nif_erlang_iolist_size_1*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   var ok: cint
-  var size: avm_int_t = interop_iolist_size(argv[0], addr(ok))
+  var size: avm_int = interop_iolist_size(argv[0], addr(ok))
   if ok:
     return term_from_int(size)
   else:
@@ -671,14 +671,14 @@ proc nif_erlang_spawn_fun*(ctx: ptr Context; argc: cint; argv: ptr term): term =
     ##  0 arity, however right now they are not supported.
     ##  TODO: implement for funs having arity 0.
     abort()
-  var fun_index: uint32_t = term_to_int32(index_or_module)
-  var label: uint32_t
-  var arity: uint32_t
-  var n_freeze: uint32_t
+  var fun_index: uint32 = term_to_int32(index_or_module)
+  var label: uint32
+  var arity: uint32
+  var n_freeze: uint32
   module_get_fun(fun_module, fun_index, addr(label), addr(arity), addr(n_freeze))
   ##  TODO: new process should fail with badarity if arity != 0
   var size: cint = 0
-  var i: uint32_t = 0
+  var i: uint32 = 0
   while i < n_freeze:
     inc(size, memory_estimate_usage(boxed_value[i + 3]))
     inc(i)
@@ -686,7 +686,7 @@ proc nif_erlang_spawn_fun*(ctx: ptr Context; argc: cint; argv: ptr term): term =
     ## TODO: new process should be terminated, however a new pid is returned anyway
     fprintf(stderr, "Unable to allocate sufficient memory to spawn process.\n")
     abort()
-  var i: uint32_t = 0
+  var i: uint32 = 0
   while i < n_freeze:
     new_ctx.x[i + arity - n_freeze] = memory_copy_term_tree(addr(new_ctx.heap_ptr),
         boxed_value[i + 3])
@@ -761,7 +761,7 @@ proc nif_erlang_spawn*(ctx: ptr Context; argc: cint; argv: ptr term): term =
       RAISE_ERROR(BADARG_ATOM)
   var reg_index: cint = 0
   var t: term = argv[2]
-  var size: avm_int_t = MAX(cast[culong](term_to_int(min_heap_size_term)),
+  var size: avm_int = MAX(cast[culong](term_to_int(min_heap_size_term)),
                         memory_estimate_usage(t))
   if UNLIKELY(memory_ensure_free(new_ctx, size) != MEMORY_GC_OK):
     ## TODO: new process should be terminated, however a new pid is returned anyway
@@ -831,7 +831,7 @@ proc nif_erlang_make_ref_0*(ctx: ptr Context; argc: cint; argv: ptr term): term 
   ##  a ref is 64 bits, hence 8 bytes
   if UNLIKELY(memory_ensure_free(ctx, (8 div TERM_BYTES) + 1) != MEMORY_GC_OK):
     RAISE_ERROR(OUT_OF_MEMORY_ATOM)
-  var ref_ticks: uint64_t = globalcontext_get_ref_ticks(ctx.global)
+  var ref_ticks: uint64 = globalcontext_get_ref_ticks(ctx.global)
   return term_from_ref_ticks(ref_ticks, ctx)
 
 proc nif_erlang_system_time_1*(ctx: ptr Context; argc: cint; argv: ptr term): term =
@@ -843,7 +843,7 @@ proc nif_erlang_system_time_1*(ctx: ptr Context; argc: cint; argv: ptr term): te
   if argv[0] == second_atom:
     return make_maybe_boxed_int64(ctx, ts.tv_sec)
   elif argv[0] == context_make_atom(ctx, "\vmillisecond"):
-    return make_maybe_boxed_int64(ctx, (cast[int64_t](ts.tv_sec)) * 1000 +
+    return make_maybe_boxed_int64(ctx, (cast[int64](ts.tv_sec)) * 1000 +
         ts.tv_nsec div 1000000)
   else:
     RAISE_ERROR(BADARG_ATOM)
@@ -894,7 +894,7 @@ proc nif_erlang_timestamp_0*(ctx: ptr Context; argc: cint; argv: ptr term): term
 proc nif_erlang_make_tuple_2*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   UNUSED(argc)
   VALIDATE_VALUE(argv[0], term_is_integer)
-  var count_elem: avm_int_t = term_to_int(argv[0])
+  var count_elem: avm_int = term_to_int(argv[0])
   if UNLIKELY(count_elem < 0):
     RAISE_ERROR(BADARG_ATOM)
   if UNLIKELY(memory_ensure_free(ctx, count_elem + 1) != MEMORY_GC_OK):
@@ -913,7 +913,7 @@ proc nif_erlang_insert_element_3*(ctx: ptr Context; argc: cint; argv: ptr term):
   VALIDATE_VALUE(argv[0], term_is_integer)
   VALIDATE_VALUE(argv[1], term_is_tuple)
   ##  indexes are 1 based
-  var insert_index: avm_int_t = term_to_int(argv[0]) - 1
+  var insert_index: avm_int = term_to_int(argv[0]) - 1
   var old_tuple_size: cint = term_get_tuple_arity(argv[1])
   if UNLIKELY((insert_index > old_tuple_size) or (insert_index < 0)):
     RAISE_ERROR(BADARG_ATOM)
@@ -941,7 +941,7 @@ proc nif_erlang_delete_element_2*(ctx: ptr Context; argc: cint; argv: ptr term):
   VALIDATE_VALUE(argv[0], term_is_integer)
   VALIDATE_VALUE(argv[1], term_is_tuple)
   ##  indexes are 1 based
-  var delete_index: avm_int_t = term_to_int(argv[0]) - 1
+  var delete_index: avm_int = term_to_int(argv[0]) - 1
   var old_tuple_size: cint = term_get_tuple_arity(argv[1])
   if UNLIKELY((delete_index > old_tuple_size) or (delete_index < 0)):
     RAISE_ERROR(BADARG_ATOM)
@@ -965,7 +965,7 @@ proc nif_erlang_setelement_3*(ctx: ptr Context; argc: cint; argv: ptr term): ter
   VALIDATE_VALUE(argv[0], term_is_integer)
   VALIDATE_VALUE(argv[1], term_is_tuple)
   ##  indexes are 1 based
-  var replace_index: avm_int_t = term_to_int(argv[0]) - 1
+  var replace_index: avm_int = term_to_int(argv[0]) - 1
   var tuple_size: cint = term_get_tuple_arity(argv[1])
   if UNLIKELY((replace_index >= tuple_size) or (replace_index < 0)):
     RAISE_ERROR(BADARG_ATOM)
@@ -1015,7 +1015,7 @@ proc nif_erlang_binary_to_integer_1*(ctx: ptr Context; argc: cint; argv: ptr ter
   ## TODO: handle 64 bits numbers
   ## TODO: handle errors
   var endptr: cstring
-  var value: uint64_t = strtoll(null_terminated_buf, addr(endptr), 10)
+  var value: uint64 = strtoll(null_terminated_buf, addr(endptr), 10)
   if endptr[] != '\x00':
     RAISE_ERROR(BADARG_ATOM)
   return make_maybe_boxed_int64(ctx, value)
@@ -1048,7 +1048,7 @@ when not defined(AVM_NO_FP):
     var null_terminated_buf: array[FLOAT_BUF_SIZE, char]
     memcpy(null_terminated_buf, buf, len)
     null_terminated_buf[len] = '\x00'
-    var fvalue: avm_float_t
+    var fvalue: avm_float
     if UNLIKELY(sscanf(null_terminated_buf, AVM_FLOAT_FMT, addr(fvalue)) != 1):
       RAISE_ERROR(BADARG_ATOM)
     if UNLIKELY(not is_valid_float_string(null_terminated_buf, len)):
@@ -1129,7 +1129,7 @@ proc binary_to_atom*(ctx: ptr Context; argc: cint; argv: ptr term; create_new: c
     free(atom_string)
     RAISE_ERROR(SYSTEM_LIMIT_ATOM)
   var atom: AtomString = malloc(atom_string_len + 1)
-  (cast[ptr uint8_t](atom))[0] = atom_string_len
+  (cast[ptr uint8](atom))[0] = atom_string_len
   memcpy((cast[cstring](atom)) + 1, atom_string, atom_string_len)
   var global_atom_index: culong = atomshashtable_get_value(ctx.global.atoms_table,
       atom, ULONG_MAX)
@@ -1167,7 +1167,7 @@ proc list_to_atom*(ctx: ptr Context; argc: cint; argv: ptr term; create_new: cin
     free(atom_string)
     RAISE_ERROR(SYSTEM_LIMIT_ATOM)
   var atom: AtomString = malloc(atom_string_len + 1)
-  (cast[ptr uint8_t](atom))[0] = atom_string_len
+  (cast[ptr uint8](atom))[0] = atom_string_len
   memcpy((cast[cstring](atom)) + 1, atom_string, atom_string_len)
   var global_atom_index: culong = atomshashtable_get_value(ctx.global.atoms_table,
       atom, ULONG_MAX)
@@ -1223,7 +1223,7 @@ proc nif_erlang_integer_to_binary_1*(ctx: ptr Context; argc: cint; argv: ptr ter
   UNUSED(argc)
   var value: term = argv[0]
   VALIDATE_VALUE(value, term_is_any_integer)
-  var int_value: avm_int64_t = term_maybe_unbox_int64(value)
+  var int_value: avm_int64 = term_maybe_unbox_int64(value)
   var integer_string: array[21, char]
   ## TODO: just copy data to the binary instead of using the stack
   snprintf(integer_string, 21, AVM_INT64_FMT, int_value)
@@ -1238,7 +1238,7 @@ proc nif_erlang_integer_to_list_1*(ctx: ptr Context; argc: cint; argv: ptr term)
   UNUSED(argc)
   var value: term = argv[0]
   VALIDATE_VALUE(value, term_is_any_integer)
-  var int_value: avm_int64_t = term_maybe_unbox_int64(value)
+  var int_value: avm_int64 = term_maybe_unbox_int64(value)
   var integer_string: array[21, char]
   snprintf(integer_string, 21, AVM_INT64_FMT, int_value)
   var integer_string_len: cint = strlen(integer_string)
@@ -1260,7 +1260,7 @@ when not defined(AVM_NO_FP):
       format = "%.*e"
     else:
       format = "%.*f"
-    var float_value: avm_float_t = term_to_float(value)
+    var float_value: avm_float = term_to_float(value)
     snprintf(out_buf, outbuf_len, format, decimals, float_value)
     if compact and not scientific:
       var start: cint = 0
@@ -1399,7 +1399,7 @@ proc nif_erlang_list_to_integer_1*(ctx: ptr Context; argc: cint; argv: ptr term)
     cdecl.} =
   UNUSED(argc)
   var t: term = argv[0]
-  var acc: int64_t = 0
+  var acc: int64 = 0
   var digits: cint = 0
   VALIDATE_VALUE(t, term_is_nonempty_list)
   var negative: cint = 0
@@ -1412,7 +1412,7 @@ proc nif_erlang_list_to_integer_1*(ctx: ptr Context; argc: cint; argv: ptr term)
   while term_is_nonempty_list(t):
     var head: term = term_get_list_head(t)
     VALIDATE_VALUE(head, term_is_integer)
-    var c: avm_int_t = term_to_int(head)
+    var c: avm_int = term_to_int(head)
     if UNLIKELY((c < '0') or (c > '9')):
       RAISE_ERROR(BADARG_ATOM)
     if acc > INT64_MAX div 10:
@@ -1595,7 +1595,7 @@ proc nif_erlang_system_info*(ctx: ptr Context; argc: cint; argv: ptr term): term
     if memory_ensure_free(ctx, term_binary_data_size_in_terms(len)) !=
         MEMORY_GC_OK:
       RAISE_ERROR(OUT_OF_MEMORY_ATOM)
-    return term_from_literal_binary(cast[ptr uint8_t](buf), len, ctx)
+    return term_from_literal_binary(cast[ptr uint8](buf), len, ctx)
   return sys_get_info(ctx, key)
 
 proc nif_erlang_binary_to_term*(ctx: ptr Context; argc: cint; argv: ptr term): term {.
@@ -1607,7 +1607,7 @@ proc nif_erlang_binary_to_term*(ctx: ptr Context; argc: cint; argv: ptr term): t
   var binary: term = argv[0]
   if not term_is_binary(binary):
     RAISE_ERROR(BADARG_ATOM)
-  var return_used: uint8_t = 0
+  var return_used: uint8 = 0
   var num_extra_terms: csize = 0
   if argc == 2 and term_list_member(argv[1], USED_ATOM, ctx):
     return_used = 1
@@ -1651,8 +1651,8 @@ proc nif_binary_at_2*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   var pos_term: term = argv[1]
   VALIDATE_VALUE(bin_term, term_is_binary)
   VALIDATE_VALUE(pos_term, term_is_integer)
-  var size: int32_t = term_binary_size(bin_term)
-  var pos: avm_int_t = term_to_int(pos_term)
+  var size: int32 = term_binary_size(bin_term)
+  var pos: avm_int = term_to_int(pos_term)
   if UNLIKELY((pos < 0) or (pos >= size)):
     RAISE_ERROR(BADARG_ATOM)
   return term_from_int11(term_binary_data(bin_term)[pos])
@@ -1683,8 +1683,8 @@ proc nif_binary_part_3*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   VALIDATE_VALUE(pos_term, term_is_integer)
   VALIDATE_VALUE(len_term, term_is_integer)
   var bin_size: cint = term_binary_size(bin_term)
-  var pos: avm_int_t = term_to_int(pos_term)
-  var len: avm_int_t = term_to_int(len_term)
+  var pos: avm_int = term_to_int(pos_term)
+  var len: avm_int = term_to_int(len_term)
   if len < 0:
     inc(pos, len)
     len = -len
@@ -1797,7 +1797,7 @@ proc nif_erlang_fun_to_list*(ctx: ptr Context; argc: cint; argv: ptr term): term
   VALIDATE_VALUE(t, term_is_function)
   var boxed_value: ptr term = term_to_const_term_ptr(t)
   var fun_module: ptr Module = cast[ptr Module](boxed_value[1])
-  var fun_index: uint32_t = boxed_value[2]
+  var fun_index: uint32 = boxed_value[2]
   ##  char-len(address) + char-len(32-bit-num) + 16 + '\0' = 47
   ##  20                  10
   when defined(__clang__):
@@ -1860,16 +1860,16 @@ proc nif_atomvm_read_priv*(ctx: ptr Context; argc: cint; argv: ptr term): term =
   free(app)
   free(path)
   var bin_data: pointer
-  var size: uint32_t
+  var size: uint32
   if avmpack_find_section_by_name(glb.avmpack_data, complete_path, addr(bin_data),
                                  addr(size)):
-    var file_size: uint32_t = READ_32_ALIGNED(cast[ptr uint32_t](bin_data))
+    var file_size: uint32 = READ_32_ALIGNED(cast[ptr uint32](bin_data))
     free(complete_path)
     if UNLIKELY(memory_ensure_free(ctx, TERM_BOXED_REFC_BINARY_SIZE) !=
         MEMORY_GC_OK):
       RAISE_ERROR(OUT_OF_MEMORY_ATOM)
-    return term_from_const_binary((cast[ptr uint8_t](bin_data)) +
-        sizeof((uint32_t)), file_size, ctx)
+    return term_from_const_binary((cast[ptr uint8](bin_data)) +
+        sizeof((uint32)), file_size, ctx)
   else:
     free(complete_path)
     return UNDEFINED_ATOM

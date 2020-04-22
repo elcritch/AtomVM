@@ -57,14 +57,14 @@ proc gpio_interrupt_callback*(listener: ptr EventListener) =
   mailbox_send(listening_ctx, int_msg)
 
 proc gpiodriver_set_level*(msg: term): term =
-  var gpio_num: int32_t = term_to_int32(term_get_tuple_element(msg, 2))
-  var level: int32_t = term_to_int32(term_get_tuple_element(msg, 3))
+  var gpio_num: int32 = term_to_int32(term_get_tuple_element(msg, 2))
+  var level: int32 = term_to_int32(term_get_tuple_element(msg, 3))
   gpio_set_level(gpio_num, level != 0)
   TRACE("gpio: set_level: %i %i\n", gpio_num, level != 0)
   return OK_ATOM
 
 proc gpiodriver_set_direction*(msg: term): term =
-  var gpio_num: int32_t = term_to_int32(term_get_tuple_element(msg, 2))
+  var gpio_num: int32 = term_to_int32(term_get_tuple_element(msg, 2))
   var direction: term = term_get_tuple_element(msg, 3)
   if direction == INPUT_ATOM:
     gpio_set_direction(gpio_num, GPIO_MODE_INPUT)
@@ -79,16 +79,16 @@ proc gpiodriver_set_direction*(msg: term): term =
     return ERROR_ATOM
 
 proc gpiodriver_read*(msg: term): term =
-  var gpio_num: int32_t = term_to_int32(term_get_tuple_element(msg, 2))
+  var gpio_num: int32 = term_to_int32(term_get_tuple_element(msg, 2))
   var level: cint = gpio_get_level(gpio_num)
   return term_from_int11(level)
 
 proc gpiodriver_set_int*(ctx: ptr Context; target: ptr Context; msg: term): term =
   var glb: ptr GlobalContext = ctx.global
   var platform: ptr ESP32PlatformData = glb.platform_data
-  var gpio_num: int32_t = term_to_int32(term_get_tuple_element(msg, 2))
+  var gpio_num: int32 = term_to_int32(term_get_tuple_element(msg, 2))
   var trigger: term = term_get_tuple_element(msg, 3)
-  var interrupt_type: gpio_int_type_t
+  var interrupt_type: gpio_int_type
   case trigger
   of NONE_ATOM:
     interrupt_type = GPIO_INTR_DISABLE
